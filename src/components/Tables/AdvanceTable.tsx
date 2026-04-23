@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../UI/table";
-import { CrossIcon, DeleteIcon, Eyeicon, HistoryIcon, SearchIcon, ArrowDownIcon, ArrowUpIcon, EditIcon, InforIcon, InfoIcon } from "../../icons/icons";
+import { CrossIcon, DeleteIcon, Eyeicon, HistoryIcon, SearchIcon, ArrowDownIcon, ArrowUpIcon, EditIcon, InfoIcon } from "../../icons/icons";
 import { useNavigate } from "react-router-dom";
 import Button from "../UI/button/Button";
 import Papa from "papaparse";
@@ -125,10 +125,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [expandedCells, setExpandedCells] = useState<{ [key: string]: boolean }>({});
     const [localSelectedRows, setLocalSelectedRows] = useState<{ [key: string]: boolean }>({});
-    const [showModal, setShowModal] = useState(false);
-    const [remarks, setRemarks] = useState('Default');
-    const [showValidationError, setShowValidationError] = useState(false);
-    const [selectedRow, setSelectedRow] = useState<any>(null);
+
     const selectedRows = propSelectedRows !== undefined ? propSelectedRows : localSelectedRows;
     const setSelectedRows = onSelectionChange || setLocalSelectedRows;
 

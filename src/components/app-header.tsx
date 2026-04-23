@@ -1,4 +1,4 @@
-import { Search, Bell, UserCircle, Menu, Moon, Sun, Loader2 } from "lucide-react";
+import { Bell, Moon, Sun, Loader2 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";

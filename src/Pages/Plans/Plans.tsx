@@ -76,7 +76,7 @@ const Plans: React.FC = () => {
   const tableRows = plans.map(plan => ({
     ...plan,
     id: plan._id,
-    formattedDate: formatDateWithTiming(plan.createdAt),
+    formattedDate: formatDateWithTiming(plan.createdAt ?? null),
     statusStr: plan.isActive ? "Active" : "Inactive",
     featuredStr: plan.isFeatured ? "Yes" : "No",
     priceStr: plan.basePrice !== undefined

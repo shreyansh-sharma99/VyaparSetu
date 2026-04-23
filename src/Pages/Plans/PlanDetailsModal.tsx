@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Tag, Divider } from 'antd';
 import type { Plan } from './services/PlanSlice';
-import { CheckCircle, XCircle, Package, Users, ShoppingCart, HardDrive, Layout, ShieldCheck, BarChart2, Globe, Database, HelpCircle, Download, Smartphone, Palette } from 'lucide-react';
+import { CheckCircle, Package, Users, ShoppingCart, HardDrive, Layout, ShieldCheck, BarChart2, Globe, Database, HelpCircle, Download, Smartphone, Palette } from 'lucide-react';
 
 interface PlanDetailsModalProps {
   visible: boolean;

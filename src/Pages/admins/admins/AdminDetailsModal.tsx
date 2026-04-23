@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Tag, Divider } from 'antd';
+import { Modal, Tag } from 'antd';
 import {
   User,
   Mail,

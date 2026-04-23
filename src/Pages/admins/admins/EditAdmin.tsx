@@ -55,8 +55,13 @@ const EditAdmin: React.FC = () => {
         if (adminId) {
             try {
                 const id = decryptData(decodeURIComponent(adminId));
-                setDecryptedId(id);
-                dispatch(fetchAdminById(id));
+                if (id) {
+                    setDecryptedId(id);
+                    dispatch(fetchAdminById(id));
+                } else {
+                    toast.error("Invalid admin ID");
+                    navigate('/Admin');
+                }
             } catch (error) {
                 toast.error("Unable to fetch admin details");
                 navigate('/Admin');

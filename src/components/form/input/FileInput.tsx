@@ -19,7 +19,8 @@
 
 // export default FileInput;
 
-import { FC, useRef } from "react";
+import { useRef } from "react";
+import type { FC } from "react";
 
 interface FileInputProps {
   className?: string;

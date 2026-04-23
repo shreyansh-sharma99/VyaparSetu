@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, deleteAdmin, updateAdmin, fetchAdminById, clearCurrentAdmin } from "./services/adminSlice";
+import { fetchAdmins, deleteAdmin, fetchAdminById, clearCurrentAdmin } from "./services/adminSlice";
 import AdminDetailsModal from "./AdminDetailsModal";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
