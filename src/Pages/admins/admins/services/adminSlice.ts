@@ -25,9 +25,12 @@ interface Admin {
     _id: string;
     name: string;
   } | null;
-  subscription: {
+  subscription?: {
     status: string;
-    currentPeriodEnd: string;
+    currentPeriodEnd?: string;
+    currentPeriodStart?: string;
+    razorpaySubscriptionId?: string;
+    trialEndsAt?: string | null;
   };
   onboardingStatus?: string;
   status?: string;
@@ -59,9 +62,9 @@ const initialState: AdminState = {
 };
 
 export const fetchAdmins = createAsyncThunk("admin/fetchAdmins",
-  async ({ page, limit, search, isActive, onboardingStatus, status }: { page: number; limit: number; search?: string, isActive?: boolean, onboardingStatus?: string, status?: string }, { rejectWithValue }) => {
+  async ({ page, limit, search, isActive, onboardingStatus, status, subscriptionStatus }: { page: number; limit: number; search?: string, isActive?: boolean, onboardingStatus?: string, status?: string, subscriptionStatus?: string }, { rejectWithValue }) => {
     try {
-      const response = await getAdminsService(page, limit, search, isActive, onboardingStatus, status);
+      const response = await getAdminsService(page, limit, search, isActive, onboardingStatus, status, subscriptionStatus);
       return response.data;
     } catch (error: any) {
       const message = error.response?.data?.message || "Failed to fetch admins";

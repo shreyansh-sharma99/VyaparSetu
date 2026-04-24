@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Modal, Tabs } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, deleteAdmin, fetchAdminById, clearCurrentAdmin, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription } from "../admins/services/adminSlice";
+import { fetchAdmins, fetchAdminById, clearCurrentAdmin, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription } from "../admins/services/adminSlice";
 import AdminDetailsModal from "../admins/AdminDetailsModal";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -12,6 +12,7 @@ import PageMeta from "@/components/common/PageMeta";
 import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
 import Select from "../../../components/form/Select";
+import StatusToggle from "../../../components/form/input/StatusToggle";
 import { SendHorizontal, AlertTriangle, CheckCircle, CalendarClock } from "lucide-react";
 
 const AdminManagementList: React.FC = () => {
@@ -30,6 +31,11 @@ const AdminManagementList: React.FC = () => {
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<string>("suspend");
     const [extendDays, setExtendDays] = useState<number>(30);
+    const [activeStatus, setActiveStatus] = useState("all");
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeStatus]);
 
     useEffect(() => {
         const params: any = { page: currentPage, limit: pageSize, search: searchQuery };
@@ -38,12 +44,16 @@ const AdminManagementList: React.FC = () => {
             params.onboardingStatus = "pending_subscription";
         } else if (statusFilter === "subscribed") {
             params.onboardingStatus = "subscribed";
-        } else if (statusFilter === "expired") {
-            params.status = "expired";
+        } else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(statusFilter)) {
+            params.subscriptionStatus = statusFilter;
+        }
+
+        if (activeStatus !== "all") {
+            params.isActive = activeStatus === "active";
         }
 
         dispatch(fetchAdmins(params));
-    }, [dispatch, currentPage, pageSize, searchQuery, statusFilter]);
+    }, [dispatch, currentPage, pageSize, searchQuery, statusFilter, activeStatus]);
 
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
@@ -73,34 +83,38 @@ const AdminManagementList: React.FC = () => {
         navigate(`/Admin/edit/${encryptedId}`);
     };
 
-    const handleDelete = async (id: string) => {
-        Modal.confirm({
-            title: 'Are you sure you want to delete this admin?',
-            content: 'This action cannot be undone and will permanently remove the admin account.',
-            okText: 'Delete',
-            okType: 'danger',
-            cancelText: 'No',
-            centered: true,
-            onOk: async () => {
-                try {
-                    const resultAction = await dispatch(deleteAdmin(id));
-                    if (deleteAdmin.fulfilled.match(resultAction)) {
-                        toast.success("Admin deleted successfully");
-                    } else {
-                        toast.error(resultAction.payload as string || "Failed to delete admin");
-                    }
-                } catch (error) {
-                    toast.error("An unexpected error occurred");
-                }
-            },
-        });
-    };
+    // const handleDelete = async (id: string) => {
+    //     Modal.confirm({
+    //         title: 'Are you sure you want to delete this admin?',
+    //         content: 'This action cannot be undone and will permanently remove the admin account.',
+    //         okText: 'Delete',
+    //         okType: 'danger',
+    //         cancelText: 'No',
+    //         centered: true,
+    //         onOk: async () => {
+    //             try {
+    //                 const resultAction = await dispatch(deleteAdmin(id));
+    //                 if (deleteAdmin.fulfilled.match(resultAction)) {
+    //                     toast.success("Admin deleted successfully");
+    //                 } else {
+    //                     toast.error(resultAction.payload as string || "Failed to delete admin");
+    //                 }
+    //             } catch (error) {
+    //                 toast.error("An unexpected error occurred");
+    //             }
+    //         },
+    //     });
+    // };
 
     const handleActionButtonClick = (admin: any) => {
         const onboardingStatus = admin.onboardingStatusRaw || admin.onboardingStatus;
         const status = admin.statusRaw || admin.status;
 
-        if (onboardingStatus === "pending_subscription") {
+        if (!admin.isActive && admin?.subscription?.status === "cancelled") {
+            setSelectedActionAdmin(admin);
+            setActionType("activate");
+            setActionModalVisible(true);
+        } else if (onboardingStatus === "pending_subscription") {
             setSelectedActionAdmin(admin);
             setActionType("resend");
             setActionModalVisible(true);
@@ -177,23 +191,23 @@ const AdminManagementList: React.FC = () => {
         statusRaw: admin.status,
         planName: admin.plan?.name || "N/A",
         subStatusBadge: (
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                admin.subscription?.status === "active"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                    : admin.subscription?.status === "cancelled"
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${admin.subscription?.status === "active"
+                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                : admin.subscription?.status === "cancelled"
                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                     : admin.subscription?.status === "trialing"
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                 }`}>
                 {(admin.subscription?.status || "inactive").toUpperCase()}
             </span>
         ),
         joinedDate: formatDateWithTiming(admin.createdAt),
+        trialEndsAt: admin.subscription?.trialEndsAt ? formatDateWithTiming(admin.subscription.trialEndsAt) : "N/A",
         statusBadge: (
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${admin.isActive
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                 }`}>
                 {admin.isActive ? "ACTIVE" : "INACTIVE"}
             </span>
@@ -201,10 +215,10 @@ const AdminManagementList: React.FC = () => {
         businessInfo: `${admin.businessName} (${admin.businessType})`,
         onboardingStatusBadge: (
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${admin.onboardingStatus === "pending_subscription"
-                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50"
-                    : admin.onboardingStatus === "subscribed"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50"
-                        : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50"
+                : admin.onboardingStatus === "subscribed"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50"
+                    : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                 }`}>
                 {admin.onboardingStatus === "pending_subscription" ? "PENDING SUBSCRIPTION" :
                     admin.onboardingStatus === "subscribed" ? "SUBSCRIBED" : (admin.onboardingStatus || "N/A").toUpperCase()}
@@ -221,6 +235,7 @@ const AdminManagementList: React.FC = () => {
         { label: "Business Details", key: "businessInfo", value: "checked" as const },
         { label: "Current Plan", key: "planName", value: "checked" as const },
         { label: "Joining Date", key: "joinedDate", value: "checked" as const },
+        { label: "Trial End Date", key: "trialEndsAt", value: "checked" as const },
         { label: "Status", key: "statusBadge", value: "checked" as const },
         { label: "Subscription", key: "subStatusBadge", value: "checked" as const },
         { label: "Onboarding Status", key: "onboardingStatusBadge", value: "checked" as const }
@@ -245,6 +260,10 @@ const AdminManagementList: React.FC = () => {
                                     { label: "All Status", value: "all" },
                                     { label: "Pending Subscription", value: "pending_subscription" },
                                     { label: "Subscribed", value: "subscribed" },
+                                    { label: "Trialing", value: "trialing" },
+                                    { label: "Active", value: "active" },
+                                    { label: "Past Due", value: "past_due" },
+                                    { label: "Cancelled", value: "cancelled" },
                                     { label: "Expired", value: "expired" },
                                 ]}
                                 onChange={(val) => {
@@ -254,6 +273,8 @@ const AdminManagementList: React.FC = () => {
                                 placeholder="Filter by Status"
                             />
                         </div>
+                        <StatusToggle status={activeStatus} onStatusChange={setActiveStatus} />
+
                     </div>
                 }
             >
@@ -269,7 +290,7 @@ const AdminManagementList: React.FC = () => {
                     addButtonPath="/Admin/add"
                     onView={handleView}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    // onDelete={handleDelete}
                     actionButtonName="Action"
                     actionButtonHeader=""
                     onActionButtonClick={handleActionButtonClick}
@@ -363,34 +384,36 @@ const AdminManagementList: React.FC = () => {
                                             </div>
                                         )
                                     },
-                                    {
-                                        key: "extend",
-                                        label: "Extend Subscription",
-                                        children: (
-                                            <div className="flex flex-col items-center justify-center text-center py-4">
-                                                <div className="relative mb-6">
-                                                    <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
-                                                    <div className="relative w-20 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-800 shadow-xl transform transition-transform hover:scale-105">
-                                                        <CalendarClock className="w-10 h-10" />
+                                    ...((!selectedActionAdmin?.subscription?.trialEndsAt || new Date(selectedActionAdmin.subscription.trialEndsAt) <= new Date()) ? [
+                                        {
+                                            key: "extend",
+                                            label: "Extend Subscription",
+                                            children: (
+                                                <div className="flex flex-col items-center justify-center text-center py-4">
+                                                    <div className="relative mb-6">
+                                                        <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+                                                        <div className="relative w-20 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-800 shadow-xl transform transition-transform hover:scale-105">
+                                                            <CalendarClock className="w-10 h-10" />
+                                                        </div>
+                                                    </div>
+                                                    <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 mb-3 tracking-tight">Extend Subscription</h3>
+                                                    <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-[320px] mb-6">
+                                                        Add more days to <strong className="text-gray-900 dark:text-white font-semibold">{selectedActionAdmin?.name}</strong>'s subscription.
+                                                    </p>
+                                                    <div className="w-full max-w-[200px] bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Number of Days</label>
+                                                        <input
+                                                            type="number"
+                                                            value={extendDays}
+                                                            onChange={(e) => setExtendDays(parseInt(e.target.value) || 0)}
+                                                            className="w-full bg-transparent text-2xl font-bold text-center text-gray-800 dark:text-white outline-none"
+                                                            min="1"
+                                                        />
                                                     </div>
                                                 </div>
-                                                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 mb-3 tracking-tight">Extend Subscription</h3>
-                                                <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-[320px] mb-6">
-                                                    Add more days to <strong className="text-gray-900 dark:text-white font-semibold">{selectedActionAdmin?.name}</strong>'s subscription.
-                                                </p>
-                                                <div className="w-full max-w-[200px] bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Number of Days</label>
-                                                    <input
-                                                        type="number"
-                                                        value={extendDays}
-                                                        onChange={(e) => setExtendDays(parseInt(e.target.value) || 0)}
-                                                        className="w-full bg-transparent text-2xl font-bold text-center text-gray-800 dark:text-white outline-none"
-                                                        min="1"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )
-                                    }
+                                            )
+                                        }
+                                    ] : [])
                                 ]}
                             />
                         </div>

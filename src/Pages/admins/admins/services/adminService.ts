@@ -1,11 +1,12 @@
 import Http from "@/utility/Http";
 
-export const getAdminsService = async (page: number = 1, limit: number = 10, search: string = "", isActive?: boolean, onboardingStatus?: string, status?: string) => {
+export const getAdminsService = async (page: number = 1, limit: number = 10, search: string = "", isActive?: boolean, onboardingStatus?: string, status?: string, subscriptionStatus?: string) => {
     let url = `/owner/admins?page=${page}&limit=${limit}`;
     if (search) url += `&search=${search}`;
     if (isActive !== undefined) url += `&isActive=${isActive}`;
     if (onboardingStatus) url += `&onboardingStatus=${onboardingStatus}`;
     if (status) url += `&status=${status}`;
+    if (subscriptionStatus) url += `&subscriptionStatus=${subscriptionStatus}`;
     return await Http.get(url);
 };
 

@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Modal } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, deleteAdmin, fetchAdminById, clearCurrentAdmin } from "./services/adminSlice";
+import { fetchAdmins, fetchAdminById, clearCurrentAdmin } from "./services/adminSlice";
 import AdminDetailsModal from "./AdminDetailsModal";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
-import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
 import StatusToggle from "../../../components/form/input/StatusToggle";
 
@@ -22,18 +20,18 @@ const AdminsList: React.FC = () => {
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
     const [searchQuery, setSearchQuery] = useState("");
     const [detailModalVisible, setDetailModalVisible] = useState(false);
-    const [status, setStatus] = useState("active");
+    const [status, setStatus] = useState("all");
 
     useEffect(() => {
         setCurrentPage(1);
     }, [status]);
 
     useEffect(() => {
-        dispatch(fetchAdmins({ 
-            page: currentPage, 
-            limit: pageSize, 
-            search: searchQuery, 
-            isActive: status === "active" 
+        dispatch(fetchAdmins({
+            page: currentPage,
+            limit: pageSize,
+            search: searchQuery,
+            isActive: status === "all" ? undefined : status === "active"
         }));
     }, [dispatch, currentPage, pageSize, searchQuery, status]);
 
@@ -65,28 +63,28 @@ const AdminsList: React.FC = () => {
         navigate(`/Admin/edit/${encryptedId}`);
     };
 
-    const handleDelete = async (id: string) => {
-        Modal.confirm({
-            title: 'Are you sure you want to delete this admin?',
-            content: 'This action cannot be undone and will permanently remove the admin account.',
-            okText: 'Delete',
-            okType: 'danger',
-            cancelText: 'No',
-            centered: true,
-            onOk: async () => {
-                try {
-                    const resultAction = await dispatch(deleteAdmin(id));
-                    if (deleteAdmin.fulfilled.match(resultAction)) {
-                        toast.success("Admin deleted successfully");
-                    } else {
-                        toast.error(resultAction.payload as string || "Failed to delete admin");
-                    }
-                } catch (error) {
-                    toast.error("An unexpected error occurred");
-                }
-            },
-        });
-    };
+    // const handleDelete = async (id: string) => {
+    //     Modal.confirm({
+    //         title: 'Are you sure you want to delete this admin?',
+    //         content: 'This action cannot be undone and will permanently remove the admin account.',
+    //         okText: 'Delete',
+    //         okType: 'danger',
+    //         cancelText: 'No',
+    //         centered: true,
+    //         onOk: async () => {
+    //             try {
+    //                 const resultAction = await dispatch(deleteAdmin(id));
+    //                 if (deleteAdmin.fulfilled.match(resultAction)) {
+    //                     toast.success("Admin deleted successfully");
+    //                 } else {
+    //                     toast.error(resultAction.payload as string || "Failed to delete admin");
+    //                 }
+    //             } catch (error) {
+    //                 toast.error("An unexpected error occurred");
+    //             }
+    //         },
+    //     });
+    // };
 
 
     // const handleToggleStatus = async (admin: any) => {
@@ -157,7 +155,7 @@ const AdminsList: React.FC = () => {
                     addButtonPath="/Admin/add"
                     onView={handleView}
                     onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    // onDelete={handleDelete}
                     checkboxHeading="Action"
                     // onCheckbox={true}
                     // onCheckboxToggle={handleToggleStatus}

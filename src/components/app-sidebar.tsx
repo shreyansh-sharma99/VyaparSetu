@@ -5,7 +5,8 @@ import {
   LayoutDashboard,
   Building2,
   UserCheck,
-  DollarSign,
+  IndianRupee,
+  CreditCard,
 } from "lucide-react";
 import {
   Sidebar,
@@ -72,12 +73,12 @@ const menuItems: MenuItem[] = [
   },
   {
     title: "Plans",
-    icon: DollarSign,
+    icon: IndianRupee,
     url: "/Plans",
   },
   {
     title: "Subscriptions",
-    icon: DollarSign,
+    icon: CreditCard,
     url: "/Subscriptions",
   },
   {
@@ -115,7 +116,7 @@ export function AppSidebar() {
         <div className="flex items-center w-full h-full">
           <div className="flex items-center justify-center w-full h-full group-data-[collapsible=icon]:hidden">
             <img
-              src="/image/logos/logo.png"
+              src="/image/logos/bgLessLogo.png"
               alt="Logo"
               className="w-full h-full object-contain brightness-110 contrast-125 transition-all duration-300 hover:scale-105"
             />
@@ -123,7 +124,7 @@ export function AppSidebar() {
 
           <div className="hidden group-data-[collapsible=icon]:flex h-full w-full items-center justify-center">
             <img
-              src="/image/logos/HeroImage.png"
+              src="/image/logos/bglessHeroIcon.png"
               alt="Hero Icon"
               className="h-10 w-10 object-contain transition-all duration-300 hover:scale-110"
             />

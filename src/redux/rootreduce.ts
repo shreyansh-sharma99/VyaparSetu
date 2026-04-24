@@ -5,6 +5,7 @@ import userReducer from '@/Pages/login/services/userSlice';
 
 import planReducer from '@/Pages/Plans/services/PlanSlice';
 import adminReducer from '@/Pages/admins/admins/services/adminSlice';
+import subscriptionReducer from '@/Pages/subscription/services/subscriptionSlice';
 
 const rootReducer = combineReducers({
   ui: uiReducer,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   plan: planReducer,
   admin: adminReducer,
+  subscription: subscriptionReducer,
 });
 
 export default rootReducer;

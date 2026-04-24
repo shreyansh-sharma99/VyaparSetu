@@ -15,6 +15,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import AdminsList from './Pages/admins/admins/AdminsList';
 import Onboarding from './Pages/onBoarding/Onboarding';
 import AdminManagementList from './Pages/admins/adminManagement/AdminManagementList';
+import Subscription from './Pages/subscription/Subscription';
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -42,6 +44,7 @@ function App() {
           <Route path="/Admin/add" element={<AddAdmin />} />
           <Route path="/Admin/edit/:adminId" element={<EditAdmin />} />
           <Route path="/AdminManagement" element={<AdminManagementList />} />
+          <Route path="/Subscriptions" element={<Subscription />} />
         </Route>
         <Route path="/onboarding" element={<Onboarding />} />
 
