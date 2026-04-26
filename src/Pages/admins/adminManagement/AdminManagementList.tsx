@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
 import Select from "../../../components/form/Select";
 import StatusToggle from "../../../components/form/input/StatusToggle";
-import { SendHorizontal, AlertTriangle, CheckCircle, CalendarClock } from "lucide-react";
+import { SendHorizontal, AlertTriangle, CheckCircle, CalendarClock, Ban } from "lucide-react";
 
 const AdminManagementList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -27,10 +27,9 @@ const AdminManagementList: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState("all");
     const [actionModalVisible, setActionModalVisible] = useState(false);
     const [selectedActionAdmin, setSelectedActionAdmin] = useState<any>(null);
-    const [actionType, setActionType] = useState<"resend" | "suspend" | "activate" | null>(null);
+    const [actionType, setActionType] = useState<"resend" | "suspend" | "activate" | "extend" | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<string>("suspend");
-    const [extendDays, setExtendDays] = useState<number>(30);
+    const [extendDays, setExtendDays] = useState<number>(1);
     const [activeStatus, setActiveStatus] = useState("all");
 
     useEffect(() => {
@@ -106,29 +105,10 @@ const AdminManagementList: React.FC = () => {
     //     });
     // };
 
-    const handleActionButtonClick = (admin: any) => {
-        const onboardingStatus = admin.onboardingStatusRaw || admin.onboardingStatus;
-        const status = admin.statusRaw || admin.status;
-
-        if (!admin.isActive && admin?.subscription?.status === "cancelled") {
-            setSelectedActionAdmin(admin);
-            setActionType("activate");
-            setActionModalVisible(true);
-        } else if (onboardingStatus === "pending_subscription") {
-            setSelectedActionAdmin(admin);
-            setActionType("resend");
-            setActionModalVisible(true);
-        } else if (onboardingStatus === "subscribed") {
-            setSelectedActionAdmin(admin);
-            setActionType("suspend");
-            setActionModalVisible(true);
-        } else if (status === "expired") {
-            setSelectedActionAdmin(admin);
-            setActionType("activate");
-            setActionModalVisible(true);
-        } else {
-            toast.info("No action defined for this status");
-        }
+    const handleActionClick = (admin: any, type: "resend" | "suspend" | "activate" | "extend") => {
+        setSelectedActionAdmin(admin);
+        setActionType(type);
+        setActionModalVisible(true);
     };
 
     const handleActionConfirm = async () => {
@@ -144,20 +124,18 @@ const AdminManagementList: React.FC = () => {
                     toast.error(resultAction.payload as string || "Failed to resend onboarding");
                 }
             } else if (actionType === "suspend") {
-                if (activeTab === "suspend") {
-                    const resultAction = await dispatch(suspendAdmin(selectedActionAdmin.id));
-                    if (suspendAdmin.fulfilled.match(resultAction)) {
-                        toast.success("Admin suspended successfully");
-                    } else {
-                        toast.error(resultAction.payload as string || "Failed to suspend admin");
-                    }
-                } else if (activeTab === "extend") {
-                    const resultAction = await dispatch(extendSubscription({ id: selectedActionAdmin.id, days: extendDays }));
-                    if (extendSubscription.fulfilled.match(resultAction)) {
-                        toast.success("Subscription extended successfully");
-                    } else {
-                        toast.error(resultAction.payload as string || "Failed to extend subscription");
-                    }
+                const resultAction = await dispatch(suspendAdmin(selectedActionAdmin.id));
+                if (suspendAdmin.fulfilled.match(resultAction)) {
+                    toast.success("Admin suspended successfully");
+                } else {
+                    toast.error(resultAction.payload as string || "Failed to suspend admin");
+                }
+            } else if (actionType === "extend") {
+                const resultAction = await dispatch(extendSubscription({ id: selectedActionAdmin.id, days: extendDays }));
+                if (extendSubscription.fulfilled.match(resultAction)) {
+                    toast.success("Subscription extended successfully");
+                } else {
+                    toast.error(resultAction.payload as string || "Failed to extend subscription");
                 }
             } else if (actionType === "activate") {
                 const resultAction = await dispatch(activateAdmin(selectedActionAdmin.id));
@@ -174,7 +152,6 @@ const AdminManagementList: React.FC = () => {
             setActionModalVisible(false);
             setSelectedActionAdmin(null);
             setActionType(null);
-            setActiveTab("suspend");
             setExtendDays(30);
             const params: any = { page: currentPage, limit: pageSize, search: searchQuery };
             if (statusFilter === "pending_subscription") params.onboardingStatus = "pending_subscription";
@@ -291,9 +268,45 @@ const AdminManagementList: React.FC = () => {
                     onView={handleView}
                     onEdit={handleEdit}
                     // onDelete={handleDelete}
-                    actionButtonName="Action"
-                    actionButtonHeader=""
-                    onActionButtonClick={handleActionButtonClick}
+                    customActions={(row: any) => {
+                        const onboardingStatus = row.onboardingStatusRaw || row.onboardingStatus;
+                        const status = row.statusRaw || row.status;
+
+                        if (!row.isActive && row?.subscription?.status === "cancelled") {
+                            return (
+                                <button onClick={() => handleActionClick(row, "activate")} className="text-emerald-600 hover:text-emerald-800 transition-colors" title="Activate Account">
+                                    <CheckCircle className="w-5 h-5" strokeWidth={1.75} />
+                                </button>
+                            );
+                        } else if (onboardingStatus === "pending_subscription") {
+                            return (
+                                <button onClick={() => handleActionClick(row, "resend")} className="text-blue-600 hover:text-blue-800 transition-colors" title="Resend Onboarding">
+                                    <SendHorizontal className="w-5 h-5" strokeWidth={1.75} />
+                                </button>
+                            );
+                        } else if (onboardingStatus === "subscribed") {
+                            const canExtend = !row?.subscription?.trialEndsAt || new Date(row.subscription.trialEndsAt) <= new Date();
+                            return (
+                                <>
+                                    <button onClick={() => handleActionClick(row, "suspend")} className="text-red-600 hover:text-red-800 transition-colors" title="Suspend Account">
+                                        <Ban className="w-5 h-5" strokeWidth={1.75} />
+                                    </button>
+                                    {canExtend && (
+                                        <button onClick={() => handleActionClick(row, "extend")} className="text-blue-600 hover:text-blue-800 transition-colors" title="Extend Subscription">
+                                            <CalendarClock className="w-5 h-5" strokeWidth={1.75} />
+                                        </button>
+                                    )}
+                                </>
+                            );
+                        } else if (status === "expired") {
+                            return (
+                                <button onClick={() => handleActionClick(row, "activate")} className="text-emerald-600 hover:text-emerald-800 transition-colors" title="Activate Account">
+                                    <CheckCircle className="w-5 h-5" strokeWidth={1.75} />
+                                </button>
+                            );
+                        }
+                        return null;
+                    }}
                     checkboxHeading="Action"
                     selectedRows={selectedRows}
                     onSelectionChange={setSelectedRows}
@@ -322,13 +335,15 @@ const AdminManagementList: React.FC = () => {
                 }}
                 okText={
                     actionType === "resend" ? "Resend Onboarding" :
-                        actionType === "suspend" ? (activeTab === "suspend" ? "Suspend Account" : "Extend Subscription") :
-                            actionType === "activate" ? "Activate Account" : "Confirm"
+                        actionType === "suspend" ? "Suspend Account" :
+                            actionType === "extend" ? "Extend Subscription" :
+                                actionType === "activate" ? "Activate Account" : "Confirm"
                 }
                 okButtonProps={{
                     className: `!rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-300 border-0 !px-6 !py-2.5 !h-auto ${actionType === "resend" ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700" :
                         actionType === "activate" ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700" :
-                            actionType === "suspend" ? (activeTab === "suspend" ? "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700" : "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700") : ""
+                            actionType === "suspend" ? "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700" :
+                                actionType === "extend" ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700" : ""
                         }`
                 }}
                 cancelButtonProps={{
@@ -360,62 +375,41 @@ const AdminManagementList: React.FC = () => {
                         </>
                     )}
                     {actionType === "suspend" && (
-                        <div className="w-full">
-                            <Tabs
-                                activeKey={activeTab}
-                                onChange={setActiveTab}
-                                centered
-                                items={[
-                                    {
-                                        key: "suspend",
-                                        label: "Suspend Account",
-                                        children: (
-                                            <div className="flex flex-col items-center justify-center text-center py-4">
-                                                <div className="relative mb-6">
-                                                    <div className="absolute inset-0 bg-red-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
-                                                    <div className="relative w-20 h-20 bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-800 shadow-xl transform transition-transform hover:scale-105">
-                                                        <AlertTriangle className="w-10 h-10" />
-                                                    </div>
-                                                </div>
-                                                <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 mb-3 tracking-tight">Suspend Account</h3>
-                                                <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-[320px]">
-                                                    This action will immediately revoke access for <strong className="text-gray-900 dark:text-white font-semibold">{selectedActionAdmin?.name}</strong>. Are you sure?
-                                                </p>
-                                            </div>
-                                        )
-                                    },
-                                    ...((!selectedActionAdmin?.subscription?.trialEndsAt || new Date(selectedActionAdmin.subscription.trialEndsAt) <= new Date()) ? [
-                                        {
-                                            key: "extend",
-                                            label: "Extend Subscription",
-                                            children: (
-                                                <div className="flex flex-col items-center justify-center text-center py-4">
-                                                    <div className="relative mb-6">
-                                                        <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
-                                                        <div className="relative w-20 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-800 shadow-xl transform transition-transform hover:scale-105">
-                                                            <CalendarClock className="w-10 h-10" />
-                                                        </div>
-                                                    </div>
-                                                    <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 mb-3 tracking-tight">Extend Subscription</h3>
-                                                    <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-[320px] mb-6">
-                                                        Add more days to <strong className="text-gray-900 dark:text-white font-semibold">{selectedActionAdmin?.name}</strong>'s subscription.
-                                                    </p>
-                                                    <div className="w-full max-w-[200px] bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
-                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Number of Days</label>
-                                                        <input
-                                                            type="number"
-                                                            value={extendDays}
-                                                            onChange={(e) => setExtendDays(parseInt(e.target.value) || 0)}
-                                                            className="w-full bg-transparent text-2xl font-bold text-center text-gray-800 dark:text-white outline-none"
-                                                            min="1"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )
-                                        }
-                                    ] : [])
-                                ]}
-                            />
+                        <div className="flex flex-col items-center justify-center text-center py-4 w-full">
+                            <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-red-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+                                <div className="relative w-20 h-20 bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-800 shadow-xl transform transition-transform hover:scale-105">
+                                    <Ban className="w-10 h-10" />
+                                </div>
+                            </div>
+                            <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 mb-3 tracking-tight">Suspend Account</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-[320px]">
+                                This action will immediately revoke access for <strong className="text-gray-900 dark:text-white font-semibold">{selectedActionAdmin?.name}</strong>. Are you sure?
+                            </p>
+                        </div>
+                    )}
+                    {actionType === "extend" && (
+                        <div className="flex flex-col items-center justify-center text-center py-4 w-full">
+                            <div className="relative mb-6">
+                                <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+                                <div className="relative w-20 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center ring-4 ring-white dark:ring-gray-800 shadow-xl transform transition-transform hover:scale-105">
+                                    <CalendarClock className="w-10 h-10" />
+                                </div>
+                            </div>
+                            <h3 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 mb-3 tracking-tight">Extend Subscription</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-[320px] mb-6">
+                                Add more days to <strong className="text-gray-900 dark:text-white font-semibold">{selectedActionAdmin?.name}</strong>'s subscription.
+                            </p>
+                            <div className="w-full max-w-[200px] bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Number of Days</label>
+                                <input
+                                    type="number"
+                                    value={extendDays}
+                                    onChange={(e) => setExtendDays(parseInt(e.target.value) || 0)}
+                                    className="w-full bg-transparent text-2xl font-bold text-center text-gray-800 dark:text-white outline-none"
+                                    min="1"
+                                />
+                            </div>
                         </div>
                     )}
                     {actionType === "activate" && (

@@ -69,6 +69,7 @@ interface ReusableTableProps<T> {
     onActionButtonClick?: (row: T) => void;
     actionButtonName?: string;
     actionButtonHeader?: string;
+    customActions?: (row: T) => React.ReactNode;
 }
 
 const truncateWords = (text: string, limit: number) => {
@@ -117,6 +118,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
     onActionButtonClick,
     actionButtonName,
     actionButtonHeader,
+    customActions,
 }: ReusableTableProps<T>) {
 
     const navigate = useNavigate();
@@ -618,11 +620,11 @@ export default function AdvanceTable<T extends Record<string, any>>({
                         </div>
                     </div>) : rows.length > 0 ? (
                         <div style={{ maxHeight: maxHeight ?? "400px" }} className="w-full max-w-full overflow-x-auto overflow-y-auto relative border border-gray-200 dark:border-gray-700 rounded-md scrollbar-hide hover:scrollbar-default">
-                            <Table className="sticky top-0 z-20 bg-white dark:bg-white/[0.03]">
-                                <TableHeader className="sticky top-0 z-20 bg-white dark:bg-white/[0.03]">
+                            <Table className="sticky top-0 z-40 bg-white dark:bg-white/[0.03]">
+                                <TableHeader className="sticky top-0 z-40 bg-white dark:bg-white/[0.03]">
                                     <TableRow>
-                                        {(onView || onDelete || onHistory || onEdit || onCheckbox) && (
-                                            <TableCell isHeader className="sticky left-0 z-30 bg-white dark:bg-white/[0.03] text-theme-sm px-5 py-2 font-medium text-gray-600 text-center whitespace-nowrap border-b border-gray-200 dark:border-gray-700 border-t-0 min-w-[120px]">
+                                        {(onView || onDelete || onHistory || onEdit || onCheckbox || customActions) && (
+                                            <TableCell isHeader className={`sticky left-0 z-40 bg-white dark:bg-white/[0.03] text-theme-sm px-5 py-2 font-medium text-gray-600 ${customActions ? 'text-left' : 'text-center'} whitespace-nowrap border-b border-gray-200 dark:border-gray-700 border-t-0 min-w-[120px]`}>
                                                 {checkboxHeading || "Action"}
                                             </TableCell>
                                         )}
@@ -677,10 +679,10 @@ export default function AdvanceTable<T extends Record<string, any>>({
 
                                         return (
                                             <TableRow key={rowIndex} className={`${row.requestedStatus === "User Rejected" || row.approvalStatus === 'Rejected' ? "bg-red-200 text-red-700" : ""}`}>
-                                                {(onView || onDelete || onHistory || onEdit || onCheckbox) && (
-                                                    <TableCell className={`sticky left-0 z-30 border-b ${row.requestedStatus === "User Rejected" || row.approvalStatus === 'Rejected' ? "bg-red-200 text-red-700" : "bg-white"} dark:bg-white/[0.03] px-4 py-1.5 whitespace-nowrap dark:border-gray-700 min-w-[120px] ${[onView, onDelete, onHistory, onEdit, onCheckbox].filter(Boolean).length > 1 ? 'text-start space-x-2' : 'text-center'
+                                                {(onView || onDelete || onHistory || onEdit || onCheckbox || customActions) && (
+                                                    <TableCell className={`sticky left-0 z-30 border-b ${row.requestedStatus === "User Rejected" || row.approvalStatus === 'Rejected' ? "bg-red-200 text-red-700" : "bg-white"} dark:bg-white/[0.03] px-4 py-1.5 whitespace-nowrap dark:border-gray-700 min-w-[120px] ${[onView, onDelete, onHistory, onEdit, onCheckbox, customActions].filter(Boolean).length > 1 ? (customActions ? 'text-start space-x-2' : 'text-center space-x-2') : 'text-center'
                                                         }`}>
-                                                        <div className={`flex justify-center  items-center ${[onView, onDelete, onHistory, onEdit, onCheckbox].filter(Boolean).length > 1 ? "gap-2" : ""}`}>
+                                                        <div className={`flex ${customActions ? 'justify-start' : 'justify-center'} items-center ${[onView, onDelete, onHistory, onEdit, onCheckbox, customActions].filter(Boolean).length > 1 ? "gap-2" : ""}`}>
                                                             {onCheckbox && (
                                                                 <Switch
                                                                     size="small"
@@ -727,6 +729,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                                                     <HistoryIcon className="w-5 h-5" />
                                                                 </button>
                                                             )}
+                                                            {customActions && customActions(row)}
                                                         </div>
                                                     </TableCell>
                                                 )}

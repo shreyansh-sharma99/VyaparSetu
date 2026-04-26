@@ -112,7 +112,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r bg-sidebar/50 backdrop-blur-xl">
-      <SidebarHeader className="h-32 flex items-center justify-center p-0 overflow-hidden mt-2">
+      <SidebarHeader className="h-32 group-data-[collapsible=icon]:h-16 group-data-[collapsible=icon]:mt-0 flex items-center justify-center p-0 overflow-hidden mt-2">
         <div className="flex items-center w-full h-full">
           <div className="flex items-center justify-center w-full h-full group-data-[collapsible=icon]:hidden">
             <img
@@ -122,11 +122,11 @@ export function AppSidebar() {
             />
           </div>
 
-          <div className="hidden group-data-[collapsible=icon]:flex h-full w-full items-center justify-center">
+          <div className="hidden group-data-[collapsible=icon]:flex h-full w-full items-start pt-2 justify-center">
             <img
               src="/image/logos/bglessHeroIcon.png"
               alt="Hero Icon"
-              className="h-10 w-10 object-contain transition-all duration-300 hover:scale-110"
+              className="w-full h-auto px-2 object-contain transition-all duration-300 hover:scale-110"
             />
           </div>
         </div>
@@ -138,7 +138,7 @@ export function AppSidebar() {
             Main Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
+            <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
               {menuItems.map((item) => {
                 const isParentActive = item.subItems
                   ? item.subItems.some(sub => isItemActive(sub.url))
