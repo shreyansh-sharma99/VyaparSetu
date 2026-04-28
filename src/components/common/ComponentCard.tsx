@@ -9,9 +9,19 @@ interface ComponentCardProps {
   collapsible?: boolean;
   disable?: boolean;
   bodyClassName?: string;
+  titleBorder?: boolean;
 }
 
-const ComponentCard: React.FC<ComponentCardProps> = ({ title, children, className = "", desc = "", collapsible = false, disable = false, rightButtonNode = null, bodyClassName = ""
+const ComponentCard: React.FC<ComponentCardProps> = ({ 
+  title, 
+  children, 
+  className = "", 
+  desc = "", 
+  collapsible = false, 
+  disable = false, 
+  rightButtonNode = null, 
+  bodyClassName = "",
+  titleBorder = true
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const handleToggle = () => {
@@ -29,7 +39,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({ title, children, classNam
 
           {/* Left: Title */}
           <div onClick={handleToggle}>
-            <h3 className="text-xl cursor-pointer font-medium border-b inline-block border-blue-700 text-blue-700 dark:text-white/90">
+            <h3 className={`text-xl cursor-pointer font-medium inline-block dark:text-white/90 ${titleBorder ? "border-b border-blue-700 text-blue-700" : ""}`}>
               {title}
             </h3>
             {desc && (

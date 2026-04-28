@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Modal, Tabs } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, fetchAdminById, clearCurrentAdmin, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription } from "../admins/services/adminSlice";
-import AdminDetailsModal from "../admins/AdminDetailsModal";
+import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription } from "../admins/services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
@@ -18,12 +17,11 @@ import { SendHorizontal, AlertTriangle, CheckCircle, CalendarClock, Ban } from "
 const AdminManagementList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { admins, loading, error, meta, currentAdmin, fetchingCurrent } = useSelector((state: RootState) => state.admin);
+    const { admins, loading, error, meta } = useSelector((state: RootState) => state.admin);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
     const [searchQuery, setSearchQuery] = useState("");
-    const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [statusFilter, setStatusFilter] = useState("all");
     const [actionModalVisible, setActionModalVisible] = useState(false);
     const [selectedActionAdmin, setSelectedActionAdmin] = useState<any>(null);
@@ -68,13 +66,8 @@ const AdminManagementList: React.FC = () => {
     }, [admins]);
 
     const handleView = (admin: any) => {
-        setDetailModalVisible(true);
-        dispatch(fetchAdminById(admin.id));
-    };
-
-    const handleCloseModal = () => {
-        setDetailModalVisible(false);
-        dispatch(clearCurrentAdmin());
+        const encryptedId = encodeURIComponent(encryptData(admin.id));
+        navigate(`/AdminManagement/view/${encryptedId}`, { state: { from: 'AdminManagement' } });
     };
 
     const handleEdit = (admin: any) => {
@@ -318,12 +311,7 @@ const AdminManagementList: React.FC = () => {
                 />
             </ComponentCard>
 
-            <AdminDetailsModal
-                visible={detailModalVisible}
-                onClose={handleCloseModal}
-                adminData={currentAdmin}
-                loading={fetchingCurrent}
-            />
+
 
             <Modal
                 open={actionModalVisible}

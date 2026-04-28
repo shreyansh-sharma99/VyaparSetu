@@ -22,3 +22,15 @@ export const getSubscriptionByIdService = async (id: string) => {
 export const updateSubscriptionService = async (id: string, data: any) => {
   return await Http.patch(`/owner/subscriptions/${id}`, data);
 };
+
+export const upgradeSubscriptionService = async (id: string, data: { planId: string; tenure: string }) => {
+  return await Http.post(`/owner/subscriptions/${id}/upgrade`, data);
+};
+
+export const cancelSubscriptionService = async (id: string) => {
+  return await Http.post(`/owner/subscriptions/${id}/cancel`, {});
+};
+
+export const extendSubscriptionService = async (id: string, data: { days: number }) => {
+  return await Http.post(`/owner/subscriptions/${id}/extend`, data);
+};

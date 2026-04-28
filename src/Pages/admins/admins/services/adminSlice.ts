@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getAdminsService, createAdminService, getAdminByIdService, updateAdminService, deleteAdminService, resendOnboardingService, suspendAdminService, activateAdminService, extendSubscriptionService } from "./adminService";
+import { getAdminsService, createAdminService, getAdminByIdService, updateAdminService, deleteAdminService, resendOnboardingService, suspendAdminService, activateAdminService, extendSubscriptionService, getAdminRazorpayService, getAdminAuditLogsService } from "./adminService";
 import { toast } from "react-toastify";
 
 interface Admin {
@@ -39,6 +39,10 @@ interface Admin {
 interface AdminState {
   admins: Admin[];
   currentAdmin: any | null;
+  razorpayData: any | null;
+  auditLogs: any | null;
+  fetchingRazorpay: boolean;
+  fetchingAuditLogs: boolean;
   meta: {
     total: number;
     page: number;
@@ -54,6 +58,10 @@ interface AdminState {
 const initialState: AdminState = {
   admins: [],
   currentAdmin: null,
+  razorpayData: null,
+  auditLogs: null,
+  fetchingRazorpay: false,
+  fetchingAuditLogs: false,
   meta: null,
   loading: false,
   submitting: false,
@@ -170,12 +178,38 @@ export const extendSubscription = createAsyncThunk("admin/extendSubscription",
   }
 );
 
+export const fetchAdminRazorpay = createAsyncThunk("admin/fetchAdminRazorpay",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await getAdminRazorpayService(id);
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to fetch Razorpay data";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const fetchAdminAuditLogs = createAsyncThunk("admin/fetchAdminAuditLogs",
+  async ({ id, page, limit }: { id: string; page?: number; limit?: number }, { rejectWithValue }) => {
+    try {
+      const response = await getAdminAuditLogsService(id, page, limit);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to fetch audit logs";
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const adminSlice = createSlice({
   name: "admin",
   initialState,
   reducers: {
     clearCurrentAdmin: (state) => {
       state.currentAdmin = null;
+      state.razorpayData = null;
+      state.auditLogs = null;
     }
   },
   extraReducers: (builder) => {
@@ -235,6 +269,26 @@ const adminSlice = createSlice({
       })
       .addCase(deleteAdmin.fulfilled, (state, action) => {
         state.admins = state.admins.filter(admin => admin._id !== action.payload);
+      })
+      .addCase(fetchAdminRazorpay.pending, (state) => {
+        state.fetchingRazorpay = true;
+      })
+      .addCase(fetchAdminRazorpay.fulfilled, (state, action) => {
+        state.fetchingRazorpay = false;
+        state.razorpayData = action.payload;
+      })
+      .addCase(fetchAdminRazorpay.rejected, (state) => {
+        state.fetchingRazorpay = false;
+      })
+      .addCase(fetchAdminAuditLogs.pending, (state) => {
+        state.fetchingAuditLogs = true;
+      })
+      .addCase(fetchAdminAuditLogs.fulfilled, (state, action) => {
+        state.fetchingAuditLogs = false;
+        state.auditLogs = action.payload;
+      })
+      .addCase(fetchAdminAuditLogs.rejected, (state) => {
+        state.fetchingAuditLogs = false;
       });
   },
 });

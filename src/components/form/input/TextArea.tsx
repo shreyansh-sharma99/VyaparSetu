@@ -34,7 +34,7 @@
 //   } else if (error) {
 //     textareaClasses += ` bg-transparent  border-gray-300 focus:border-error-300 focus:ring-3 focus:ring-error-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-error-800`;
 //   } else {
-//     textareaClasses += ` bg-transparent text-gray-900 dark:text-gray-300 text-gray-900 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-brand-800`;
+//     textareaClasses += ` bg-transparent text-gray-900 dark:text-gray-300 text-gray-900 border-gray-300 focus:border-blue-300 focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:focus:border-blue-800`;
 //   }
 
 //   return (
@@ -89,7 +89,7 @@ const TextArea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     } else if (error) {
       textareaClasses += ` border-red-500 focus:border-red-300 focus:ring-3 focus:ring-red-500/20 dark:border-red-500 dark:focus:border-red-800 dark:text-red-400`;
     } else {
-      textareaClasses += ` bg-transparent text-gray-900 dark:text-gray-300 border-gray-300 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-800`;
+      textareaClasses += ` bg-transparent text-gray-900 dark:text-gray-300 border-gray-300 focus:border-blue-300 focus:ring-3 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:focus:border-blue-800`;
     }
 
     return (

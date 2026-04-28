@@ -13,9 +13,22 @@ import { Layout } from './components/layout';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AdminsList from './Pages/admins/admins/AdminsList';
+import AdminDetails from './Pages/admins/admins/AdminDetails';
 import Onboarding from './Pages/onBoarding/Onboarding';
 import AdminManagementList from './Pages/admins/adminManagement/AdminManagementList';
 import Subscription from './Pages/subscription/Subscription';
+import SubscriptionDetails from './Pages/subscription/SubscriptionDetails';
+import Settings from './Pages/settings/Settings';
+import TeamMemberList from './Pages/teamMember/TeamMemberList';
+import AddTeamMember from './Pages/teamMember/AddTeamMember';
+import EditTeamMember from './Pages/teamMember/EditTeamMember';
+import AdminReport from './Pages/reports/adminReports/AdminReport';
+import RevenueReport from './Pages/reports/revenueReports/RevenueReport';
+import SubscriptionReport from './Pages/reports/subscriptionReports/SubscriptionReport';
+import InvoiceReport from './Pages/reports/invoiceReports/InvoiceReport';
+import RazorpayPayments from './Pages/reports/RazorpayPayments/RazorpayPayments';
+import RazorpaySettlements from './Pages/reports/RazorpaySettlements/RazorpaySettlements';
+import Invoice from './Pages/invoices/Invoice';
 
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -43,8 +56,22 @@ function App() {
           <Route path="/Admin" element={<AdminsList />} />
           <Route path="/Admin/add" element={<AddAdmin />} />
           <Route path="/Admin/edit/:adminId" element={<EditAdmin />} />
+          <Route path="/Admin/view/:adminId" element={<AdminDetails />} />
           <Route path="/AdminManagement" element={<AdminManagementList />} />
+          <Route path="/AdminManagement/view/:adminId" element={<AdminDetails />} />
           <Route path="/Subscriptions" element={<Subscription />} />
+          <Route path="/Subscriptions/view/:id" element={<SubscriptionDetails />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/TeamMembers" element={<TeamMemberList />} />
+          <Route path="/TeamMembers/add" element={<AddTeamMember />} />
+          <Route path="/TeamMembers/edit/:id" element={<EditTeamMember />} />
+          <Route path="/reports/admin" element={<AdminReport />} />
+          <Route path="/reports/revenue" element={<RevenueReport />} />
+          <Route path="/reports/subscriptions" element={<SubscriptionReport />} />
+          <Route path="/reports/invoices" element={<InvoiceReport />} />
+          <Route path="/reports/razorpay-payments" element={<RazorpayPayments />} />
+          <Route path="/reports/razorpay-settlements" element={<RazorpaySettlements />} />
+          <Route path="/Invoices" element={<Invoice />} />
         </Route>
         <Route path="/onboarding" element={<Onboarding />} />
 

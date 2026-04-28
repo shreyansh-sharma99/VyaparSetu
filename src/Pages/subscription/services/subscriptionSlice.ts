@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getSubscriptionsService, getSubscriptionByIdService, updateSubscriptionService } from "./subscriptionService";
+import { getSubscriptionsService, getSubscriptionByIdService, updateSubscriptionService, upgradeSubscriptionService, cancelSubscriptionService, extendSubscriptionService } from "./subscriptionService";
 import { toast } from "react-toastify";
 
 interface AdminInfo {
@@ -136,6 +136,51 @@ export const updateSubscription = createAsyncThunk(
   }
 );
 
+export const upgradeSubscription = createAsyncThunk(
+  "subscription/upgradeSubscription",
+  async ({ id, data }: { id: string; data: { planId: string; tenure: string } }, { rejectWithValue }) => {
+    try {
+      const response = await upgradeSubscriptionService(id, data);
+      toast.success("Subscription upgraded successfully");
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to upgrade subscription";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const cancelSubscription = createAsyncThunk(
+  "subscription/cancelSubscription",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await cancelSubscriptionService(id);
+      toast.success("Subscription cancelled successfully");
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to cancel subscription";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const extendSubscription = createAsyncThunk(
+  "subscription/extendSubscription",
+  async ({ id, data }: { id: string; data: { days: number } }, { rejectWithValue }) => {
+    try {
+      const response = await extendSubscriptionService(id, data);
+      toast.success("Subscription extended successfully");
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to extend subscription";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const subscriptionSlice = createSlice({
   name: "subscription",
   initialState,
@@ -187,6 +232,45 @@ const subscriptionSlice = createSlice({
       .addCase(updateSubscription.rejected, (state, action) => {
         state.submitting = false;
         state.error = action.payload as string;
+      })
+      .addCase(upgradeSubscription.pending, (state) => {
+        state.submitting = true;
+      })
+      .addCase(upgradeSubscription.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.currentSubscription = action.payload;
+        state.subscriptions = state.subscriptions.map((sub) =>
+          sub._id === action.payload._id ? action.payload : sub
+        );
+      })
+      .addCase(upgradeSubscription.rejected, (state) => {
+        state.submitting = false;
+      })
+      .addCase(cancelSubscription.pending, (state) => {
+        state.submitting = true;
+      })
+      .addCase(cancelSubscription.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.currentSubscription = action.payload;
+        state.subscriptions = state.subscriptions.map((sub) =>
+          sub._id === action.payload._id ? action.payload : sub
+        );
+      })
+      .addCase(cancelSubscription.rejected, (state) => {
+        state.submitting = false;
+      })
+      .addCase(extendSubscription.pending, (state) => {
+        state.submitting = true;
+      })
+      .addCase(extendSubscription.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.currentSubscription = action.payload;
+        state.subscriptions = state.subscriptions.map((sub) =>
+          sub._id === action.payload._id ? action.payload : sub
+        );
+      })
+      .addCase(extendSubscription.rejected, (state) => {
+        state.submitting = false;
       });
   },
 });

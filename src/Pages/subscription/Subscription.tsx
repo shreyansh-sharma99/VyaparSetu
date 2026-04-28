@@ -11,8 +11,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
-import { fetchSubscriptions, fetchSubscriptionById, clearCurrentSubscription } from "./services/subscriptionSlice";
-import SubscriptionDetailsModal from "./SubscriptionDetailsModal";
+import { fetchSubscriptions } from "./services/subscriptionSlice";
+import { useNavigate } from "react-router-dom";
+import { User, CreditCard } from "lucide-react";
+import { encryptData } from "@/utility/crypto";
 
 import AdvanceTable from "../../components/Tables/AdvanceTable";
 import ComponentCard from "../../components/common/ComponentCard";
@@ -23,7 +25,8 @@ import Select from "../../components/form/Select";
 
 const Subscription: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { subscriptions, loading, error, meta, currentSubscription, fetchingCurrent } = useSelector(
+    const navigate = useNavigate();
+    const { subscriptions, loading, error, meta } = useSelector(
         (state: RootState) => state.subscription
     );
 
@@ -33,7 +36,6 @@ const Subscription: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [status, setStatus] = useState("all");
     const [tenure, setTenure] = useState("all");
-    const [detailModalVisible, setDetailModalVisible] = useState(false);
 
 
     useEffect(() => {
@@ -62,13 +64,8 @@ const Subscription: React.FC = () => {
     };
 
     const handleView = (sub: any) => {
-        setDetailModalVisible(true);
-        dispatch(fetchSubscriptionById(sub.id));
-    };
-
-    const handleCloseModal = () => {
-        setDetailModalVisible(false);
-        dispatch(clearCurrentSubscription());
+        const encryptedId = encodeURIComponent(encryptData(sub._id));
+        navigate(`/Subscriptions/view/${encryptedId}`);
     };
 
     const tableRows = subscriptions.map((sub) => ({
@@ -166,13 +163,6 @@ const Subscription: React.FC = () => {
                     maxHeight="calc(100vh - 350px)"
                 />
             </ComponentCard>
-
-            <SubscriptionDetailsModal
-                visible={detailModalVisible}
-                onClose={handleCloseModal}
-                subscriptionData={currentSubscription}
-                loading={fetchingCurrent}
-            />
         </div>
 
     );

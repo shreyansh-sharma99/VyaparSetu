@@ -69,7 +69,7 @@ const AddAdmin: React.FC = () => {
             const resultAction = await dispatch(createAdmin(data));
             if (createAdmin.fulfilled.match(resultAction)) {
                 toast.success('Admin created successfully!');
-                navigate('/Admin');
+                navigate(-1);
             } else {
                 toast.error(resultAction.payload as string || 'Failed to create admin');
             }

@@ -28,7 +28,7 @@ import { encryptData } from "@/utility/crypto"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16.5rem"
+const SIDEBAR_WIDTH = "19rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "4.5rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
@@ -523,7 +523,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-2.5 text-left text-[15px] font-medium outline-none ring-sidebar-ring transition-all duration-300 ease-in-out hover:bg-muted/50 hover:text-primary focus-visible:ring-2 active:scale-[0.97] group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-primary/5 data-[active=true]:text-primary data-[active=true]:font-semibold data-[state=open]:hover:bg-muted/50 data-[state=open]:hover:text-primary group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-2.5 group-data-[collapsible=icon]:justify-center [&>span:last-child]:truncate [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:transition-colors [&>svg]:duration-300 group-hover/menu-item:[&>svg]:text-primary data-[active=true]:[&>svg]:text-primary group-data-[collapsible=icon]:[&>svg]:size-7 group-data-[collapsible=icon]:[&>span]:hidden",
+  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-2.5 text-left text-[15px] font-medium outline-none ring-sidebar-ring transition-all duration-300 ease-in-out hover:bg-muted/50 hover:text-primary focus-visible:ring-2 active:scale-[0.97] group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-primary/5 data-[active=true]:text-primary data-[active=true]:font-semibold data-[state=open]:hover:bg-muted/50 data-[state=open]:hover:text-primary group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-2.5 group-data-[collapsible=icon]:justify-center [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:transition-colors [&>svg]:duration-300 group-hover/menu-item:[&>svg]:text-primary data-[active=true]:[&>svg]:text-primary group-data-[collapsible=icon]:[&>svg]:size-7 group-data-[collapsible=icon]:[&>span]:hidden",
   {
     variants: {
       variant: {
@@ -733,7 +733,7 @@ const SidebarMenuSubButton = React.forwardRef<
       data-size={size}
       data-active={isActive}
       className={cn(
-        "flex h-8 min-w-0 -translate-x-px items-center gap-3 overflow-hidden rounded-lg px-2 text-muted-foreground outline-none ring-sidebar-ring hover:bg-muted/40 hover:text-primary focus-visible:ring-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:transition-colors transition-all duration-300 ease-out",
+        "flex h-8 min-w-0 -translate-x-px items-center gap-3 overflow-hidden rounded-lg px-2 text-muted-foreground outline-none ring-sidebar-ring hover:bg-muted/40 hover:text-primary focus-visible:ring-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:transition-colors transition-all duration-300 ease-out",
         "data-[active=true]:bg-primary/5 data-[active=true]:text-primary data-[active=true]:font-semibold data-[active=true]:[&>svg]:text-primary group-hover/menu-sub-item:[&>svg]:text-primary",
         size === "sm" && "text-xs",
         size === "md" && "text-[14px]",

@@ -103,7 +103,7 @@ const Select: React.FC<SelectProps> = ({
 
   const borderClasses = error
     ? "border-red-500 focus:border-red-500 focus:ring-red-500/10 dark:border-red-500"
-    : "border-gray-300 focus:border-brand-800 focus:ring-brand-500/10 dark:border-gray-700 dark:focus:border-brand-800";
+    : "border-gray-300 focus:border-blue-800 focus:ring-blue-500/10 dark:border-gray-700 dark:focus:border-blue-800";
 
   const handleOptionClick = (option: Option) => {
     setInternalValue(option.value);

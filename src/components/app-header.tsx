@@ -43,8 +43,9 @@ export function AppHeader() {
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center">
-          <span className="text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
-            {import.meta.env.VITE_PLATFORM_NAME}
+          <span className="text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-800 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
+            {/* {import.meta.env.VITE_PLATFORM_NAME} */}
+            Vyapar<span style={{ color: "#ff5a1f" }}>Setu</span>
           </span>
         </div>
 
@@ -94,7 +95,7 @@ export function AppHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings")}>Settings</DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">Billing</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

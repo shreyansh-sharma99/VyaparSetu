@@ -7,6 +7,10 @@ import {
   UserCheck,
   IndianRupee,
   CreditCard,
+  Users,
+  BarChart3,
+  TrendingUp,
+  Receipt,
 } from "lucide-react";
 import {
   Sidebar,
@@ -82,9 +86,32 @@ const menuItems: MenuItem[] = [
     url: "/Subscriptions",
   },
   {
+    title: "Team Members",
+    icon: Users,
+    url: "/TeamMembers",
+  },
+  {
+    title: "Reports",
+    icon: BarChart3,
+    url: "#",
+    subItems: [
+      { title: "Admin Report", icon: UserCheck, url: "/reports/admin" },
+      { title: "Revenue Report", icon: TrendingUp, url: "/reports/revenue" },
+      { title: "Subscription Report", icon: CreditCard, url: "/reports/subscriptions" },
+      { title: "Invoice Report", icon: Receipt, url: "/reports/invoices" },
+      { title: "Razorepay Payements", icon: IndianRupee, url: "/reports/razorpay-payments" },
+      { title: "Razorepay Settelment", icon: IndianRupee, url: "/reports/razorpay-settlements" },
+    ],
+  },
+  {
+    title: "Invoices",
+    icon: Receipt,
+    url: "/Invoices",
+  },
+  {
     title: "Settings",
     icon: Settings,
-    url: "#",
+    url: "/settings",
   },
 ];
 
@@ -93,6 +120,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile } from "@/Pages/login/services/userSlice";
 import type { RootState, AppDispatch } from "@/store";
 import { useLocation } from "react-router-dom";
+import { Logo } from "@/components/Logo";
 
 export function AppSidebar() {
   const dispatch = useDispatch<AppDispatch>();
@@ -111,28 +139,24 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r bg-sidebar/50 backdrop-blur-xl">
-      <SidebarHeader className="h-32 group-data-[collapsible=icon]:h-16 group-data-[collapsible=icon]:mt-0 flex items-center justify-center p-0 overflow-hidden mt-2">
+    <Sidebar collapsible="icon" className="border-r bg-sidebar/50 backdrop-blur-xl no-scrollbar">
+      <SidebarHeader className="h-auto py-4 group-data-[collapsible=icon]:h-16 group-data-[collapsible=icon]:py-0 flex items-center justify-center overflow-hidden">
         <div className="flex items-center w-full h-full">
-          <div className="flex items-center justify-center w-full h-full group-data-[collapsible=icon]:hidden">
-            <img
-              src="/image/logos/bgLessLogo.png"
-              alt="Logo"
-              className="w-full h-full object-contain brightness-110 contrast-125 transition-all duration-300 hover:scale-105"
-            />
+          <div className="flex items-center justify-center w-full h-full group-data-[collapsible=icon]:hidden px-4">
+            <Logo className="w-full h-auto object-contain transition-all duration-300 hover:scale-105" />
           </div>
 
-          <div className="hidden group-data-[collapsible=icon]:flex h-full w-full items-start pt-2 justify-center">
+          <div className="hidden group-data-[collapsible=icon]:flex h-full w-full items-center justify-center">
             <img
-              src="/image/logos/bglessHeroIcon.png"
+              src="/image/logos/newLogo.png"
               alt="Hero Icon"
-              className="w-full h-auto px-2 object-contain transition-all duration-300 hover:scale-110"
+              className="w-10 h-10 object-contain transition-all duration-300 hover:scale-110"
             />
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3">
+      <SidebarContent className="px-3 no-scrollbar">
         <SidebarGroup>
           <SidebarGroupLabel className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/60 group-data-[collapsible=icon]:hidden mb-2">
             Main Menu
@@ -167,7 +191,7 @@ export function AppSidebar() {
                                   <SidebarMenuSubButton asChild isActive={isItemActive(subItem.url)}>
                                     <Link to={subItem.url} className="flex items-center gap-3">
                                       <subItem.icon className="h-4 w-4 opacity-70 z-999999 group-hover/menu-sub-item:opacity-100" />
-                                      <span>{subItem.title}</span>
+                                      <span className="whitespace-nowrap">{subItem.title}</span>
                                     </Link>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
@@ -181,7 +205,7 @@ export function AppSidebar() {
                         <SidebarMenuButton asChild tooltip={item.title} isActive={isItemActive(item.url)}>
                           <Link to={item.url}>
                             <item.icon className="h-[18px] w-[18px]" />
-                            <span>{item.title}</span>
+                            <span className="whitespace-nowrap">{item.title}</span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>

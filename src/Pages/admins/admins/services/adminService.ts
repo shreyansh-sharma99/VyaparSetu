@@ -45,3 +45,11 @@ export const activateAdminService = async (id: string) => {
 export const extendSubscriptionService = async (id: string, days: number) => {
     return await Http.post(`/owner/admins/${id}/extend`, { days });
 };
+
+export const getAdminRazorpayService = async (id: string) => {
+    return await Http.get(`/owner/admins/${id}/razorpay`);
+};
+
+export const getAdminAuditLogsService = async (id: string, page: number = 1, limit: number = 20) => {
+    return await Http.get(`/owner/admins/${id}/audit-logs?page=${page}&limit=${limit}`);
+};

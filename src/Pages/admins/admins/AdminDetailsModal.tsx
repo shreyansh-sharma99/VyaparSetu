@@ -190,7 +190,7 @@ const AdminDetailsModal: React.FC<AdminDetailsModalProps> = ({ visible, onClose,
           {admin.usageOverrides && Object.values(admin.usageOverrides).some(v => v !== null) && (
             <div className="bg-gray-50 dark:bg-white/[0.03] p-5 rounded-xl border border-gray-100 dark:border-gray-800">
               <h3 className="text-gray-800 dark:text-gray-200 font-semibold mb-4 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-orange-500" /> Custom Usage Overrides
+                <Activity className="w-4 h-4 text-blue-500" /> Custom Usage Overrides
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-6">
                 {admin.usageOverrides.maxProducts !== null && (

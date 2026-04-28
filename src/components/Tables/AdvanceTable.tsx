@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Loader2 } from "lucide-react";
 
 
 interface ColumnConfig<T> {
@@ -70,6 +71,12 @@ interface ReusableTableProps<T> {
     actionButtonName?: string;
     actionButtonHeader?: string;
     customActions?: (row: T) => React.ReactNode;
+    onDownloadExcel?: () => void;
+    onDownloadCSV?: () => void;
+    onDownloadPDF?: () => void;
+    isDownloadingExcel?: boolean;
+    isDownloadingCSV?: boolean;
+    isDownloadingPDF?: boolean;
 }
 
 const truncateWords = (text: string, limit: number) => {
@@ -119,6 +126,12 @@ export default function AdvanceTable<T extends Record<string, any>>({
     actionButtonName,
     actionButtonHeader,
     customActions,
+    onDownloadExcel,
+    onDownloadCSV,
+    onDownloadPDF,
+    isDownloadingExcel,
+    isDownloadingCSV,
+    isDownloadingPDF,
 }: ReusableTableProps<T>) {
 
     const navigate = useNavigate();
@@ -550,17 +563,23 @@ export default function AdvanceTable<T extends Record<string, any>>({
                     {/* Action buttons */}
                     <div className="flex flex-wrap items-end gap-1.5">
                         {showAddButton && (
-                            <Button size="sm" variant="primary" onClick={onAdd ? onAdd : () => navigate(addButtonPath || "/")} disabled={disableAddButton}>
+                            <Button size="sm" variant="primary" className="!py-2 !px-3 !rounded-md" onClick={onAdd ? onAdd : () => navigate(addButtonPath || "/")} disabled={disableAddButton}>
                                 {addButtonText || "Add Item"}
                             </Button>
                         )}
                         {!error && (
                             <>
-                                <Button size="sm" variant="outline" onClick={handleCopyToClipboard}>Copy</Button>
-                                <Button size="sm" variant="outline" onClick={handleCSVDownload}>CSV</Button>
-                                <Button size="sm" variant="outline" onClick={handleExcelDownload}>Excel</Button>
-                                <Button size="sm" variant="outline" onClick={handlePDFDownload}>PDF</Button>
-                                <Button size="sm" variant="outline" onClick={handlePrint}>Print</Button>
+                                {/* <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={handleCopyToClipboard}>Copy</Button> */}
+                                <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadCSV ? onDownloadCSV : handleCSVDownload} disabled={isDownloadingCSV}>
+                                    {isDownloadingCSV ? <Loader2 className="w-4 h-4 animate-spin" /> : "CSV"}
+                                </Button>
+                                <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadExcel ? onDownloadExcel : handleExcelDownload} disabled={isDownloadingExcel}>
+                                    {isDownloadingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : "Excel"}
+                                </Button>
+                                <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadPDF ? onDownloadPDF : handlePDFDownload} disabled={isDownloadingPDF}>
+                                    {isDownloadingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : "PDF"}
+                                </Button>
+                                {/* <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={handlePrint}>Print</Button> */}
                             </>
                         )}
                     </div>
@@ -740,13 +759,9 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                                     return (
                                                         <TableCell
                                                             key={colIndex}
-                                                            className={`px-4 py-1 whitespace-nowrap border border-gray-200 dark:border-gray-700 ${header.button ? "text-center" : typeof value === "number" || value === "—" || value === "-" ? "text-center" : "text-start"
-                                                                }`}
-                                                        >
+                                                            className={`px-4 py-1 whitespace-nowrap border border-gray-200 dark:border-gray-700 ${header.button ? "text-center" : typeof value === "number" || value === "—" || value === "-" ? "text-center" : "text-start"}`}>
                                                             {header.button ? (
-                                                                <button
-
-                                                                >
+                                                                <button>
                                                                     {value === 'Implementation Pending' || value === "HelpDesk Pending" || value === "Pending Approval" ? 'Implement' : value}
                                                                 </button>
                                                             ) : isImage ? (
@@ -758,10 +773,8 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                                                         toggleCellExpansion(`${rowIndex}-${header.key.toString()}`)
                                                                     }
                                                                     className={`cursor-pointer text-sm dark:text-gray-200 ${value === "User Rejected" ||
-                                                                        value === "Rejected" ||
-                                                                        value === "Offboard" ||
-                                                                        value === "Offboarded" ||
-                                                                        value === "Inactive"
+                                                                        value === "Rejected" || value === "Offboard" ||
+                                                                        value === "Offboarded" || value === "Inactive"
                                                                         ? "text-red-600"
                                                                         : value === "Approved" ||
                                                                             value === "User Approved" ||
@@ -774,7 +787,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                                                     title="Click to toggle full text"
                                                                 >
                                                                     {typeof value === "string" && !expandedCells[`${rowIndex}-${header.key.toString()}`]
-                                                                        ? truncateWords(value, 6)
+                                                                        ? truncateWords(value, 4)
                                                                         : value}
                                                                 </span>
                                                             )}

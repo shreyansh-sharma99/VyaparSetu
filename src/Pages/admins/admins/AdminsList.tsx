@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, fetchAdminById, clearCurrentAdmin } from "./services/adminSlice";
-import AdminDetailsModal from "./AdminDetailsModal";
+import { fetchAdmins } from "./services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
@@ -14,12 +13,11 @@ import StatusToggle from "../../../components/form/input/StatusToggle";
 const AdminsList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { admins, loading, error, meta, currentAdmin, fetchingCurrent } = useSelector((state: RootState) => state.admin);
+    const { admins, loading, error, meta } = useSelector((state: RootState) => state.admin);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
     const [searchQuery, setSearchQuery] = useState("");
-    const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [status, setStatus] = useState("all");
 
     useEffect(() => {
@@ -49,14 +47,11 @@ const AdminsList: React.FC = () => {
     }, [admins]);
 
     const handleView = (admin: any) => {
-        setDetailModalVisible(true);
-        dispatch(fetchAdminById(admin.id));
+        const encryptedId = encodeURIComponent(encryptData(admin.id));
+        navigate(`/Admin/view/${encryptedId}`, { state: { from: 'AdminList' } });
     };
 
-    const handleCloseModal = () => {
-        setDetailModalVisible(false);
-        dispatch(clearCurrentAdmin());
-    };
+
 
     const handleEdit = (admin: any) => {
         const encryptedId = encodeURIComponent(encryptData(admin.id));
@@ -169,12 +164,7 @@ const AdminsList: React.FC = () => {
                 />
             </ComponentCard>
 
-            <AdminDetailsModal
-                visible={detailModalVisible}
-                onClose={handleCloseModal}
-                adminData={currentAdmin}
-                loading={fetchingCurrent}
-            />
+
         </div>
     );
 };
