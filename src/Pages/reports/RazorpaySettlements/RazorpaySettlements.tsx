@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RefreshCcw } from "lucide-react";
+
 import ComponentCard from "@/components/common/ComponentCard";
 import PageMeta from "@/components/common/PageMeta";
 import type { AppDispatch, RootState } from "@/store";
@@ -10,6 +10,7 @@ import AdvanceTable from "@/components/Tables/AdvanceTable";
 export default function RazorpaySettlements() {
     const dispatch = useDispatch<AppDispatch>();
     const { data, loading, downloadingFormat, error } = useSelector((state: RootState) => state.razorpaySettlements);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         dispatch(fetchRazorpaySettlements());
@@ -35,6 +36,17 @@ export default function RazorpaySettlements() {
         amount: ` ${item.amount}`,
     }));
 
+    const filteredRows = tableRows.filter((row) => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+            row.id?.toLowerCase().includes(query) ||
+            row.utr?.toLowerCase().includes(query) ||
+            row.status?.toLowerCase().includes(query) ||
+            row.amount?.toLowerCase().includes(query)
+        );
+    });
+
     return (
         <>
             <PageMeta
@@ -51,10 +63,12 @@ export default function RazorpaySettlements() {
                     <div className="mt-4">
                         <AdvanceTable
                             headers={tableHeaders}
-                            rows={tableRows}
+                            rows={filteredRows}
                             loading={loading}
                             error={error}
                             maxHeight="calc(100vh - 300px)"
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
                             onDownloadExcel={() => handleDownload('excel')}
                             onDownloadCSV={() => handleDownload('csv')}
                             onDownloadPDF={() => handleDownload('pdf')}

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Users,
@@ -8,7 +8,6 @@ import {
   AlertCircle,
   TrendingDown,
   UserCheck,
-  RefreshCcw,
 } from "lucide-react";
 import {
   BarChart,
@@ -26,6 +25,7 @@ import type { AppDispatch, RootState } from "@/store";
 import { fetchAdminReport } from "./services/adminReportSlice";
 import { formatDateWithTiming } from "@/components/common/dateFormat";
 import AdvanceTable from "@/components/Tables/AdvanceTable";
+import Loader from "@/components/UI/Loader";
 
 const COLORS = [
   "#3b82f6",
@@ -42,6 +42,7 @@ export default function AdminReport() {
   const { data, loading, error } = useSelector(
     (state: RootState) => state.adminReport
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     dispatch(fetchAdminReport());
@@ -50,15 +51,7 @@ export default function AdminReport() {
   /* ── Loading ─────────────────────────────────────── */
   if (loading && !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 px-4">
-        <div className="relative h-14 w-14">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
-          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 animate-spin" />
-        </div>
-        <p className="text-sm font-medium text-gray-500 animate-pulse text-center">
-          Loading admin report…
-        </p>
-      </div>
+      <ComponentCard title="Admin Report"><Loader /></ComponentCard>
     );
   }
 
@@ -113,6 +106,18 @@ export default function AdminReport() {
     createdAt: formatDateWithTiming(a.createdAt),
   }));
 
+  const filteredRows = tableRows.filter((row) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      row.name?.toLowerCase().includes(query) ||
+      row.email?.toLowerCase().includes(query) ||
+      row.businessName?.toLowerCase().includes(query) ||
+      row.planName?.toLowerCase().includes(query) ||
+      row.subscriptionStatus?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <>
       <PageMeta
@@ -125,16 +130,7 @@ export default function AdminReport() {
         {/* ── Header + KPI Cards ─────────────────────── */}
         <ComponentCard
           title="Admin Report"
-          desc="Overview of all admins, subscription statuses, and plan distribution"
-          rightButtonNode={
-            <button
-              onClick={() => dispatch(fetchAdminReport())}
-              className="flex items-center gap-1.5 px-3 py-2 sm:px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-md"
-            >
-              <RefreshCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span className="hidden xs:inline">Refresh</span>
-            </button>
-          }
+        // desc="Overview of all admins, subscription statuses, and plan distribution"
         >
           {/* 2 cols mobile → 3 sm → 6 lg */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 pt-2">
@@ -269,7 +265,7 @@ export default function AdminReport() {
           rightButtonNode={
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
               <UserCheck className="h-3.5 w-3.5 text-blue-600" />
-              <span className="text-xs font-black text-blue-600">{data.recentAdmins.length} Shown</span>
+              <span className="text-xs font-black text-blue-600">{filteredRows.length} Shown</span>
             </div>
           }
         >
@@ -277,9 +273,11 @@ export default function AdminReport() {
             <div className="min-w-[600px] sm:min-w-0 px-4 sm:px-0">
               <AdvanceTable
                 headers={tableHeaders}
-                rows={tableRows}
+                rows={filteredRows}
                 loading={loading}
                 maxHeight="380px"
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
               />
             </div>
           </div>

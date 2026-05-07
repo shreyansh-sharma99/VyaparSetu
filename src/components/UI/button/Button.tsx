@@ -35,11 +35,11 @@ const Button: React.FC<ButtonProps> = ({
   // Variant Classes
   const variantClasses = {
     primary:
-      "bg-primary text-primary-foreground shadow-theme-xs hover:bg-primary/90 disabled:bg-primary/30",
+      "bg-primary text-primary-foreground shadow-theme-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:bg-primary/30",
     outline:
-      "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300",
+      "bg-transparent text-gray-700 border border-gray-300 hover:bg-gray-50 active:scale-[0.98] dark:text-gray-200 dark:border-border dark:hover:bg-white/[0.05] transition-all",
     danger:
-      "bg-red-600 text-white shadow-theme-xs hover:bg-red-700 disabled:bg-red-300",
+      "bg-red-600 text-white shadow-theme-sm hover:bg-red-700 active:scale-[0.98] transition-all disabled:bg-red-300",
   };
 
   return (

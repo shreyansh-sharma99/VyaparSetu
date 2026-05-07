@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   IndianRupee,
@@ -21,9 +21,10 @@ import ComponentCard from "@/components/common/ComponentCard";
 import PageMeta from "@/components/common/PageMeta";
 import type { AppDispatch, RootState } from "@/store";
 import { fetchRevenueReport } from "./services/revenueReportSlice";
+import Loader from "@/components/UI/Loader";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function formatRaw(amount: number) {
   return `₹${amount.toLocaleString("en-IN")}`;
@@ -63,15 +64,7 @@ export default function RevenueReport() {
   /* ── Loading ─────────────────────────────────────── */
   if (loading && !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 px-4">
-        <div className="relative h-14 w-14">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
-          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 animate-spin" />
-        </div>
-        <p className="text-sm font-medium text-gray-500 animate-pulse text-center">
-          Loading revenue report…
-        </p>
-      </div>
+      <ComponentCard title='Revenue Report'><Loader /></ComponentCard>
     );
   }
 
@@ -154,7 +147,7 @@ export default function RevenueReport() {
         {/* ── Header + Date Filter + KPI Cards ─────── */}
         <ComponentCard
           title="Revenue Report"
-          desc={isFiltered ? `Filtered: ${appliedFrom} → ${appliedTo}` : "All-time revenue analytics"}
+          // desc={isFiltered ? `Filtered: ${appliedFrom} → ${appliedTo}` : "All-time revenue analytics"}
           rightButtonNode={DatePickerNode}
         >
           {data && (

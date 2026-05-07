@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getPlans, createPlan, togglePlan, getPlanById, updatePlan, deletePlan } from './PlanServices';
+import { getPlans, createPlan, togglePlan, getPlanById, updatePlan, deletePlan, getPlanFormSchema } from './PlanServices';
 
 // Define the interface for the Plan state
 export interface Plan {
@@ -22,27 +22,25 @@ export interface Plan {
     isEnabled: boolean;
     razorpayPlanId?: string | null;
   }[];
-  limits: {
-    maxProducts: number;
-    maxOrders: number;
-    maxCustomers: number;
-    maxStaff: number;
-    maxStores: number;
-    storageGB: number;
-  };
-  features: {
-    analyticsEnabled: boolean;
-    customDomain: boolean;
-    apiAccess: boolean;
-    prioritySupport: boolean;
-    exportData: boolean;
-    whitelabel: boolean;
-    customThemes: boolean;
-    smsNotifications: boolean;
-  };
+  accessMode: string;
+  capabilities: Record<string, any>;
   subscriberCount?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface FeatureDefinition {
+  key: string;
+  label: string;
+  type: 'number' | 'boolean';
+  defaultValue: any;
+  description: string;
+  sortOrder: number;
+}
+
+export interface PlanFormSchema {
+  accessModes: string[];
+  featureDefinitions: FeatureDefinition[];
 }
 
 interface PlanState {
@@ -51,6 +49,7 @@ interface PlanState {
   submitting: boolean;
   error: string | null;
   currentPlan: Plan | null;
+  schema: PlanFormSchema | null;
 }
 
 const initialState: PlanState = {
@@ -59,6 +58,7 @@ const initialState: PlanState = {
   submitting: false,
   error: null,
   currentPlan: null,
+  schema: null,
 };
 
 // Async thunk for fetching plans
@@ -163,6 +163,23 @@ export const deleteExistingPlan = createAsyncThunk(
   }
 );
 
+// Async thunk for fetching plan form schema
+export const fetchPlanFormSchema = createAsyncThunk(
+  'plan/fetchPlanFormSchema',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getPlanFormSchema();
+      if (response.success) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.message || 'Failed to fetch form schema');
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch form schema');
+    }
+  }
+);
+
 const planSlice = createSlice({
   name: 'plan',
   initialState,
@@ -259,6 +276,19 @@ const planSlice = createSlice({
         state.plans = state.plans.filter(p => p._id !== deletedPlanId);
       })
       .addCase(deleteExistingPlan.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Plan Form Schema
+      .addCase(fetchPlanFormSchema.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPlanFormSchema.fulfilled, (state, action) => {
+        state.loading = false;
+        state.schema = action.payload;
+      })
+      .addCase(fetchPlanFormSchema.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

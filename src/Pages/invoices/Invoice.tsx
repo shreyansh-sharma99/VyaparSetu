@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../store";
 import { fetchInvoices } from "./services/invoiceSlice";
 import AdvanceTable from "../../components/Tables/AdvanceTable";
 import ComponentCard from "../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
-import StatusToggle from "../../components/form/input/StatusToggle";
+import { encryptData } from "@/utility/crypto";
 
 const Invoice: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
     const { invoices, loading, error, meta } = useSelector((state: RootState) => state.invoice);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -30,9 +32,24 @@ const Invoice: React.FC = () => {
 
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
-        // Backend search might not be implemented for invoices, but we'll keep the state
     };
 
+    const handleViewInvoice = (id: string) => {
+        const encryptedId = encodeURIComponent(encryptData(id));
+        navigate(`/Invoices/view/${encryptedId}`);
+    };
+
+    const getStatusBadgeClass = (status: string) => {
+        switch (status?.toLowerCase()) {
+            case "paid": return "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400";
+            case "pending": return "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400";
+            case "failed": return "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400";
+            case "free": return "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400";
+            case "waived": return "bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400";
+            default: return "bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400";
+        }
+    };
+    // draft, open, paid, overdue, cancelled, waived
     const tableRows = invoices.map((invoice) => ({
         ...invoice,
         id: invoice._id,
@@ -40,7 +57,11 @@ const Invoice: React.FC = () => {
         adminEmail: invoice.adminId?.email || "N/A",
         planName: invoice.planId?.name || "N/A",
         amount: `${invoice.currency} ${invoice.totalAmount.toLocaleString()}`,
-        statusDisplay: invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1),
+        statusDisplay: (
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold uppercase tracking-wide ${getStatusBadgeClass(invoice.status)}`}>
+                {invoice.status}
+            </span>
+        ),
         invoiceDate: formatDateWithTiming(invoice.createdAt),
         dueDateDisplay: formatDateWithTiming(invoice.dueDate),
     }));
@@ -107,6 +128,7 @@ const Invoice: React.FC = () => {
                     pageSize={pageSize}
                     onPageChange={handlePageChange}
                     maxHeight="calc(100vh - 350px)"
+                    onView={(row: any) => handleViewInvoice(row._id)}
                 />
             </ComponentCard>
         </div>

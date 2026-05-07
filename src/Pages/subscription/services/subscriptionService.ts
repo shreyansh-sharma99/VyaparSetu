@@ -34,3 +34,11 @@ export const cancelSubscriptionService = async (id: string) => {
 export const extendSubscriptionService = async (id: string, data: { days: number }) => {
   return await Http.post(`/owner/subscriptions/${id}/extend`, data);
 };
+
+export const reconcileSubscriptionsService = async () => {
+  return await Http.post(`/owner/subscriptions/reconcile`, {});
+};
+
+export const forceStatusSubscriptionService = async (id: string, data: { status: string }) => {
+  return await Http.post(`/owner/subscriptions/${id}/force-status`, data);
+};

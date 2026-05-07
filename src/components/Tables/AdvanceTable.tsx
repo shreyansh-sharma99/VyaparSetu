@@ -3,15 +3,11 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../UI/table"
 import { CrossIcon, DeleteIcon, Eyeicon, HistoryIcon, SearchIcon, ArrowDownIcon, ArrowUpIcon, EditIcon, InfoIcon } from "../../icons/icons";
 import { useNavigate } from "react-router-dom";
 import Button from "../UI/button/Button";
-import Papa from "papaparse";
 import Loader from "../UI/Loader";
 import '../../index.css';
 import Checkbox from "../form/input/Checkbox";
 import { Pagination, Switch } from 'antd';
-import { toast } from "react-toastify";
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+
 import { Loader2 } from "lucide-react";
 
 
@@ -180,279 +176,102 @@ export default function AdvanceTable<T extends Record<string, any>>({
     }, []);
 
 
-    const handleCopyToClipboard = () => {
-        // Get all visible data from the table
-        const tableData = sortedRows.map(row => {
-            const rowData: Record<string, any> = {};
-            headers
-                .filter(h => visibleKeys.includes(h.key))
-                .forEach(header => {
-                    rowData[header.label] = row[header.key];
-                });
-            return rowData;
-        });
+    // const handleCopyToClipboard = () => {
+    //     // Get all visible data from the table
+    //     const tableData = sortedRows.map(row => {
+    //         const rowData: Record<string, any> = {};
+    //         headers
+    //             .filter(h => visibleKeys.includes(h.key))
+    //             .forEach(header => {
+    //                 rowData[header.label] = row[header.key];
+    //             });
+    //         return rowData;
+    //     });
 
-        // Convert to formatted text (you can adjust the format as needed)
-        let textToCopy = '';
+    //     // Convert to formatted text (you can adjust the format as needed)
+    //     let textToCopy = '';
 
-        // Add headers
-        const headersText = headers
-            .filter(h => visibleKeys.includes(h.key))
-            .map(h => h.label)
-            .join('\t');
-        textToCopy += headersText + '\n';
+    //     // Add headers
+    //     const headersText = headers
+    //         .filter(h => visibleKeys.includes(h.key))
+    //         .map(h => h.label)
+    //         .join('\t');
+    //     textToCopy += headersText + '\n';
 
-        // Add rows
-        tableData.forEach(row => {
-            const rowText = headers
-                .filter(h => visibleKeys.includes(h.key))
-                .map(header => {
-                    const value = row[header.label];
-                    // Handle different data types and format appropriately
-                    if (value === null || value === undefined) return '';
-                    if (typeof value === 'object') return JSON.stringify(value);
-                    return String(value).replace(/\t/g, ' ').replace(/\n/g, ' ');
-                })
-                .join('\t');
-            textToCopy += rowText + '\n';
-        });
+    //     // Add rows
+    //     tableData.forEach(row => {
+    //         const rowText = headers
+    //             .filter(h => visibleKeys.includes(h.key))
+    //             .map(header => {
+    //                 const value = row[header.label];
+    //                 // Handle different data types and format appropriately
+    //                 if (value === null || value === undefined) return '';
+    //                 if (typeof value === 'object') return JSON.stringify(value);
+    //                 return String(value).replace(/\t/g, ' ').replace(/\n/g, ' ');
+    //             })
+    //             .join('\t');
+    //         textToCopy += rowText + '\n';
+    //     });
 
-        navigator.clipboard.writeText(textToCopy).then(() => { toast.success('Table data copied to clipboard!'); })
-            .catch(err => {
-                console.error('Failed to copy: ', err);
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = textToCopy;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                toast.success('Table data copied to clipboard!');
-            });
-    };
+    //     navigator.clipboard.writeText(textToCopy).then(() => { toast.success('Table data copied to clipboard!'); })
+    //         .catch(err => {
+    //             console.error('Failed to copy: ', err);
+    //             // Fallback for older browsers
+    //             const textArea = document.createElement('textarea');
+    //             textArea.value = textToCopy;
+    //             document.body.appendChild(textArea);
+    //             textArea.select();
+    //             document.execCommand('copy');
+    //             document.body.removeChild(textArea);
+    //             toast.success('Table data copied to clipboard!');
+    //         });
+    // };
 
-    const handleCSVDownload = () => {
-        const filteredData = rows.map((row) =>
-            Object.fromEntries(
-                headers
-                    .filter((h) => visibleKeys.includes(h.key))
-                    .map((h) => [h.label, row[h.key]])
-            )
-        );
-        const csv = Papa.unparse(filteredData);
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", "Circulants table-data.csv");
-        link.click();
-    };
 
-    const handlePrint = () => {
-        const tableColumn = headers
-            .filter((h) => visibleKeys.includes(h.key))
-            .map((h) => h.label);
 
-        const tableRows = rows.map((row) =>
-            headers
-                .filter((h) => visibleKeys.includes(h.key))
-                .map((h) => row[h.key])
-        );
+    // const handlePrint = () => {
+    //     const tableColumn = headers
+    //         .filter((h) => visibleKeys.includes(h.key))
+    //         .map((h) => h.label);
 
-        const printWindow = window.open('', '', 'height=600,width=800');
-        if (!printWindow) return;
+    //     const tableRows = rows.map((row) =>
+    //         headers
+    //             .filter((h) => visibleKeys.includes(h.key))
+    //             .map((h) => row[h.key])
+    //     );
 
-        let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%; font-size: 12px;">';
-        tableHTML += '<thead><tr>' + tableColumn.map(col => `<th style="padding: 8px;">${col}</th>`).join('') + '</tr></thead>';
-        tableHTML += '<tbody>';
-        tableRows.forEach(row => {
-            tableHTML += '<tr>' + row.map(cell => `<td style="padding: 8px;">${cell}</td>`).join('') + '</tr>';
-        });
-        tableHTML += '</tbody></table>';
+    //     const printWindow = window.open('', '', 'height=600,width=800');
+    //     if (!printWindow) return;
 
-        printWindow.document.write(`
-            <html>
-              <head><title>Circulant Table PDF</title></head>
-              <body>
-                <h3>Table Data</h3>
-                ${tableHTML}
-                <script>
-                  window.onload = function() {
-                    window.print();
-                    window.onafterprint = function() { window.close(); };
-                  };
-                </script>
-              </body>
-            </html>
-        `);
-        printWindow.document.close();
-    };
+    //     let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%; font-size: 12px;">';
+    //     tableHTML += '<thead><tr>' + tableColumn.map(col => `<th style="padding: 8px;">${col}</th>`).join('') + '</tr></thead>';
+    //     tableHTML += '<tbody>';
+    //     tableRows.forEach(row => {
+    //         tableHTML += '<tr>' + row.map(cell => `<td style="padding: 8px;">${cell}</td>`).join('') + '</tr>';
+    //     });
+    //     tableHTML += '</tbody></table>';
 
-    const handleExcelDownload = () => {
-        if (!rows.length || error) return;
+    //     printWindow.document.write(`
+    //         <html>
+    //           <head><title>Circulant Table PDF</title></head>
+    //           <body>
+    //             <h3>Table Data</h3>
+    //             ${tableHTML}
+    //             <script>
+    //               window.onload = function() {
+    //                 window.print();
+    //                 window.onafterprint = function() { window.close(); };
+    //               };
+    //             </script>
+    //           </body>
+    //         </html>
+    //     `);
+    //     printWindow.document.close();
+    // };
 
-        try {
-            const workbook = XLSX.utils.book_new();
-            const worksheetData = [];
 
-            // Add title and date rows
-            worksheetData.push(['Data Export Report']);
-            worksheetData.push([`Generated on: ${new Date().toLocaleString()}`]);
-            worksheetData.push([]); // Empty row
 
-            // Prepare headers based on selected options
-            const headers = selectedOptions
-                .filter(opt => visibleKeys.includes(opt.value))
-                .map(opt => opt.label);
-            worksheetData.push(headers);
 
-            // Add data rows
-            rows.forEach(row => {
-                const rowData = selectedOptions
-                    .filter(opt => visibleKeys.includes(opt.value))
-                    .map(opt => {
-                        const value = row[opt.value];
-                        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-                        if (value === null || value === undefined) return '-';
-                        if (typeof value === 'number') return value;
-                        if (typeof value === 'string' && !isNaN(Number(value))) return Number(value);
-                        return String(value);
-                    });
-                worksheetData.push(rowData);
-            });
-
-            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-            // Initialize merges if not present
-            if (!worksheet['!merges']) worksheet['!merges'] = [];
-
-            // --- Title Row Styling ---
-            const titleCell = 'A1';
-            worksheet[titleCell].s = {
-                font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
-                fill: { fgColor: { rgb: '4472C4' } },
-                alignment: { horizontal: 'center' }
-            };
-            // Merge across all columns
-            worksheet['!merges'].push({
-                s: { r: 0, c: 0 },
-                e: { r: 0, c: headers.length - 1 }
-            });
-
-            // --- Date Row Styling ---
-            const dateCell = 'A2';
-            worksheet[dateCell].s = {
-                font: { italic: true, sz: 10 },
-                alignment: { horizontal: 'left' }
-            };
-            worksheet['!merges'].push({
-                s: { r: 1, c: 0 },
-                e: { r: 1, c: headers.length - 1 }
-            });
-
-            // --- Header Row Styling ---
-            const headerRowIndex = 3; // 0-based index
-            headers.forEach((_, colIndex) => {
-                const cellRef = XLSX.utils.encode_cell({ r: headerRowIndex, c: colIndex });
-                worksheet[cellRef].s = {
-                    font: { bold: true, color: { rgb: 'FFFFFF' } },
-                    fill: { fgColor: { rgb: '5B9BD5' } },
-                    alignment: { horizontal: 'center' },
-                    border: {
-                        top: { style: 'thin', color: { rgb: '000000' } },
-                        left: { style: 'thin', color: { rgb: '000000' } },
-                        bottom: { style: 'thin', color: { rgb: '000000' } },
-                        right: { style: 'thin', color: { rgb: '000000' } }
-                    }
-                };
-            });
-
-            // --- Column Widths ---
-            worksheet['!cols'] = headers.map(() => ({ wch: 20 }));
-
-            // --- Row Heights ---
-            worksheet['!rows'] = [
-                { hpt: 25 }, // Title
-                { hpt: 20 }, // Date
-                { hpt: 5 },  // Empty row
-                { hpt: 25 }  // Header row
-            ];
-
-            // Append sheet and save
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
-            const fileName = `data-export-${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(workbook, fileName, { bookType: 'xlsx', type: 'binary' });
-
-        } catch (error) {
-            console.error('Error generating Excel file:', error);
-            alert('Error generating Excel file. Please try again.');
-        }
-    };
-
-    const handlePDFDownload = () => {
-        if (!rows.length || error) return;
-
-        try {
-            const doc = new jsPDF();
-            doc.setFontSize(18);
-            doc.setTextColor(40, 40, 40);
-            doc.text('Data Export Report', 14, 15);
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
-            doc.text(`Total Records: ${rows.length}`, 14, 28);
-            const headers = selectedOptions.filter(opt => visibleKeys.includes(opt.value)).map(opt => opt.label);
-            const data = rows.map(row => selectedOptions
-                .filter(opt => visibleKeys.includes(opt.value))
-                .map(opt => {
-                    const value = row[opt.value];
-                    if (value === null || value === undefined) return '-';
-                    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-                    const text = String(value);
-                    return text.length > 50 ? text.substring(0, 47) + '...' : text;
-                })
-            );
-
-            // Use the imported autoTable function directly
-            autoTable(doc, {
-                head: [headers],
-                body: data,
-                startY: 35,
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2,
-                    lineColor: [200, 200, 200],
-                    lineWidth: 0.1
-                },
-                headStyles: {
-                    fillColor: [66, 139, 202],
-                    textColor: 255,
-                    fontStyle: 'bold'
-                },
-                alternateRowStyles: {
-                    fillColor: [250, 250, 250]
-                },
-                margin: { top: 35 },
-                tableWidth: 'wrap'
-            });
-
-            // Add page numbers
-            const pageCount = doc.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150, 150, 150);
-                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 25, doc.internal.pageSize.height - 10);
-            }
-
-            const fileName = `data-export-${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(fileName);
-
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Error generating PDF file. Please try again.');
-        }
-    };
 
     const handleCheckboxChange = (id: string) => {
         const newSelectedRows = {
@@ -570,15 +389,15 @@ export default function AdvanceTable<T extends Record<string, any>>({
                         {!error && (
                             <>
                                 {/* <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={handleCopyToClipboard}>Copy</Button> */}
-                                <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadCSV ? onDownloadCSV : handleCSVDownload} disabled={isDownloadingCSV}>
+                                {onDownloadCSV && <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadCSV} disabled={isDownloadingCSV}>
                                     {isDownloadingCSV ? <Loader2 className="w-4 h-4 animate-spin" /> : "CSV"}
-                                </Button>
-                                <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadExcel ? onDownloadExcel : handleExcelDownload} disabled={isDownloadingExcel}>
+                                </Button>}
+                                {onDownloadExcel && (<Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadExcel} disabled={isDownloadingExcel}>
                                     {isDownloadingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : "Excel"}
-                                </Button>
-                                <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadPDF ? onDownloadPDF : handlePDFDownload} disabled={isDownloadingPDF}>
+                                </Button>)}
+                                {onDownloadPDF && (<Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={onDownloadPDF} disabled={isDownloadingPDF}>
                                     {isDownloadingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : "PDF"}
-                                </Button>
+                                </Button>)}
                                 {/* <Button size="sm" variant="outline" className="!py-2 !px-3 !rounded-md" onClick={handlePrint}>Print</Button> */}
                             </>
                         )}
@@ -639,11 +458,11 @@ export default function AdvanceTable<T extends Record<string, any>>({
                         </div>
                     </div>) : rows.length > 0 ? (
                         <div style={{ maxHeight: maxHeight ?? "400px" }} className="w-full max-w-full overflow-x-auto overflow-y-auto relative border border-gray-200 dark:border-gray-700 rounded-md scrollbar-hide hover:scrollbar-default">
-                            <Table className="sticky top-0 z-40 bg-white dark:bg-white/[0.03]">
-                                <TableHeader className="sticky top-0 z-40 bg-white dark:bg-white/[0.03]">
+                            <Table className="sticky top-0 z-40 bg-white dark:bg-card">
+                                <TableHeader className="sticky top-0 z-40 bg-white dark:bg-card">
                                     <TableRow>
                                         {(onView || onDelete || onHistory || onEdit || onCheckbox || customActions) && (
-                                            <TableCell isHeader className={`sticky left-0 z-40 bg-white dark:bg-white/[0.03] text-theme-sm px-5 py-2 font-medium text-gray-600 ${customActions ? 'text-left' : 'text-center'} whitespace-nowrap border-b border-gray-200 dark:border-gray-700 border-t-0 min-w-[120px]`}>
+                                            <TableCell isHeader className={`sticky left-0 z-40 bg-white dark:bg-card text-theme-sm px-5 py-2 font-medium text-gray-600 dark:text-gray-300 ${customActions ? 'text-left' : 'text-center'} whitespace-nowrap border-b border-gray-200 dark:border-gray-700 border-t-0 min-w-[120px]`}>
                                                 {checkboxHeading || "Action"}
                                             </TableCell>
                                         )}
@@ -699,7 +518,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                         return (
                                             <TableRow key={rowIndex} className={`${row.requestedStatus === "User Rejected" || row.approvalStatus === 'Rejected' ? "bg-red-200 text-red-700" : ""}`}>
                                                 {(onView || onDelete || onHistory || onEdit || onCheckbox || customActions) && (
-                                                    <TableCell className={`sticky left-0 z-30 border-b ${row.requestedStatus === "User Rejected" || row.approvalStatus === 'Rejected' ? "bg-red-200 text-red-700" : "bg-white"} dark:bg-white/[0.03] px-4 py-1.5 whitespace-nowrap dark:border-gray-700 min-w-[120px] ${[onView, onDelete, onHistory, onEdit, onCheckbox, customActions].filter(Boolean).length > 1 ? (customActions ? 'text-start space-x-2' : 'text-center space-x-2') : 'text-center'
+                                                    <TableCell className={`sticky left-0 z-30 border-b ${row.requestedStatus === "User Rejected" || row.approvalStatus === 'Rejected' ? "bg-red-200 text-red-700" : "bg-white dark:bg-card"} px-4 py-1.5 whitespace-nowrap dark:border-gray-700 min-w-[120px] ${[onView, onDelete, onHistory, onEdit, onCheckbox, customActions].filter(Boolean).length > 1 ? (customActions ? 'text-start space-x-2' : 'text-center space-x-2') : 'text-center'
                                                         }`}>
                                                         <div className={`flex ${customActions ? 'justify-start' : 'justify-center'} items-center ${[onView, onDelete, onHistory, onEdit, onCheckbox, customActions].filter(Boolean).length > 1 ? "gap-2" : ""}`}>
                                                             {onCheckbox && (
@@ -782,7 +601,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                                                             ? "text-blue-600"
                                                                             : value === "Implemented"
                                                                                 ? "text-green-600"
-                                                                                : "text-gray-800"
+                                                                                : "text-gray-800 dark:text-gray-100"
                                                                         }`}
                                                                     title="Click to toggle full text"
                                                                 >

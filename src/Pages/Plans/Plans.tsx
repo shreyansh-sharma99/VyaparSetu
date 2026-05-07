@@ -82,8 +82,8 @@ const Plans: React.FC = () => {
     priceStr: plan.basePrice !== undefined
       ? (plan.basePrice === 0 ? "Free" : `${plan.currency || 'INR'} ${(plan.basePrice / 100).toLocaleString()}`)
       : "Contact Sales",
-    limitsStr: plan.limits
-      ? `Prods: ${plan.limits.maxProducts}, Orders: ${plan.limits.maxOrders}, Staff: ${plan.limits.maxStaff}`
+    limitsStr: plan.capabilities
+      ? `Prods: ${plan.capabilities.maxProducts ?? '-'}, Orders: ${plan.capabilities.maxOrders ?? '-'}, Staff: ${plan.capabilities.maxStaff ?? '-'}`
       : "—",
     trialStr: plan.trial?.enabled ? `${plan.trial.durationDays} Days` : "No",
     billingCyclesStr: plan.billingCycles?.filter(c => c.isEnabled).map(c => c.label).join(", ") || "—",

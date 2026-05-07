@@ -14,13 +14,15 @@ const LayoutContent: React.FC = () => {
         <AppHeader />
 
         <div
-          className="flex-1 overflow-y-auto overflow-x-auto thin-scrollbar bg-gray-100 w-full px-6 md:px-2 py-2"
+          className="flex-1 overflow-y-auto overflow-x-auto thin-scrollbar bg-gray-100 dark:bg-background w-full px-6 md:px-2 py-2"
         >
           <div className="w-full mx-auto animate-in fade-in slide-in-from-bottom-4  duration-700">
             <Outlet />
           </div>
         </div>
-        <footer className="sticky z-10 bottom-0 bg-white px-4 py-1 text-center text-xs border-t dark:border-none dark:bg-white/[0.03] dark:text-white">{import.meta.env.VITE_PLATFORM_NAME} © {new Date().getFullYear()} — All Rights Reserved</footer>
+        <footer className="sticky z-10 bottom-0 bg-white dark:bg-card px-4 py-2 text-center text-xs border-t dark:border-border dark:text-muted-foreground transition-colors duration-300">
+          {import.meta.env.VITE_PLATFORM_NAME} © {new Date().getFullYear()} — All Rights Reserved
+        </footer>
 
       </div>
     </div>

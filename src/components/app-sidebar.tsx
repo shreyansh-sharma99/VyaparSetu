@@ -52,7 +52,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    title: "Dashboard Overview",
+    title: "Dashboard",
     icon: LayoutDashboard,
     url: "/",
     isActive: true,

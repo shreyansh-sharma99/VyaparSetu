@@ -28,3 +28,8 @@ export const deletePlan = async (planId: string) => {
     const response = await apiClient.delete(`/owner/plans/${planId}`);
     return response.data;
 };
+
+export const getPlanFormSchema = async () => {
+    const response = await apiClient.get('/owner/plans/form-schema');
+    return response.data;
+};

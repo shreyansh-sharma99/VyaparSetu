@@ -1,9 +1,9 @@
-import { Bell, Moon, Sun, Loader2 } from "lucide-react";
+import { Moon, Sun, Loader2, Menu } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/layout/button";
-import { SidebarTrigger } from "@/components/layout/sidebar";
+import { useSidebar } from "@/components/layout/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,12 +16,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/layout/avatar"
 import type { RootState, AppDispatch } from "@/store";
 import { toggleTheme } from "@/store/slices/uiSlice";
 import { logoutUser } from "@/Pages/login/services/authSlice";
+import ChangePasswordModal from "./common/ChangePasswordModal";
 
 export function AppHeader() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const theme = useSelector((state: RootState) => state.ui.theme);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const { toggleSidebar } = useSidebar();
 
   const { profile } = useSelector((state: RootState) => state.user);
 
@@ -39,13 +42,22 @@ export function AppHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 w-full items-center px-6 md:px-8 lg:px-10 relative">
         <div className="flex items-center">
-          <SidebarTrigger className="-ml-3" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => toggleSidebar()}
+            className="-ml-7 h-11 w-11 rounded-xl border-2 border-primary text-primary bg-transparent hover:bg-primary/5 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center shadow-sm shadow-primary/5"
+            title="Toggle Sidebar"
+          >
+            <Menu className="h-6 w-6 stroke-[2.5px]" />
+          </Button>
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center">
           <span className="text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-800 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
             {/* {import.meta.env.VITE_PLATFORM_NAME} */}
-            Vyapar<span style={{ color: "#ff5a1f" }}>Setu</span>
+            {/* Vyapar<span style={{ color: "#ff5a1f" }}>Setu</span> */}
+            Platform CR2
           </span>
         </div>
 
@@ -68,16 +80,16 @@ export function AppHeader() {
               )}
             </Button>
 
-            <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-primary transition-colors">
+            {/* <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-primary transition-colors">
               <Bell className="h-5 w-5" />
               <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-background"></span>
-            </Button>
+            </Button> */}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 hover:border-primary/30 transition-all">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                    <AvatarImage src="/avatar.png" alt={profile?.name || "User"} />
                     <AvatarFallback>{profile?.name?.charAt(0) || "AD"}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -94,9 +106,9 @@ export function AppHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem>
+                {/* <DropdownMenuItem className="cursor-pointer">Profile</DropdownMenuItem> */}
                 <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings")}>Settings</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Billing</DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setIsChangePasswordOpen(true)}>Change Password</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-500 focus:text-red-500 cursor-pointer font-semibold flex items-center gap-2"
@@ -120,6 +132,10 @@ export function AppHeader() {
           </nav>
         </div>
       </div>
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </header>
   );
 }

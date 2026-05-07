@@ -15,7 +15,7 @@ interface Option {
 interface SelectProps {
   options?: Option[];
   placeholder?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   value?: string;
   className?: string;
   error?: boolean;
@@ -107,7 +107,7 @@ const Select: React.FC<SelectProps> = ({
 
   const handleOptionClick = (option: Option) => {
     setInternalValue(option.value);
-    onChange(option.value);
+    onChange?.(option.value);
     setIsOpen(false);
     setSearch("");
     inputRef.current?.blur();

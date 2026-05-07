@@ -30,7 +30,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
 
   return (
     <div
-      className={`relative rounded-2xl border border-gray-200 bg-white  dark:border-gray-500 dark:bg-white/[0.03] ${className}`}
+      className={`relative rounded-2xl border border-gray-200 bg-white dark:border-border dark:bg-card ${className}`}
     >
       {disable && (<div className="absolute inset-0 bg-transparent cursor-not-allowed z-0"></div>)}
 
@@ -59,7 +59,7 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
 
       {isOpen && (
         <div
-          className={`p-4 sm:px-4 ${title ? "border-t border-gray-200 dark:border-gray-800" : ""
+          className={`p-4 sm:px-4 ${title ? "border-t border-gray-200 dark:border-border" : ""
             } ${disable ? "pointer-events-none" : ""} ${bodyClassName}`}
         >
           <div className="space-y-2 h-full flex flex-col">{children}</div>

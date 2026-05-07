@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Receipt,
@@ -6,7 +6,7 @@ import {
   Clock,
   AlertCircle,
   XCircle,
-  RefreshCcw,
+
 } from "lucide-react";
 import ComponentCard from "@/components/common/ComponentCard";
 import PageMeta from "@/components/common/PageMeta";
@@ -14,12 +14,14 @@ import type { AppDispatch, RootState } from "@/store";
 import { fetchInvoiceReport } from "./services/invoiceReportSlice";
 import { formatDateWithTiming } from "@/components/common/dateFormat";
 import AdvanceTable from "@/components/Tables/AdvanceTable";
+import Loader from "@/components/UI/Loader";
 
 export default function InvoiceReport() {
   const dispatch = useDispatch<AppDispatch>();
   const { data, loading, error } = useSelector(
     (state: RootState) => state.invoiceReport
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     dispatch(fetchInvoiceReport());
@@ -28,15 +30,7 @@ export default function InvoiceReport() {
   /* ── Loading ─────────────────────────────────────── */
   if (loading && !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 px-4">
-        <div className="relative h-14 w-14">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
-          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 animate-spin" />
-        </div>
-        <p className="text-sm font-medium text-gray-500 animate-pulse text-center">
-          Loading invoice report…
-        </p>
-      </div>
+      <ComponentCard title="Invoice Report"><Loader /></ComponentCard>
     );
   }
 
@@ -82,6 +76,19 @@ export default function InvoiceReport() {
     paidAtFormatted: inv.paidAt ? formatDateWithTiming(inv.paidAt) : "—",
   }));
 
+  const filteredRows = tableRows.filter((row) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      row.invoiceNumber?.toLowerCase().includes(query) ||
+      row.adminName?.toLowerCase().includes(query) ||
+      row.adminEmail?.toLowerCase().includes(query) ||
+      row.planName?.toLowerCase().includes(query) ||
+      row.status?.toLowerCase().includes(query) ||
+      row.totalAmountFormatted?.toLowerCase().includes(query)
+    );
+  });
+
   const collectionPct = (
     (data.totalPaid / ((data.totalPaid + data.totalPending) || 1)) * 100
   ).toFixed(1);
@@ -100,16 +107,7 @@ export default function InvoiceReport() {
         {/* ── Header + KPI Cards ─────────────────────── */}
         <ComponentCard
           title="Invoice Report"
-          desc="Invoice collection status, aging analysis and recent transactions"
-          rightButtonNode={
-            <button
-              onClick={() => dispatch(fetchInvoiceReport())}
-              className="flex items-center gap-1.5 px-3 py-2 sm:px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-md"
-            >
-              <RefreshCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span className="hidden xs:inline">Refresh</span>
-            </button>
-          }
+
         >
           {/* 1 col → 3 col sm */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
@@ -220,7 +218,7 @@ export default function InvoiceReport() {
           rightButtonNode={
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
               <Receipt className="h-3.5 w-3.5 text-blue-600" />
-              <span className="text-xs font-black text-blue-600">{data.recentInvoices.length} Records</span>
+              <span className="text-xs font-black text-blue-600">{filteredRows.length} Records</span>
             </div>
           }
         >
@@ -229,9 +227,11 @@ export default function InvoiceReport() {
             <div className="min-w-[700px] sm:min-w-0 px-4 sm:px-0">
               <AdvanceTable
                 headers={tableHeaders}
-                rows={tableRows}
+                rows={filteredRows}
                 loading={loading}
                 maxHeight="420px"
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
               />
             </div>
           </div>

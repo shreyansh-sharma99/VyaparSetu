@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ComponentCard from "@/components/common/ComponentCard";
 import PageMeta from "@/components/common/PageMeta";
@@ -9,6 +9,7 @@ import AdvanceTable from "@/components/Tables/AdvanceTable";
 export default function RazorpayPayments() {
     const dispatch = useDispatch<AppDispatch>();
     const { data, loading, downloadingFormat, error } = useSelector((state: RootState) => state.razorpayPayments);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         dispatch(fetchRazorpayPayments());
@@ -34,6 +35,19 @@ export default function RazorpayPayments() {
         amount: `${item.currency} ${item.amount}`,
     }));
 
+    const filteredRows = tableRows.filter((row) => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+            row.id?.toLowerCase().includes(query) ||
+            row.amount?.toLowerCase().includes(query) ||
+            row.status?.toLowerCase().includes(query) ||
+            row.method?.toLowerCase().includes(query) ||
+            row.email?.toLowerCase().includes(query) ||
+            row.contact?.toLowerCase().includes(query)
+        );
+    });
+
     return (
         <>
             <PageMeta
@@ -50,10 +64,12 @@ export default function RazorpayPayments() {
                     <div className="mt-4">
                         <AdvanceTable
                             headers={tableHeaders}
-                            rows={tableRows}
+                            rows={filteredRows}
                             loading={loading}
                             error={error}
                             maxHeight="calc(100vh - 300px)"
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
                             onDownloadExcel={() => handleDownload('excel')}
                             onDownloadCSV={() => handleDownload('csv')}
                             onDownloadPDF={() => handleDownload('pdf')}

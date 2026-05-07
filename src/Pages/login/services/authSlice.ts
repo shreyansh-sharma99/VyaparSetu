@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { loginApi, logoutApi } from './authService';
+import { loginApi, logoutApi, changePasswordApi } from './authService';
 import { encryptData, decryptData } from '@/utility/crypto';
 
 interface AuthState {
@@ -7,6 +7,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  changingPassword: boolean;
 }
 
 const getInitialAuth = () => {
@@ -38,6 +39,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: initData.isAuthenticated,
+  changingPassword: false,
 };
 
 export const loginUser = createAsyncThunk(
@@ -65,6 +67,20 @@ export const logoutUser = createAsyncThunk(
       // Always clear local state even if API fails
       dispatch(logout());
       return true;
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (passwordData: any, { rejectWithValue }) => {
+    try {
+      const data = await changePasswordApi(passwordData);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to change password.'
+      );
     }
   }
 );
@@ -103,6 +119,15 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.changingPassword = true;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.changingPassword = false;
+      })
+      .addCase(changePassword.rejected, (state) => {
+        state.changingPassword = false;
       });
   },
 });

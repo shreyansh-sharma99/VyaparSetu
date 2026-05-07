@@ -9,3 +9,23 @@ export const getInvoicesService = async (page: number = 1, limit: number = 10, s
 export const getInvoiceByIdService = async (id: string) => {
     return await Http.get(`/owner/invoices/${id}`);
 };
+
+export const sendInvoicePaymentLinkService = async (invoiceId: string) => {
+    return await Http.post(`/owner/invoices/${invoiceId}/send-link`, {});
+};
+
+export const markInvoicePaidService = async (invoiceId: string) => {
+    return await Http.post(`/owner/invoices/${invoiceId}/mark-paid`, {});
+};
+
+export const waiveInvoiceService = async (invoiceId: string) => {
+    return await Http.post(`/owner/invoices/${invoiceId}/waive`, {});
+};
+
+export const sendInvoiceReminderService = async (invoiceId: string) => {
+    return await Http.post(`/owner/invoices/${invoiceId}/send-reminder`, {});
+};
+
+export const downloadInvoicePdfService = async (invoiceId: string) => {
+    return await Http.get(`/owner/invoices/${invoiceId}/download`, { responseType: "blob" });
+};

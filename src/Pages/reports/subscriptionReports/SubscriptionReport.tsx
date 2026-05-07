@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   UserPlus,
@@ -19,6 +19,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import PageMeta from "@/components/common/PageMeta";
 import type { AppDispatch, RootState } from "@/store";
 import { fetchSubscriptionReport } from "./services/subscriptionReportSlice";
+import Loader from "@/components/UI/Loader";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 const TENURE_COLORS: Record<string, string> = {
@@ -41,15 +42,7 @@ export default function SubscriptionReport() {
   /* ── Loading ─────────────────────────────────────── */
   if (loading && !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 px-4">
-        <div className="relative h-14 w-14">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
-          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 animate-spin" />
-        </div>
-        <p className="text-sm font-medium text-gray-500 animate-pulse text-center">
-          Loading subscription report…
-        </p>
-      </div>
+      <ComponentCard title='Subscription Report'><Loader /></ComponentCard>
     );
   }
 
@@ -99,16 +92,8 @@ export default function SubscriptionReport() {
         {/* ── Header + KPI Cards ─────────────────────── */}
         <ComponentCard
           title="Subscription Report"
-          desc="Monthly subscription lifecycle metrics and tenure distribution"
-          rightButtonNode={
-            <button
-              onClick={() => dispatch(fetchSubscriptionReport())}
-              className="flex items-center gap-1.5 px-3 py-2 sm:px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-md"
-            >
-              <RefreshCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span className="hidden xs:inline">Refresh</span>
-            </button>
-          }
+        // desc="Monthly subscription lifecycle metrics and tenure distribution"
+
         >
           {/* 2 col mobile → 4 col lg */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-2">

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getSubscriptionsService, getSubscriptionByIdService, updateSubscriptionService, upgradeSubscriptionService, cancelSubscriptionService, extendSubscriptionService } from "./subscriptionService";
+import { getSubscriptionsService, getSubscriptionByIdService, updateSubscriptionService, upgradeSubscriptionService, cancelSubscriptionService, extendSubscriptionService, reconcileSubscriptionsService, forceStatusSubscriptionService } from "./subscriptionService";
 import { toast } from "react-toastify";
 
 interface AdminInfo {
@@ -181,6 +181,36 @@ export const extendSubscription = createAsyncThunk(
   }
 );
 
+export const reconcileSubscription = createAsyncThunk(
+  "subscription/reconcileSubscription",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await reconcileSubscriptionsService();
+      toast.success("Subscriptions reconciled successfully");
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to reconcile subscriptions";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const forceStatusSubscription = createAsyncThunk(
+  "subscription/forceStatusSubscription",
+  async ({ id, data }: { id: string; data: { status: string } }, { rejectWithValue }) => {
+    try {
+      const response = await forceStatusSubscriptionService(id, data);
+      toast.success("Subscription status forced successfully");
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to force subscription status";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const subscriptionSlice = createSlice({
   name: "subscription",
   initialState,
@@ -270,6 +300,28 @@ const subscriptionSlice = createSlice({
         );
       })
       .addCase(extendSubscription.rejected, (state) => {
+        state.submitting = false;
+      })
+      .addCase(reconcileSubscription.pending, (state) => {
+        state.submitting = true;
+      })
+      .addCase(reconcileSubscription.fulfilled, (state) => {
+        state.submitting = false;
+      })
+      .addCase(reconcileSubscription.rejected, (state) => {
+        state.submitting = false;
+      })
+      .addCase(forceStatusSubscription.pending, (state) => {
+        state.submitting = true;
+      })
+      .addCase(forceStatusSubscription.fulfilled, (state, action) => {
+        state.submitting = false;
+        state.currentSubscription = action.payload;
+        state.subscriptions = state.subscriptions.map((sub) =>
+          sub._id === action.payload._id ? action.payload : sub
+        );
+      })
+      .addCase(forceStatusSubscription.rejected, (state) => {
         state.submitting = false;
       });
   },

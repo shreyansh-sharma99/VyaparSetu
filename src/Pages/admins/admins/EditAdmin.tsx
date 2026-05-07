@@ -16,6 +16,7 @@ import { Label } from '@/components/layout/label';
 import PageMeta from '@/components/common/PageMeta';
 import { Loader2 } from 'lucide-react';
 import { decryptData } from '@/utility/crypto';
+import Loader from '@/components/UI/Loader';
 
 interface AdminFormData {
     name: string;
@@ -109,13 +110,7 @@ const EditAdmin: React.FC = () => {
         }
     };
 
-    if (fetchingCurrent) {
-        return (
-            <div className="flex h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
-    }
+    if (fetchingCurrent) { return (<ComponentCard title="Edit Admin"><Loader /></ComponentCard>); }
 
     return (
         <div className="">

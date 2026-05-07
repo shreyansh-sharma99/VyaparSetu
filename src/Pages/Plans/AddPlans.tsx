@@ -11,7 +11,8 @@ import { Label } from '@/components/layout/label';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
-import { addNewPlan } from './services/PlanSlice';
+import { addNewPlan, fetchPlanFormSchema } from './services/PlanSlice';
+import { Info } from 'lucide-react';
 import PageMeta from '@/components/common/PageMeta';
 
 const CURRENCY_OPTIONS = [
@@ -57,30 +58,18 @@ interface PlanFormData {
         durationDays: number | string;
     };
     billingCycles: BillingCycle[];
-    limits: {
-        maxProducts: number | string;
-        maxOrders: number | string;
-        maxCustomers: number | string;
-        maxStaff: number | string;
-        maxStores: number | string;
-        storageGB: number | string;
-    };
-    features: {
-        analyticsEnabled: boolean;
-        customDomain: boolean;
-        apiAccess: boolean;
-        prioritySupport: boolean;
-        exportData: boolean;
-        whitelabel: boolean;
-        customThemes: boolean;
-        smsNotifications: boolean;
-    };
+    accessMode: string;
+    capabilities: Record<string, any>;
 }
 
 const AddPlans: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
-    const { submitting } = useSelector((state: RootState) => state.plan);
+    const { submitting, schema } = useSelector((state: RootState) => state.plan);
+
+    React.useEffect(() => {
+        dispatch(fetchPlanFormSchema());
+    }, [dispatch]);
 
     const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<PlanFormData>({
         mode: "onSubmit",
@@ -92,43 +81,29 @@ const AddPlans: React.FC = () => {
             isActive: true,
             basePrice: '',
             currency: 'INR',
-            trial: { enabled: false, durationDays: '' },
+            trial: { enabled: false, durationDays: 0 },
             billingCycles: [
                 { tenure: 'monthly', label: 'Monthly', durationMonths: 1, discountPercent: '', isEnabled: false },
                 { tenure: 'quarterly', label: 'Quarterly', durationMonths: 3, discountPercent: '', isEnabled: false },
                 { tenure: 'halfYearly', label: 'Half-Yearly', durationMonths: 6, discountPercent: '', isEnabled: false },
                 { tenure: 'yearly', label: 'Yearly', durationMonths: 12, discountPercent: '', isEnabled: false }
             ],
-            limits: {
-                maxProducts: '',
-                maxOrders: '',
-                maxCustomers: '',
-                maxStaff: '',
-                maxStores: '',
-                storageGB: ''
-            },
-            features: {
-                analyticsEnabled: false,
-                customDomain: false,
-                apiAccess: false,
-                prioritySupport: false,
-                exportData: false,
-                whitelabel: false,
-                customThemes: false,
-                smsNotifications: false
-            }
+            accessMode: 'combo',
+            capabilities: {}
         }
     });
 
-    const trialEnabled = watch('trial.enabled');
-    const features = watch('features');
-    const allFeaturesSelected = Object.values(features).every(v => v === true);
+    React.useEffect(() => {
+        if (schema?.featureDefinitions) {
+            const defaultCapabilities: Record<string, any> = {};
+            schema.featureDefinitions.forEach(feature => {
+                defaultCapabilities[feature.key] = feature.defaultValue;
+            });
+            setValue('capabilities', defaultCapabilities);
+        }
+    }, [schema, setValue]);
 
-    const toggleAllFeatures = (checked: boolean) => {
-        Object.keys(features).forEach((key) => {
-            setValue(`features.${key as keyof typeof features}`, checked);
-        });
-    };
+    const trialEnabled = watch('trial.enabled');
 
     const onSubmit = async (data: PlanFormData) => {
         const hasEnabledCycle = data.billingCycles.some(cycle => cycle.isEnabled);
@@ -140,7 +115,15 @@ const AddPlans: React.FC = () => {
         const submissionData = {
             ...data,
             isActive: true,
-            basePrice: Number(data.basePrice) * 100
+            basePrice: Number(data.basePrice) * 100,
+            trial: {
+                ...data.trial,
+                durationDays: data.trial.enabled ? Number(data.trial.durationDays) : 0
+            },
+            billingCycles: data.billingCycles.map(cycle => ({
+                ...cycle,
+                discountPercent: cycle.isEnabled ? Number(cycle.discountPercent || 0) : 0
+            }))
         };
 
         try {
@@ -350,143 +333,88 @@ const AddPlans: React.FC = () => {
                         </ComponentCard>
                     </div>
 
-                    <ComponentCard title="Usage Limits">
-                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {/* Access Mode */}
+                    <ComponentCard title="Access Configuration">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <Label className="block text-xs mb-1">Max Products</Label>
-                                <Input
-                                    type="number"
-                                    min="1"
-                                    {...register('limits.maxProducts', {
-                                        valueAsNumber: true,
-                                        min: { value: 1, message: 'Min 1' }
-                                    })}
-                                    error={!!errors.limits?.maxProducts}
-                                    hint={errors.limits?.maxProducts?.message}
+                                <Label>
+                                    Access Mode <span className="text-red-500">*</span>
+                                </Label>
+                                <Controller
+                                    name="accessMode"
+                                    control={control}
+                                    rules={{ required: 'Access Mode is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={schema?.accessModes.map(mode => ({ label: mode, value: mode })) || []}
+                                            placeholder="Select Access Mode"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!errors.accessMode}
+                                        />
+                                    )}
                                 />
-                            </div>
-                            <div>
-                                <Label className="block text-xs mb-1">Max Orders</Label>
-                                <Input
-                                    type="number"
-                                    min="-1"
-                                    {...register('limits.maxOrders', {
-                                        valueAsNumber: true,
-                                        min: { value: -1, message: 'Min -1' }
-                                    })}
-                                    error={!!errors.limits?.maxOrders}
-                                    hint={errors.limits?.maxOrders?.message}
-                                />
-                            </div>
-                            <div>
-                                <Label className="block text-xs mb-1">Max Customers</Label>
-                                <Input
-                                    type="number"
-                                    min="-1"
-                                    {...register('limits.maxCustomers', {
-                                        valueAsNumber: true,
-                                        min: { value: -1, message: 'Min -1' }
-                                    })}
-                                    error={!!errors.limits?.maxCustomers}
-                                    hint={errors.limits?.maxCustomers?.message}
-                                />
-                            </div>
-                            <div>
-                                <Label className="block text-xs mb-1">Max Staff</Label>
-                                <Input
-                                    type="number"
-                                    min="1"
-                                    {...register('limits.maxStaff', {
-                                        valueAsNumber: true,
-                                        min: { value: 1, message: 'Min 1' }
-                                    })}
-                                    error={!!errors.limits?.maxStaff}
-                                    hint={errors.limits?.maxStaff?.message}
-                                />
-                            </div>
-                            <div>
-                                <Label className="block text-xs mb-1">Max Stores</Label>
-                                <Input
-                                    type="number"
-                                    min="1"
-                                    {...register('limits.maxStores', {
-                                        valueAsNumber: true,
-                                        min: { value: 1, message: 'Min 1' }
-                                    })}
-                                    error={!!errors.limits?.maxStores}
-                                    hint={errors.limits?.maxStores?.message}
-                                />
-                            </div>
-                            <div>
-                                <Label className="block text-xs mb-1">Storage (GB)</Label>
-                                <Input
-                                    type="number"
-                                    min="1"
-                                    {...register('limits.storageGB', {
-                                        valueAsNumber: true,
-                                        min: { value: 1, message: 'Min 1' }
-                                    })}
-                                    error={!!errors.limits?.storageGB}
-                                    hint={errors.limits?.storageGB?.message}
-                                />
+                                {errors.accessMode && (
+                                    <p className="mt-1 text-xs text-red-500">{errors.accessMode.message}</p>
+                                )}
                             </div>
                         </div>
                     </ComponentCard>
 
-                    {/* Features */}
-                    <ComponentCard
-                        title="Plan Features"
-                        rightButtonNode={
-                            <div className="flex items-center gap-3 pr-2">
-                                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Select All</span>
-                                <Checkbox
-                                    checked={allFeaturesSelected}
-                                    onChange={toggleAllFeatures}
-                                />
-                            </div>
-                        }
-                    >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <Controller
-                                name="features.analyticsEnabled"
-                                control={control}
-                                render={({ field }) => <Checkbox label="Analytics Enabled" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.customDomain"
-                                control={control}
-                                render={({ field }) => <Checkbox label="Custom Domain" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.apiAccess"
-                                control={control}
-                                render={({ field }) => <Checkbox label="API Access" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.prioritySupport"
-                                control={control}
-                                render={({ field }) => <Checkbox label="Priority Support" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.exportData"
-                                control={control}
-                                render={({ field }) => <Checkbox label="Export Data" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.whitelabel"
-                                control={control}
-                                render={({ field }) => <Checkbox label="Whitelabeling" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.customThemes"
-                                control={control}
-                                render={({ field }) => <Checkbox label="Custom Themes" checked={field.value} onChange={field.onChange} />}
-                            />
-                            <Controller
-                                name="features.smsNotifications"
-                                control={control}
-                                render={({ field }) => <Checkbox label="SMS Notifications" checked={field.value} onChange={field.onChange} />}
-                            />
+                    {/* Features & Capabilities */}
+                    <ComponentCard title="Plan Capabilities & Features">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[...(schema?.featureDefinitions || [])].sort((a, b) => a.sortOrder - b.sortOrder).map((feature) => (
+                                <div key={feature.key} className="flex flex-col justify-center">
+                                    {feature.type === 'number' ? (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <Label className="text-sm font-medium">
+                                                    {feature.label}
+                                                </Label>
+                                                <div className="group relative flex items-center">
+                                                    <Info size={16} className="text-blue-500 cursor-help transition-colors hover:text-blue-600" />
+                                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-md shadow-xl z-50 text-center leading-relaxed">
+                                                        {feature.description}
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-white"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Input
+                                                type="number"
+                                                {...register(`capabilities.${feature.key}`, {
+                                                    valueAsNumber: true,
+                                                    required: `${feature.label} is required`
+                                                })}
+                                                placeholder={String(feature.defaultValue)}
+                                                error={!!errors.capabilities?.[feature.key]}
+                                                hint={errors.capabilities?.[feature.key]?.message as string}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 hover:border-blue-100 dark:hover:border-blue-900/30 transition-all duration-200">
+                                            <Controller
+                                                name={`capabilities.${feature.key}`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Checkbox
+                                                        label={feature.label}
+                                                        checked={field.value}
+                                                        onChange={field.onChange}
+                                                    />
+                                                )}
+                                            />
+                                            <div className="group relative flex items-center ml-2">
+                                                <Info size={16} className="text-blue-500 cursor-help transition-colors hover:text-blue-600" />
+                                                <div className="absolute bottom-full right-[-8px] mb-2 hidden group-hover:block w-56 p-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-md shadow-xl z-50 text-center leading-relaxed">
+                                                    {feature.description}
+                                                    <div className="absolute top-full right-[10px] border-8 border-transparent border-t-gray-900 dark:border-t-white"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </ComponentCard>
 

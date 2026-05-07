@@ -25,6 +25,20 @@ interface PlatformSettings {
   timezone: string;
   gstNumber: string;
   invoicePrefix: string;
+  frontendUrl?: string;
+  notificationEmail?: string;
+}
+
+export interface PlanFeatureDefinition {
+  _id: string;
+  key: string;
+  label: string;
+  systemHook: string;
+  type: 'number' | 'boolean';
+  defaultValue: number | boolean;
+  description: string;
+  isActive: boolean;
+  sortOrder: number;
 }
 
 interface BillingSettings {
@@ -34,11 +48,12 @@ interface BillingSettings {
   maxTrialExtensions: number;
 }
 
-interface SettingsData {
+export interface SettingsData {
   razorpay: RazorpaySettings;
   smtp: SmtpSettings;
   platform: PlatformSettings;
   billing: BillingSettings;
+  planFeatureDefinitions: PlanFeatureDefinition[];
   _id: string;
   createdAt: string;
   updatedAt: string;

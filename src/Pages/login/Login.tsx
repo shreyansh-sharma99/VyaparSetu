@@ -30,9 +30,9 @@ export default function Login() {
 
                     {/* Logo at the top of the graphics card */}
                     <img
-                        src="/image/logos/HeroImage.png"
+                        src="/image/logos/newLogo.png"
                         alt="VyaparSetu Logo"
-                        className="w-full max-w-[250px] pb-8 object-contain drop-shadow-2xl z-10 animate-in fade-in zoom-in duration-1000"
+                        className="w-full max-w-[250px]  object-contain drop-shadow-2xl z-10 animate-in fade-in zoom-in duration-1000"
                     />
 
                     <div className="text-center z-10 mb-8 space-y-4">

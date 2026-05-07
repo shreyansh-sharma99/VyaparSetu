@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Modal, Tabs } from "antd";
+import { Modal, } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
 import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription } from "../admins/services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
 import Select from "../../../components/form/Select";
 import StatusToggle from "../../../components/form/input/StatusToggle";
-import { SendHorizontal, AlertTriangle, CheckCircle, CalendarClock, Ban } from "lucide-react";
+import { SendHorizontal, CheckCircle, CalendarClock, Ban } from "lucide-react";
 
 const AdminManagementList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -278,7 +278,7 @@ const AdminManagementList: React.FC = () => {
                                 </button>
                             );
                         } else if (onboardingStatus === "subscribed") {
-                            const canExtend = !row?.subscription?.trialEndsAt || new Date(row.subscription.trialEndsAt) <= new Date();
+                            const canExtend = row?.canExtend === true;
                             return (
                                 <>
                                     <button onClick={() => handleActionClick(row, "suspend")} className="text-red-600 hover:text-red-800 transition-colors" title="Suspend Account">

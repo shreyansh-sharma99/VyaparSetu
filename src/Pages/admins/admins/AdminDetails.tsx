@@ -5,9 +5,9 @@ import { Tag, Tooltip, Empty, Modal } from 'antd';
 import {
   User, Mail, Building2, MapPin, Shield, Activity, Package, ShoppingCart,
   HardDrive, Layout, BarChart2, Globe, Database, HelpCircle, Download,
-  ShieldCheck, Palette, Smartphone, CalendarClock, ArrowLeft, Loader2,
-  Ban, CheckCircle, CheckCircle2, AlertCircle, Receipt, History, SendHorizontal, MoreVertical,
-  Eye, CreditCard, TrendingUp, FileText, Clock, UserCheck, Settings2
+  ShieldCheck, Palette, Smartphone, CalendarClock, Loader2,
+  Ban, CheckCircle, CheckCircle2, AlertCircle, History, SendHorizontal, MoreVertical,
+  Eye, CreditCard, TrendingUp, FileText, Clock,
 } from 'lucide-react';
 import { formatDateWithTiming } from '../../../components/common/dateFormat';
 import type { AppDispatch, RootState } from '../../../store';
@@ -72,7 +72,6 @@ const AdminDetails: React.FC = () => {
 
   const admin = currentAdmin?.admin;
   const subscriptions = useMemo(() => currentAdmin?.subscriptions || [], [currentAdmin]);
-  const invoices = useMemo(() => currentAdmin?.invoices || [], [currentAdmin]);
 
   const showActions = useMemo(() => location.state?.from === 'AdminManagement', [location.state]);
 
@@ -151,7 +150,7 @@ const AdminDetails: React.FC = () => {
         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400 mb-6"><AlertCircle size={40} /></div>
         <h3 className="text-xl font-bold dark:text-white mb-2">Admin Not Found</h3>
         <p className="text-gray-500 max-w-xs mx-auto mb-8">The requested administrator data could not be retrieved. It may have been deleted or the ID is invalid.</p>
-        <Button variant="danger" onClick={() => navigate(-1)} className="!rounded-2xl px-8 shadow-lg shadow-red-500/20"><ArrowLeft className="mr-2 h-4 w-4" /> Go Back</Button>
+        <Button variant="danger" onClick={() => navigate(-1)} className="!rounded-2xl px-8 shadow-lg shadow-red-500/20"> Go Back</Button>
       </div>
     );
   }
@@ -188,7 +187,7 @@ const AdminDetails: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-4">
-          <div className="flex items-center gap-2 px-2"><div className="w-1.5 h-4 bg-blue-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Contact & Business</h3></div>
+          <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Contact & Business</h3></div>
           <div className="space-y-2 sm:space-y-3 bg-gray-50/30 dark:bg-white/[0.02] p-4 sm:p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
             <InfoItem icon={User} label="Full Name" value={admin.name} colorClass="bg-blue-100 dark:bg-blue-900/30 text-blue-600" />
             <InfoItem icon={Mail} label="Primary Email" value={admin.email} colorClass="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600" />
@@ -197,7 +196,7 @@ const AdminDetails: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-2 px-2"><div className="w-1.5 h-4 bg-amber-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Registered Address</h3></div>
+          <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Registered Address</h3></div>
           <div className="bg-gray-50/30 dark:bg-white/[0.02] p-6 rounded-3xl border border-gray-100 dark:border-gray-800 h-full min-h-[160px] flex items-start shadow-sm">
             <div className="flex gap-4 sm:gap-5">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 mt-1 shadow-sm"><MapPin size={20} className="sm:w-6 sm:h-6" /></div>
@@ -216,7 +215,7 @@ const AdminDetails: React.FC = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="flex items-center gap-2 px-2"><div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Resource Quotas</h3></div>
+          <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-indigo-600 rounded-full shadow-[0_0_8px_rgba(79,70,229,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Resource Quotas</h3></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {effectiveLimits.maxProducts.value !== 0 && effectiveLimits.maxProducts.value !== null && <LimitCard icon={<Package size={18} />} label="Max Products" value={effectiveLimits.maxProducts.value} inherited={effectiveLimits.maxProducts.inherited} planName={admin.plan?.name} />}
             {effectiveLimits.maxOrders.value !== 0 && effectiveLimits.maxOrders.value !== null && <LimitCard icon={<ShoppingCart size={18} />} label="Max Orders" value={effectiveLimits.maxOrders.value} inherited={effectiveLimits.maxOrders.inherited} planName={admin.plan?.name} />}
@@ -228,7 +227,7 @@ const AdminDetails: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="flex items-center gap-2 px-2"><div className="w-1.5 h-4 bg-emerald-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Platform Features</h3></div>
+          <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-emerald-600 rounded-full shadow-[0_0_8px_rgba(5,150,105,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Platform Features</h3></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {Object.entries(admin.plan?.features || {}).map(([key, defaultValue]) => {
               const override = admin.featureOverrides?.[key];
@@ -265,24 +264,19 @@ const AdminDetails: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto px-1 sm:px-0">
+    <div className=" max-w-[1600px] mx-auto px-1 sm:px-0">
       <PageMeta title={`Admin Details | ${admin.name}`} description="View detailed information about business administrator" />
       <ComponentCard
         titleBorder={false}
         title={
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-300">
-              <User size={20} className="sm:w-6 sm:h-6" strokeWidth={3} />
-            </div>
-            <div className="min-w-0">
-              <div className="relative inline-block pr-16 sm:pr-20">
-                <h2 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white tracking-tight truncate leading-tight">{admin.name}</h2>
-                {admin.isActive && admin.subscription?.status === 'active' && (
-                  <span className="absolute -top-1 right-0 flex items-center px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] sm:text-[10px] uppercase tracking-wider border border-emerald-100 dark:border-emerald-800/50 shadow-sm whitespace-nowrap">Active</span>
-                )}
-              </div>
-              <p className="text-[10px] text-gray-400 mt-0.5 truncate max-w-[180px] sm:max-w-none">ID: {admin?._id}</p>
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xl  text-blue-600 dark:text-white">{admin.name}</span>
+            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${admin.isActive
+              ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 shadow-sm shadow-emerald-500/10'
+              : 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 shadow-sm shadow-rose-500/10'
+              }`}>
+              {admin.isActive ? 'Active' : 'Inactive'}
+            </span>
           </div>
         }
         rightButtonNode={
@@ -295,7 +289,7 @@ const AdminDetails: React.FC = () => {
                   ) : (
                     <Button variant="outline" size="xs" onClick={() => handleActionClick("activate")} className="flex items-center gap-2 !text-emerald-500 border-emerald-200 hover:bg-emerald-50 dark:border-emerald-900/30 dark:hover:bg-emerald-900/10 !rounded-xl !px-4"><CheckCircle className="w-4 h-4" /> Activate</Button>
                   )}
-                  {admin.onboardingStatus === "subscribed" && (!admin.subscription?.trialEndsAt || new Date(admin.subscription.trialEndsAt) <= new Date()) && (
+                  {admin.onboardingStatus === "subscribed" && admin.canExtend === true && (
                     <Button variant="outline" size="xs" onClick={() => handleActionClick("extend")} className="flex items-center gap-2 !text-blue-500 border-blue-200 hover:bg-blue-50 dark:border-blue-900/30 dark:hover:bg-blue-900/10 !rounded-xl !px-4"><CalendarClock className="w-4 h-4" /> Extend</Button>
                   )}
                   {admin.onboardingStatus === "pending_subscription" && (
@@ -317,12 +311,12 @@ const AdminDetails: React.FC = () => {
               </div>
             )}
             <Button variant="danger" size="xs" onClick={() => navigate(-1)} className="flex items-center gap-2 !rounded-xl !px-4 shadow-lg shadow-red-500/10">
-              <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back</span>
+              <span className="hidden sm:inline">Back</span>
             </Button>
           </div>
         }
       >
-        <div className="p-1 sm:p-4 mt-0 sm:mt-1">
+        <div className="mt-0 sm:mt-1">
           <Tabs items={[
             { key: 'overview', label: 'Overview', icon: <Layout size={16} />, children: <OverviewTab /> },
             { key: 'usage', label: 'Plan & Usage', icon: <Activity size={16} />, children: <PlanUsageTab /> },
@@ -332,7 +326,7 @@ const AdminDetails: React.FC = () => {
                   {/* Razorpay Summary */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                      <div className="flex items-center gap-2"><div className="w-1.5 h-4 bg-blue-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Razorpay Summary</h3></div>
+                      <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Razorpay Summary</h3></div>
                       <button onClick={() => setRazorpayModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 border border-blue-100 dark:border-blue-900/30">
                         <Eye size={13} /> View Details
                       </button>
@@ -358,7 +352,7 @@ const AdminDetails: React.FC = () => {
                   </div>
                   {/* Subscription History */}
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2 px-1"><div className="w-1.5 h-4 bg-indigo-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Subscription History</h3></div>
+                    <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-indigo-600 rounded-full shadow-[0_0_8px_rgba(79,70,229,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Subscription History</h3></div>
                     {subscriptions.length > 0 ? (
                       <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-white/[0.02] shadow-sm no-scrollbar">
                         <table className="w-full text-left border-collapse min-w-[640px]">
@@ -386,7 +380,7 @@ const AdminDetails: React.FC = () => {
               key: 'audit', label: 'Audit Log', icon: <Clock size={16} />, children: (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2"><div className="w-1.5 h-4 bg-rose-500 rounded-full"></div><h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Activity Timeline</h3></div>
+                    <div className="flex items-center gap-2.5 px-1"><div className="w-1 h-5 bg-rose-600 rounded-full shadow-[0_0_8px_rgba(225,29,72,0.4)]"></div><h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white/90">Activity Timeline</h3></div>
                     <button onClick={() => setAuditModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all duration-200 border border-rose-100 dark:border-rose-900/30">
                       <Eye size={13} /> View All
                     </button>
@@ -394,10 +388,10 @@ const AdminDetails: React.FC = () => {
                   {/* Quick Counts */}
                   {auditLogs?.data?.summary && (
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                      {Object.entries(auditLogs.data.summary.quickCounts as Record<string, number>).filter(([,v]) => v > 0).map(([k, v]) => (
+                      {Object.entries(auditLogs.data.summary.quickCounts as Record<string, number>).filter(([, v]) => v > 0).map(([k, v]) => (
                         <div key={k} className="p-3 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-gray-800 text-center">
                           <p className="text-lg font-semibold text-gray-800 dark:text-white">{v}</p>
-                          <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5 capitalize">{k.replace(/([A-Z])/g,' $1')}</p>
+                          <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5 capitalize">{k.replace(/([A-Z])/g, ' $1')}</p>
                         </div>
                       ))}
                     </div>
@@ -414,7 +408,7 @@ const AdminDetails: React.FC = () => {
                           <div className="ml-2 p-4 rounded-2xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-gray-800 hover:border-rose-200 dark:hover:border-rose-900/30 transition-all duration-200">
                             <div className="flex items-start justify-between gap-2 flex-wrap">
                               <div className="flex items-center gap-2">
-                                <Tag color={log.action === 'created' ? 'green' : log.action === 'extended' ? 'blue' : log.action === 'suspended' ? 'red' : 'default'} className="font-bold uppercase text-[10px] rounded-lg px-2 border-0 m-0">{log.action?.replace(/_/g,' ')}</Tag>
+                                <Tag color={log.action === 'created' ? 'green' : log.action === 'extended' ? 'blue' : log.action === 'suspended' ? 'red' : 'default'} className="font-bold uppercase text-[10px] rounded-lg px-2 border-0 m-0">{log.action?.replace(/_/g, ' ')}</Tag>
                                 <span className="text-[10px] font-semibold uppercase text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">{log.performedBy}</span>
                               </div>
                               <span className="text-[10px] text-gray-400">{formatDateWithTiming(log.createdAt)}</span>
@@ -525,7 +519,7 @@ const AdminDetails: React.FC = () => {
                   <div className="ml-2 p-3 rounded-xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-gray-800">
                     <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
                       <div className="flex items-center gap-1.5">
-                        <Tag color={log.action === 'created' ? 'green' : log.action === 'extended' ? 'blue' : log.action === 'trial_started' ? 'cyan' : log.action === 'suspended' ? 'red' : 'default'} className="uppercase text-[10px] rounded-md px-1.5 border-0 m-0">{log.action?.replace(/_/g,' ')}</Tag>
+                        <Tag color={log.action === 'created' ? 'green' : log.action === 'extended' ? 'blue' : log.action === 'trial_started' ? 'cyan' : log.action === 'suspended' ? 'red' : 'default'} className="uppercase text-[10px] rounded-md px-1.5 border-0 m-0">{log.action?.replace(/_/g, ' ')}</Tag>
                         <span className="text-[10px] uppercase text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full">{log.performedBy}</span>
                       </div>
                       <span className="text-[10px] text-gray-400">{formatDateWithTiming(log.createdAt)}</span>

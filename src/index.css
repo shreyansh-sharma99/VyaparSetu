@@ -38,33 +38,53 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* Page background — deep navy/slate */
+    --background: 222 47% 8%;
+    --foreground: 213 31% 91%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
+    /* Cards & surfaces — noticeably lighter than background */
+    --card: 222 40% 13%;
+    --card-foreground: 213 31% 91%;
+
+    /* Popovers / dropdowns / modals */
+    --popover: 222 40% 13%;
+    --popover-foreground: 213 31% 91%;
+
+    /* Brand */
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 213 31% 91%;
+
+    /* Secondary / muted surfaces */
+    --secondary: 222 35% 18%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 222 35% 18%;
+    --muted-foreground: 215 20% 72%;
+
+    /* Accent */
+    --accent: 222 35% 21%;
+    --accent-foreground: 213 31% 91%;
+
+    /* Destructive */
+    --destructive: 0 63% 42%;
+    --destructive-foreground: 213 31% 91%;
+
+    /* Borders — visible but subtle */
+    --border: 222 30% 22%;
+
+    /* Input backgrounds — slightly lighter than card */
+    --input: 222 38% 17%;
+
+    /* Focus ring */
+    --ring: 217.2 91.2% 59.8%;
+
+    /* Sidebar - Integrated with navy theme */
+    --sidebar-background: 222 47% 4%;
+    --sidebar-foreground: 213 31% 91%;
     --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 240 5.9% 10%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-primary-foreground: 213 31% 91%;
+    --sidebar-accent: 217.2 91.2% 15%;
+    --sidebar-accent-foreground: 217.2 91.2% 59.8%;
+    --sidebar-border: 222 30% 12%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -255,33 +275,43 @@
   }
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  background-color: rgba(38, 84, 164, 0.5);
-  width: 8px;
-  /* keep space reserved */
-  height: 8px;
-  background: transparent;
-}
-
-.scrollbar-hide::-webkit-scrollbar-thumb {
-  background: transparent;
-  /* invisible by default */
-}
-
-/* Show styled scrollbar on hover */
-.hover\:scrollbar-default:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(38, 84, 164, 0.5);
-  border-radius: 9999px;
-}
-
-/* Firefox support */
-.scrollbar-hide {
+/* --- Custom Thin Scrollbar --- */
+* {
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+  scrollbar-color: hsl(var(--border)) transparent;
 }
 
-.hover\:scrollbar-default:hover {
-  scrollbar-color: rgba(38, 84, 164, 0.5) transparent;
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+/* --- Utilities --- */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
 }
 
 /* Truly hide scrollbar */
@@ -292,8 +322,10 @@
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none !important;  /* IE and Edge */
-  scrollbar-width: none !important;  /* Firefox */
+  -ms-overflow-style: none !important;
+  /* IE and Edge */
+  scrollbar-width: none !important;
+  /* Firefox */
 }
 
 
@@ -394,4 +426,33 @@
 
 .ant-pagination-custom .ant-pagination-options-quick-jumper button:hover {
   @apply bg-blue-600 border-blue-600;
+}
+
+/* --- Ant Design Modal Dark Mode Fix --- */
+.dark .ant-modal-content,
+.dark .ant-modal-header {
+  background-color: #0B0F19 !important;
+  /* Premium deep navy */
+  color: #f9fafb !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .ant-modal-title {
+  background-color: transparent !important;
+  color: #f9fafb !important;
+}
+
+.dark .ant-modal-close {
+  color: #98a2b3 !important;
+}
+
+.dark .ant-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+.dark .plan-details-modal .ant-modal-content {
+  background-color: #0B0F19 !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }

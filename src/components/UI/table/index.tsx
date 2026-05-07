@@ -1,4 +1,4 @@
-import type { ReactNode, HTMLAttributes } from "react";
+import type { ReactNode, TdHTMLAttributes } from "react";
 
 // Props for Table
 interface TableProps {
@@ -26,7 +26,7 @@ interface TableRowProps {
 
 // Props for TableCell
 interface TableCellProps
-  extends HTMLAttributes<HTMLTableCellElement> {
+  extends TdHTMLAttributes<HTMLTableCellElement> {
   children?: ReactNode;
   isHeader?: boolean;
   className?: string;

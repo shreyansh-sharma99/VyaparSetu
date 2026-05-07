@@ -24,7 +24,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/layout/tooltip"
-import { encryptData } from "@/utility/crypto"
+// import { encryptData } from "@/utility/crypto"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -44,7 +44,7 @@ type SidebarContextProps = {
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
-console.log(encryptData(localStorage.getItem("vyaparsetu") || ""))
+// console.log(encryptData(localStorage.getItem("vyaparsetu") || ""))
 function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {
@@ -523,13 +523,13 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-2.5 text-left text-[15px] font-medium outline-none ring-sidebar-ring transition-all duration-300 ease-in-out hover:bg-muted/50 hover:text-primary focus-visible:ring-2 active:scale-[0.97] group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-primary/5 data-[active=true]:text-primary data-[active=true]:font-semibold data-[state=open]:hover:bg-muted/50 data-[state=open]:hover:text-primary group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-2.5 group-data-[collapsible=icon]:justify-center [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:transition-colors [&>svg]:duration-300 group-hover/menu-item:[&>svg]:text-primary data-[active=true]:[&>svg]:text-primary group-data-[collapsible=icon]:[&>svg]:size-7 group-data-[collapsible=icon]:[&>span]:hidden",
+  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-xl p-2.5 text-left text-[15px] font-medium outline-none ring-sidebar-ring transition-all duration-300 ease-in-out text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:ring-2 active:scale-[0.97] group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-semibold data-[state=open]:hover:bg-sidebar-accent/50 group-data-[collapsible=icon]:!size-11 group-data-[collapsible=icon]:!p-2.5 group-data-[collapsible=icon]:justify-center [&>svg]:size-5 [&>svg]:shrink-0 [&>svg]:transition-colors [&>svg]:duration-300 group-hover/menu-item:[&>svg]:text-sidebar-accent-foreground data-[active=true]:[&>svg]:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&>svg]:size-7 group-data-[collapsible=icon]:[&>span]:hidden",
   {
     variants: {
       variant: {
-        default: "hover:bg-muted/50 hover:text-primary",
+        default: "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
         outline:
-          "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-muted/50 hover:text-primary hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
+          "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
         default: "h-11 text-[15px]",

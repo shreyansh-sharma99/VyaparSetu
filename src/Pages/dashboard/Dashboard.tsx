@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Users,
@@ -7,20 +7,12 @@ import {
   Package,
   TrendingUp,
   IndianRupee,
-  Activity,
-  CreditCard,
-  UserPlus,
-  RefreshCcw,
-  Calendar,
   CheckCircle2,
   XCircle,
   Clock,
   ChevronRight,
-  PieChart as PieChartIcon,
-  BarChart3,
   AlertCircle,
   Zap,
-  ArrowRightLeft,
   ShieldCheck,
   Receipt,
   Layers,
@@ -38,14 +30,13 @@ import {
   Cell,
   PieChart,
   Pie,
-  Legend,
-  type TooltipProps,
 } from "recharts";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import type { AppDispatch, RootState } from "../../store";
 import { fetchDashboardData } from "./services/dashboardSlice";
 import { formatDateWithTiming } from "../../components/common/dateFormat";
+import Loader from "../../components/UI/Loader";
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e'];
 
@@ -87,13 +78,9 @@ export function Dashboard() {
 
   if (loading && !data) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
-        <div className="relative h-16 w-16">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-100 dark:border-blue-900/20"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-t-blue-600 animate-spin"></div>
-        </div>
-        <p className="text-sm font-medium text-gray-500 animate-pulse">Syncing dashboard data...</p>
-      </div>
+      <ComponentCard title="Dashboard">
+        <Loader />
+      </ComponentCard>
     );
   }
 
@@ -234,26 +221,13 @@ export function Dashboard() {
 
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         {/* Header Card */}
-        <ComponentCard
-          title="Dashboard"
-          desc={`Live System Status • ${formatDateWithTiming(data.generatedAt)}`}
-          rightButtonNode={
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => dispatch(fetchDashboardData())}
-                className="group p-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-95"
-              >
-                <RefreshCcw className={`h-5 w-5 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-              </button>
-            </div>
-          }
-        >
+        <ComponentCard title="Dashboard">
           {/* Hero Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-2">
             {mainStats.map((stat, i) => (
               <div key={i} className="group relative overflow-hidden rounded-3xl border bg-white dark:bg-gray-900 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500">
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} transition-all group-hover:scale-110 group-hover:rotate-3`}>
+                  <div className={`p-3 sm:p-4 rounded-2xl ${stat.bg} ${stat.color} transition-all group-hover:scale-110 group-hover:rotate-3`}>
                     <stat.icon className="h-6 w-6" />
                   </div>
                   {stat.trend && (
@@ -280,11 +254,10 @@ export function Dashboard() {
         {/* Revenue Analytics & Plan Mix */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <ComponentCard
-            title="Revenue Performance"
+            title="Revenue & Transaction Trends"
             className="lg:col-span-8 overflow-hidden"
-            desc="Monthly growth and invoice volume visualization"
           >
-            <div className="h-[400px] w-full mt-6">
+            <div className="h-[300px] sm:h-[400px] w-full mt-6">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData}>
                   <defs>
@@ -364,11 +337,10 @@ export function Dashboard() {
           </ComponentCard>
 
           <ComponentCard
-            title="Revenue by Tenure"
+            title="Revenue Mix by Tenure"
             className="lg:col-span-4"
-            desc="Monthly vs Annual commitment"
           >
-            <div className="h-[300px] w-full mt-6">
+            <div className="h-[250px] sm:h-[300px] w-full mt-6">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -416,7 +388,7 @@ export function Dashboard() {
 
         {/* Collection & Financial Detail */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <ComponentCard title="Collection Pipeline" desc="Current month invoicing status">
+          <ComponentCard title="Receivables & Aging Analysis">
             <div className="space-y-6 mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-3xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
@@ -433,18 +405,40 @@ export function Dashboard() {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-gray-400">Aging (30-60 Days)</span>
+                  <span className="text-gray-400">0-30 Days</span>
+                  <span className="text-gray-900 dark:text-white">₹{invoices.agingBuckets['0_30_days'].inr}</span>
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full"
+                    style={{ width: `${(parseFloat(invoices.agingBuckets['0_30_days'].inr) / (parseFloat(revenue.totalPending.inr) || 1)) * 100}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-gray-400">31-60 Days</span>
                   <span className="text-gray-900 dark:text-white">₹{invoices.agingBuckets['31_60_days'].inr}</span>
                 </div>
                 <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-rose-500 rounded-full"
+                    className="h-full bg-amber-500 rounded-full"
                     style={{ width: `${(parseFloat(invoices.agingBuckets['31_60_days'].inr) / (parseFloat(revenue.totalPending.inr) || 1)) * 100}%` }}
                   />
                 </div>
 
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-gray-400">Aging (90+ Days)</span>
+                  <span className="text-gray-400">61-90 Days</span>
+                  <span className="text-gray-900 dark:text-white">₹{invoices.agingBuckets['61_90_days'].inr}</span>
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-rose-500 rounded-full"
+                    style={{ width: `${(parseFloat(invoices.agingBuckets['61_90_days'].inr) / (parseFloat(revenue.totalPending.inr) || 1)) * 100}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-gray-400">90+ Days</span>
                   <span className="text-gray-900 dark:text-white">₹{invoices.agingBuckets['90_plus_days'].inr}</span>
                 </div>
                 <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
@@ -462,8 +456,8 @@ export function Dashboard() {
             </div>
           </ComponentCard>
 
-          <ComponentCard title="Admin Growth Mix" desc="New registrations by product plan">
-            <div className="h-[250px] w-full mt-4">
+          <ComponentCard title="Registration Mix by Plan">
+            <div className="h-[200px] sm:h-[250px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={admins.byPlan} layout="vertical" margin={{ left: 20 }}>
                   <XAxis type="number" hide />
@@ -498,7 +492,7 @@ export function Dashboard() {
             </div>
           </ComponentCard>
 
-          <ComponentCard title="Platform Health" desc="System reconciliation & events">
+          <ComponentCard title="Platform Vitality & Payments">
             <div className="space-y-6 mt-4">
               <div className="flex items-center gap-4 p-4 rounded-3xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20">
                 <ShieldCheck className="h-8 w-8 text-blue-600" />
@@ -526,13 +520,6 @@ export function Dashboard() {
                   </div>
                 </div>
               </div>
-
-              <div className="pt-2">
-                <button className="w-full py-3 rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold text-xs shadow-xl transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
-                  <ArrowRightLeft className="h-4 w-4" />
-                  Run Reconciliation
-                </button>
-              </div>
             </div>
           </ComponentCard>
         </div>
@@ -541,42 +528,42 @@ export function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Invoices */}
           <div className="lg:col-span-2">
-            <ComponentCard title="Recent Transactions" desc="Latest billing collection events">
+            <ComponentCard title="Latest Billing Activity">
               <div className="overflow-x-auto mt-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-                <table className="w-full text-left min-w-[600px]">
+                <table className="w-full text-left min-w-[600px] border-collapse border border-gray-100 dark:border-white/5">
                   <thead>
-                    <tr className="border-b border-gray-100 dark:border-white/5">
-                      <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Invoice</th>
-                      <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
-                      <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
-                      <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                      <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Date</th>
+                    <tr className="bg-gray-50/50 dark:bg-white/5">
+                      <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Invoice</th>
+                      <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Business</th>
+                      <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Amount</th>
+                      <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Status</th>
+                      <th className="px-4 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right border border-gray-100 dark:border-white/5">Date</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 dark:divide-white/5">
                     {invoices.recentInvoices.slice(0, 6).map((inv) => (
                       <tr key={inv._id} className="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                        <td className="py-4">
+                        <td className="px-4 py-4 border border-gray-100 dark:border-white/5">
                           <div className="flex items-center gap-2">
                             <Receipt className="h-4 w-4 text-gray-400" />
                             <span className="text-xs font-bold text-gray-900 dark:text-white">{inv.invoiceNumber}</span>
                           </div>
                         </td>
-                        <td className="py-4">
+                        <td className="px-4 py-4 border border-gray-100 dark:border-white/5">
                           <p className="text-xs font-bold text-gray-900 dark:text-white truncate max-w-[150px]">{inv.adminId.name}</p>
                           <p className="text-[10px] font-bold text-gray-400">{inv.planId.name}</p>
                         </td>
-                        <td className="py-4">
+                        <td className="px-4 py-4 border border-gray-100 dark:border-white/5">
                           <span className="text-xs font-black text-gray-900 dark:text-white">₹{inv.totalAmount.toLocaleString()}</span>
                         </td>
-                        <td className="py-4">
+                        <td className="px-4 py-4 border border-gray-100 dark:border-white/5">
                           <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-600' :
-                              inv.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400'
+                            inv.status === 'pending' ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400'
                             }`}>
                             {inv.status}
                           </span>
                         </td>
-                        <td className="py-4 text-right">
+                        <td className="px-4 py-4 text-right border border-gray-100 dark:border-white/5">
                           <span className="text-[10px] font-bold text-gray-400">{formatDateWithTiming(inv.createdAt)}</span>
                         </td>
                       </tr>
@@ -591,13 +578,13 @@ export function Dashboard() {
           </div>
 
           {/* Subscriptions Activity */}
-          <ComponentCard title="Subscription Pulse" desc="Recent lifecycle events">
+          <ComponentCard title="Subscription Lifecycle Events">
             <div className="space-y-4 mt-4">
               {subscriptions.recentActivity.slice(0, 6).map((activity) => (
                 <div key={activity._id} className="relative pl-6 pb-6 last:pb-0 border-l-2 border-gray-100 dark:border-white/5">
                   <div className={`absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-white dark:border-gray-900 ${activity.status === 'active' ? 'bg-emerald-500' :
-                      activity.status === 'trialing' ? 'bg-blue-500' :
-                        'bg-rose-500'
+                    activity.status === 'trialing' ? 'bg-blue-500' :
+                      'bg-rose-500'
                     }`} />
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-1">
@@ -609,8 +596,8 @@ export function Dashboard() {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${activity.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                          activity.status === 'trialing' ? 'bg-blue-100 text-blue-700' :
-                            'bg-rose-100 text-rose-700'
+                        activity.status === 'trialing' ? 'bg-blue-100 text-blue-700' :
+                          'bg-rose-100 text-rose-700'
                         }`}>
                         {activity.status}
                       </span>
@@ -626,7 +613,7 @@ export function Dashboard() {
         </div>
 
         {/* Plans Adoption Full Table */}
-        <ComponentCard title="Plan Adoption Details" desc="Usage and capacity by plan tier">
+        <ComponentCard title="Plan Performance & Pricing Breakdown">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
             {plans.adoption.map((plan) => (
               <div key={plan._id} className="p-5 rounded-3xl border border-gray-100 dark:border-white/5 bg-gray-50/30 dark:bg-white/5 hover:border-blue-200 transition-all">
@@ -665,50 +652,37 @@ export function Dashboard() {
         </ComponentCard>
 
         {/* Recent Signups Full Table */}
-        <ComponentCard title="Recent Signups" desc="New business registrations and onboarding status">
+        <ComponentCard title="New Business Registrations">
           <div className="overflow-x-auto mt-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <table className="w-full text-left min-w-[800px]">
+            <table className="w-full text-left min-w-[700px] border-collapse border border-gray-100 dark:border-white/5">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-white/5">
-                  <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Business</th>
-                  <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Admin</th>
-                  <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                  <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan & Tenure</th>
-                  <th className="pb-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Registered At</th>
+                <tr className="bg-gray-50/50 dark:bg-white/5">
+                  <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Business & Admin</th>
+                  <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Subscription Status</th>
+                  <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-white/5">Selected Plan</th>
+                  <th className="px-4 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right border border-gray-100 dark:border-white/5">Registered Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-white/5">
                 {admins.recentSignups.map((signup) => (
                   <tr key={signup._id} className="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                    <td className="py-4">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">{signup.businessName}</p>
-                      <p className="text-[10px] font-bold text-gray-400">{signup.onboardingStatus.replace('_', ' ')}</p>
+                    <td className="px-4 py-5 border border-gray-100 dark:border-white/5">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{signup.businessName}</p>
+                      <p className="text-xs font-medium text-gray-400">{signup.name} • {signup.email}</p>
                     </td>
-                    <td className="py-4">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">{signup.name}</p>
-                      <p className="text-[10px] font-bold text-gray-400">{signup.email}</p>
+                    <td className="px-4 py-5 border border-gray-100 dark:border-white/5">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${signup.subscriptionStatus === 'active' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                        signup.subscriptionStatus === 'trialing' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
+                          'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'
+                        }`}>
+                        {signup.subscriptionStatus}
+                      </span>
                     </td>
-                    <td className="py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className={`w-fit px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${signup.subscriptionStatus === 'active' ? 'bg-emerald-50 text-emerald-600' :
-                            signup.subscriptionStatus === 'trialing' ? 'bg-blue-50 text-blue-600' :
-                              'bg-amber-50 text-amber-600'
-                          }`}>
-                          {signup.subscriptionStatus}
-                        </span>
-                        {signup.trialExtensionsCount > 0 && (
-                          <span className="text-[8px] font-bold text-blue-500 uppercase">
-                            {signup.trialExtensionsCount} Extension(s)
-                          </span>
-                        )}
-                      </div>
+                    <td className="px-4 py-5 border border-gray-100 dark:border-white/5">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{signup.plan?.name || 'Pending'}</p>
                     </td>
-                    <td className="py-4">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">{signup.plan?.name || 'No Plan Selected'}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase">{signup.planTenure || 'N/A'}</p>
-                    </td>
-                    <td className="py-4 text-right">
-                      <span className="text-[10px] font-bold text-gray-400">{formatDateWithTiming(signup.createdAt)}</span>
+                    <td className="px-4 py-5 text-right border border-gray-100 dark:border-white/5">
+                      <span className="text-xs font-bold text-gray-500">{formatDateWithTiming(signup.createdAt)}</span>
                     </td>
                   </tr>
                 ))}

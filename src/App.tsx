@@ -29,6 +29,7 @@ import InvoiceReport from './Pages/reports/invoiceReports/InvoiceReport';
 import RazorpayPayments from './Pages/reports/RazorpayPayments/RazorpayPayments';
 import RazorpaySettlements from './Pages/reports/RazorpaySettlements/RazorpaySettlements';
 import Invoice from './Pages/invoices/Invoice';
+import InvoiceDetails from './Pages/invoices/InvoiceDetails';
 
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -72,6 +73,7 @@ function App() {
           <Route path="/reports/razorpay-payments" element={<RazorpayPayments />} />
           <Route path="/reports/razorpay-settlements" element={<RazorpaySettlements />} />
           <Route path="/Invoices" element={<Invoice />} />
+          <Route path="/Invoices/view/:id" element={<InvoiceDetails />} />
         </Route>
         <Route path="/onboarding" element={<Onboarding />} />
 
