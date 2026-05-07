@@ -56,8 +56,8 @@ export function AppHeader() {
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center">
           <span className="text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-800 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
             {/* {import.meta.env.VITE_PLATFORM_NAME} */}
-            {/* Vyapar<span style={{ color: "#ff5a1f" }}>Setu</span> */}
-            Platform CR2
+            Vyapar<span style={{ color: "#ff5a1f" }}>Setu</span>
+            {/* Platform CR2 */}
           </span>
         </div>
 
