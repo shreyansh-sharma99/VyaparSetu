@@ -273,14 +273,16 @@ const SubscriptionDetails: React.FC = () => {
             <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
               {sub.status !== 'cancelled' && (
                 <>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    onClick={() => handleActionClick("reconcile")}
-                    className="flex items-center gap-2 !text-amber-600 border-amber-200 hover:bg-amber-50 dark:border-amber-900/30 dark:hover:bg-amber-900/10 !rounded-xl !px-3 sm:!px-4"
-                  >
-                    <RefreshCw size={16} /> Reconcile
-                  </Button>
+                  {sub.status !== 'trialing' && (
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      onClick={() => handleActionClick("reconcile")}
+                      className="flex items-center gap-2 !text-amber-600 border-amber-200 hover:bg-amber-50 dark:border-amber-900/30 dark:hover:bg-amber-900/10 !rounded-xl !px-3 sm:!px-4"
+                    >
+                      <RefreshCw size={16} /> Reconcile
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="xs"
