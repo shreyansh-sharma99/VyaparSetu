@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
 import { fetchSubscriptions, setSearchQuery, setStatusFilter, setTenureFilter, setPagination } from "./services/subscriptionSlice";
