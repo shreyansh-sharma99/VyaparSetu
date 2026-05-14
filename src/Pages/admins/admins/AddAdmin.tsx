@@ -68,7 +68,7 @@ const AddAdmin: React.FC = () => {
         try {
             const resultAction = await dispatch(createAdmin(data));
             if (createAdmin.fulfilled.match(resultAction)) {
-                toast.success('Admin created successfully!');
+                toast.success('Client created successfully!');
                 navigate(-1);
             } else {
                 toast.error(resultAction.payload as string || 'Failed to create admin');
@@ -80,10 +80,10 @@ const AddAdmin: React.FC = () => {
 
     return (
         <div className="">
-            <PageMeta title={`Add Admin | ${import.meta.env.VITE_PLATFORM_NAME}`} description="Create a new business administrator" />
+            <PageMeta title={`Add Client | ${import.meta.env.VITE_PLATFORM_NAME}`} description="Create a new business administrator" />
 
             <ComponentCard
-                title="Add New Admin"
+                title="Add New Client"
                 rightButtonNode={
                     <Button variant="danger" size="xs" onClick={() => navigate(-1)}>
                         Back
@@ -249,7 +249,7 @@ const AddAdmin: React.FC = () => {
                                     Creating...
                                 </>
                             ) : (
-                                'Create Admin Account'
+                                'Create Client Account'
                             )}
                         </Button>
                     </div>

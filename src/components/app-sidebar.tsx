@@ -67,12 +67,12 @@ const menuItems: MenuItem[] = [
   //   ],
   // },
   {
-    title: "Admin",
+    title: "Client",
     icon: User,
     url: "#",
     subItems: [
-      { title: "Admin", icon: UserCheck, url: "/Admin" },
-      { title: "Admin Management", icon: Building2, url: "/AdminManagement" },
+      { title: "Client", icon: UserCheck, url: "/Admin" },
+      { title: "Client Management", icon: Building2, url: "/AdminManagement" },
     ],
   },
   {
@@ -139,7 +139,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r bg-sidebar/50 backdrop-blur-xl no-scrollbar">
+    <Sidebar collapsible="icon" className="border-r border-border/10 bg-gradient-to-b from-sidebar via-sidebar/95 to-sidebar/90 backdrop-blur-2xl no-scrollbar shadow-2xl">
       <SidebarHeader className="h-auto py-4 group-data-[collapsible=icon]:h-16 group-data-[collapsible=icon]:py-0 flex items-center justify-center overflow-hidden">
         <div className="flex items-center w-full h-full">
           <div className="flex items-center justify-center w-full h-full group-data-[collapsible=icon]:hidden px-4">
@@ -158,8 +158,8 @@ export function AppSidebar() {
 
       <SidebarContent className="px-3 no-scrollbar">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground/60 group-data-[collapsible=icon]:hidden mb-2">
-            Main Menu
+          <SidebarGroupLabel className="px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground/50 group-data-[collapsible=icon]:hidden mb-3">
+            Main Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
@@ -178,17 +178,25 @@ export function AppSidebar() {
                       >
                         <SidebarMenuItem>
                           <CollapsibleTrigger asChild>
-                            <SidebarMenuButton tooltip={item.title} isActive={isParentActive}>
+                            <SidebarMenuButton
+                              tooltip={item.title}
+                              isActive={isParentActive}
+                              className={isParentActive ? "sidebar-item-active" : ""}
+                            >
                               <item.icon className="h-[18px] w-[18px]" />
                               <span>{item.title}</span>
                               <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-90 opacity-70 group-hover:opacity-100 group-data-[collapsible=icon]:hidden" />
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up overflow-hidden">
-                            <SidebarMenuSub className="mt-1.5 ml-5 border-l-2 border-primary/10">
+                            <SidebarMenuSub className="mt-1.5 ml-6 border-l-[1.5px] border-primary/20 transition-all duration-300">
                               {item.subItems.map((subItem) => (
                                 <SidebarMenuSubItem key={subItem.title} className="group/menu-sub-item">
-                                  <SidebarMenuSubButton asChild isActive={isItemActive(subItem.url)}>
+                                  <SidebarMenuSubButton
+                                    asChild
+                                    isActive={isItemActive(subItem.url)}
+                                    className={isItemActive(subItem.url) ? "sidebar-item-active" : ""}
+                                  >
                                     <Link to={subItem.url} className="flex items-center gap-3">
                                       <subItem.icon className="h-4 w-4 opacity-70 z-999999 group-hover/menu-sub-item:opacity-100" />
                                       <span className="whitespace-nowrap">{subItem.title}</span>
@@ -202,7 +210,12 @@ export function AppSidebar() {
                       </Collapsible>
                     ) : (
                       <SidebarMenuItem>
-                        <SidebarMenuButton asChild tooltip={item.title} isActive={isItemActive(item.url)}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={item.title}
+                          isActive={isItemActive(item.url)}
+                          className={isItemActive(item.url) ? "sidebar-item-active" : ""}
+                        >
                           <Link to={item.url}>
                             <item.icon className="h-[18px] w-[18px]" />
                             <span className="whitespace-nowrap">{item.title}</span>
@@ -218,19 +231,24 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/40 bg-transparent p-4 group-data-[collapsible=icon]:p-3">
-        <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <div className="h-9 w-9 rounded-full bg-[#8A7BFE] flex shrink-0 items-center justify-center text-white text-sm font-semibold shadow-sm">
-            {profile?.name?.charAt(0)?.toUpperCase() || "P"}
+      <SidebarFooter className="border-t border-border/10 bg-sidebar/30 p-5 group-data-[collapsible=icon]:p-3">
+        <div className="flex items-center gap-4 group-data-[collapsible=icon]:justify-center">
+          <div className="relative group/avatar">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-600 flex shrink-0 items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/30 transition-transform duration-300 group-hover/avatar:scale-105">
+              {profile?.name?.charAt(0)?.toUpperCase() || "P"}
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-success-500 shadow-sm" />
           </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-[13px] font-semibold text-sidebar-foreground truncate max-w-[130px] leading-tight">
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden min-w-0">
+            <span className="text-[14px] font-bold text-sidebar-foreground truncate leading-none mb-1">
               {profile?.name || "Platform Owner"}
             </span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">
-              {profile?.role || "OWNER"}
-            </span>
-
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+              <span className="text-[10px] text-muted-foreground/80 uppercase tracking-widest font-black">
+                {profile?.role || "OWNER"}
+              </span>
+            </div>
           </div>
         </div>
       </SidebarFooter>

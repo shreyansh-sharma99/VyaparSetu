@@ -137,6 +137,12 @@ interface InvoiceState {
     fetchingCurrent: boolean;
     submitting: boolean;
     error: string | null;
+    searchQuery: string;
+    statusFilter: string;
+    pagination: {
+        currentPage: number;
+        pageSize: number;
+    };
 }
 
 const initialState: InvoiceState = {
@@ -147,6 +153,12 @@ const initialState: InvoiceState = {
     fetchingCurrent: false,
     submitting: false,
     error: null,
+    searchQuery: "",
+    statusFilter: "all",
+    pagination: {
+        currentPage: 1,
+        pageSize: 10,
+    },
 };
 
 export const fetchInvoices = createAsyncThunk(
@@ -268,6 +280,17 @@ const invoiceSlice = createSlice({
             state.currentInvoice = null;
             state.error = null;
         },
+        setSearchQuery(state, action) {
+            state.searchQuery = action.payload;
+            state.pagination.currentPage = 1;
+        },
+        setStatusFilter(state, action) {
+            state.statusFilter = action.payload;
+            state.pagination.currentPage = 1;
+        },
+        setPagination(state, action) {
+            state.pagination = { ...state.pagination, ...action.payload };
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -333,5 +356,5 @@ const invoiceSlice = createSlice({
     },
 });
 
-export const { clearCurrentInvoice } = invoiceSlice.actions;
+export const { clearCurrentInvoice, setSearchQuery, setStatusFilter, setPagination } = invoiceSlice.actions;
 export default invoiceSlice.reducer;

@@ -79,6 +79,13 @@ interface SubscriptionState {
   submitting: boolean;
   fetchingCurrent: boolean;
   error: string | null;
+  searchQuery: string;
+  statusFilter: string;
+  tenureFilter: string;
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+  };
 }
 
 const initialState: SubscriptionState = {
@@ -89,6 +96,13 @@ const initialState: SubscriptionState = {
   submitting: false,
   fetchingCurrent: false,
   error: null,
+  searchQuery: "",
+  statusFilter: "all",
+  tenureFilter: "all",
+  pagination: {
+    currentPage: 1,
+    pageSize: 10,
+  },
 };
 
 export const fetchSubscriptions = createAsyncThunk(
@@ -218,6 +232,21 @@ const subscriptionSlice = createSlice({
     clearCurrentSubscription: (state) => {
       state.currentSubscription = null;
     },
+    setSearchQuery: (state, action) => {
+      state.searchQuery = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setStatusFilter: (state, action) => {
+      state.statusFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setTenureFilter: (state, action) => {
+      state.tenureFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setPagination: (state, action) => {
+      state.pagination = { ...state.pagination, ...action.payload };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -327,5 +356,5 @@ const subscriptionSlice = createSlice({
   },
 });
 
-export const { clearCurrentSubscription } = subscriptionSlice.actions;
+export const { clearCurrentSubscription, setSearchQuery, setStatusFilter, setTenureFilter, setPagination } = subscriptionSlice.actions;
 export default subscriptionSlice.reducer;

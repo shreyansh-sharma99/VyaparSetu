@@ -43,10 +43,10 @@ const AdminDetailsModal: React.FC<AdminDetailsModalProps> = ({ visible, onClose,
     <Modal
       title={
         loading ? (
-          "Loading Admin Details..."
+          "Loading Client Details..."
         ) : (
           <span className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-2">
-            <User className="w-5 h-5" /> Admin Details: {admin?.name}
+            <User className="w-5 h-5" /> Client Details: {admin?.name}
           </span>
         )
       }

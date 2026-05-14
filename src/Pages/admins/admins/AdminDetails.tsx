@@ -148,7 +148,7 @@ const AdminDetails: React.FC = () => {
     return (
       <div className="p-12 text-center flex flex-col items-center justify-center">
         <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400 mb-6"><AlertCircle size={40} /></div>
-        <h3 className="text-xl font-bold dark:text-white mb-2">Admin Not Found</h3>
+        <h3 className="text-xl font-bold dark:text-white mb-2">Client Not Found</h3>
         <p className="text-gray-500 max-w-xs mx-auto mb-8">The requested administrator data could not be retrieved. It may have been deleted or the ID is invalid.</p>
         <Button variant="danger" onClick={() => navigate(-1)} className="!rounded-2xl px-8 shadow-lg shadow-red-500/20"> Go Back</Button>
       </div>
@@ -265,7 +265,7 @@ const AdminDetails: React.FC = () => {
 
   return (
     <div className=" max-w-[1600px] mx-auto px-1 sm:px-0">
-      <PageMeta title={`Admin Details | ${admin.name}`} description="View detailed information about business administrator" />
+      <PageMeta title={`Client Details | ${admin.name}`} description="View detailed information about business administrator" />
       <ComponentCard
         titleBorder={false}
         title={
@@ -463,7 +463,7 @@ const AdminDetails: React.FC = () => {
         {razorpayData ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-1">
             {[
-              ['Admin', razorpayData.summary?.adminName],
+              ['Client', razorpayData.summary?.adminName],
               ['Email', razorpayData.summary?.adminEmail],
               ['Status', razorpayData.summary?.currentStatus],
               ['Plan', razorpayData.summary?.currentPlan],

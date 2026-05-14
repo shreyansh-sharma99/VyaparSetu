@@ -110,14 +110,14 @@ const EditAdmin: React.FC = () => {
         }
     };
 
-    if (fetchingCurrent) { return (<ComponentCard title="Edit Admin"><Loader /></ComponentCard>); }
+    if (fetchingCurrent) { return (<ComponentCard title="Edit Client"><Loader /></ComponentCard>); }
 
     return (
         <div className="">
-            <PageMeta title={`Edit Admin | ${import.meta.env.VITE_PLATFORM_NAME}`} description="Update business administrator details" />
+            <PageMeta title={`Edit Client | ${import.meta.env.VITE_PLATFORM_NAME}`} description="Update business administrator details" />
 
             <ComponentCard
-                title="Edit Admin Details"
+                title="Edit Client Details"
                 rightButtonNode={
                     <Button variant="danger" size="xs" onClick={() => navigate(-1)}>
                         Back
@@ -283,7 +283,7 @@ const EditAdmin: React.FC = () => {
                                     Updating...
                                 </>
                             ) : (
-                                'Update Admin Account'
+                                'Update Client Account'
                             )}
                         </Button>
                     </div>

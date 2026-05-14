@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins } from "./services/adminSlice";
+import { fetchAdmins, setFilterStatus, setSearchQuery, setPagination } from "./services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
@@ -13,29 +13,28 @@ import StatusToggle from "../../../components/form/input/StatusToggle";
 const AdminsList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { admins, loading, error, meta } = useSelector((state: RootState) => state.admin);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { admins, loading, error, meta, filterStatus, searchQuery, pagination } = useSelector((state: RootState) => state.admin);
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
-    const [searchQuery, setSearchQuery] = useState("");
-    const [status, setStatus] = useState("all");
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [status]);
 
     useEffect(() => {
         dispatch(fetchAdmins({
-            page: currentPage,
-            limit: pageSize,
+            page: pagination.currentPage,
+            limit: pagination.pageSize,
             search: searchQuery,
-            isActive: status === "all" ? undefined : status === "active"
+            isActive: filterStatus === "all" ? undefined : filterStatus === "active"
         }));
-    }, [dispatch, currentPage, pageSize, searchQuery, status]);
+    }, [dispatch, pagination.currentPage, pagination.pageSize, searchQuery, filterStatus]);
 
     const handleSearchChange = (query: string) => {
-        setSearchQuery(query);
-        setCurrentPage(1);
+        dispatch(setSearchQuery(query));
+    };
+
+    const handleStatusChange = (status: string) => {
+        dispatch(setFilterStatus(status));
+    };
+
+    const handlePageChange = (page: number, size?: number) => {
+        dispatch(setPagination({ currentPage: page, pageSize: size || pagination.pageSize }));
     };
 
     useEffect(() => {
@@ -114,7 +113,7 @@ const AdminsList: React.FC = () => {
 
 
     const headers = [
-        { label: "Admin Name", key: "name", value: "checked" as const },
+        { label: "Client Name", key: "name", value: "checked" as const },
         { label: "Email", key: "email", value: "checked" as const },
         { label: "Phone", key: "phone", value: "checked" as const },
         { label: "Business Details", key: "businessInfo", value: "checked" as const },
@@ -124,18 +123,14 @@ const AdminsList: React.FC = () => {
         { label: "Status", key: "statusIcon", value: "checked" as const },
     ];
 
-    const handlePageChange = (page: number, size?: number) => {
-        setCurrentPage(page);
-        if (size) setPageSize(size);
-    };
 
     return (
         <div className="">
-            <PageMeta title="Business Admins | VyaparSetu" description="Manage all business admins on the platform" />
+            <PageMeta title="Business Clients | VyaparSetu" description="Manage all business Clients on the platform" />
             <ComponentCard
-                title="Admin Lists"
+                title="Client Lists"
                 rightButtonNode={
-                    <StatusToggle status={status} onStatusChange={setStatus} />
+                    <StatusToggle status={filterStatus} onStatusChange={handleStatusChange} />
                 }
             >
                 <AdvanceTable
@@ -146,7 +141,7 @@ const AdminsList: React.FC = () => {
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
                     showAddButton={true}
-                    addButtonText="Add Admin"
+                    addButtonText="Add Client"
                     addButtonPath="/Admin/add"
                     onView={handleView}
                     onEdit={handleEdit}
@@ -156,9 +151,9 @@ const AdminsList: React.FC = () => {
                     // onCheckboxToggle={handleToggleStatus}
                     selectedRows={selectedRows}
                     onSelectionChange={setSelectedRows}
-                    currentPage={currentPage}
+                    currentPage={pagination.currentPage}
                     total={meta?.total || 0}
-                    pageSize={pageSize}
+                    pageSize={pagination.pageSize}
                     onPageChange={handlePageChange}
                     maxHeight="calc(100vh - 350px)"
                 />

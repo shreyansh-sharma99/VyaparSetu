@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
-import { fetchSubscriptions } from "./services/subscriptionSlice";
+import { fetchSubscriptions, setSearchQuery, setStatusFilter, setTenureFilter, setPagination } from "./services/subscriptionSlice";
 import { useNavigate } from "react-router-dom";
 import { encryptData } from "@/utility/crypto";
 
@@ -15,41 +15,36 @@ import Select from "../../components/form/Select";
 const Subscription: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { subscriptions, loading, error, meta } = useSelector(
+    const { subscriptions, loading, error, meta, searchQuery, statusFilter, tenureFilter, pagination } = useSelector(
         (state: RootState) => state.subscription
     );
-
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [status, setStatus] = useState("all");
-    const [tenure, setTenure] = useState("all");
-
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [status, tenure, searchQuery]);
 
     useEffect(() => {
         dispatch(
             fetchSubscriptions({
-                page: currentPage,
-                limit: pageSize,
+                page: pagination.currentPage,
+                limit: pagination.pageSize,
                 search: searchQuery,
-                status: status === "all" ? undefined : status,
-                tenure: tenure === "all" ? undefined : tenure,
+                status: statusFilter === "all" ? undefined : statusFilter,
+                tenure: tenureFilter === "all" ? undefined : tenureFilter,
             })
         );
-    }, [dispatch, currentPage, pageSize, searchQuery, status, tenure]);
+    }, [dispatch, pagination.currentPage, pagination.pageSize, searchQuery, statusFilter, tenureFilter]);
 
     const handleSearchChange = (query: string) => {
-        setSearchQuery(query);
+        dispatch(setSearchQuery(query));
+    };
+
+    const handleStatusChange = (val: string) => {
+        dispatch(setStatusFilter(val));
+    };
+
+    const handleTenureChange = (val: string) => {
+        dispatch(setTenureFilter(val));
     };
 
     const handlePageChange = (page: number, size?: number) => {
-        setCurrentPage(page);
-        if (size) setPageSize(size);
+        dispatch(setPagination({ currentPage: page, pageSize: size || pagination.pageSize }));
     };
 
     const handleView = (sub: any) => {
@@ -121,16 +116,16 @@ const Subscription: React.FC = () => {
                         <div className="w-44">
                             <Select
                                 options={statusOptions}
-                                value={status}
-                                onChange={(val) => setStatus(val)}
+                                value={statusFilter}
+                                onChange={handleStatusChange}
                                 placeholder="Filter by Status"
                             />
                         </div>
                         <div className="w-44">
                             <Select
                                 options={tenureOptions}
-                                value={tenure}
-                                onChange={(val) => setTenure(val)}
+                                value={tenureFilter}
+                                onChange={handleTenureChange}
                                 placeholder="Filter by Tenure"
                             />
                         </div>
@@ -145,9 +140,9 @@ const Subscription: React.FC = () => {
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
                     onView={handleView}
-                    currentPage={currentPage}
+                    currentPage={pagination.currentPage}
                     total={meta?.total || 0}
-                    pageSize={pageSize}
+                    pageSize={pagination.pageSize}
                     onPageChange={handlePageChange}
                     maxHeight="calc(100vh - 350px)"
                 />

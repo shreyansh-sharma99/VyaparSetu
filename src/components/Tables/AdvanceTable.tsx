@@ -682,8 +682,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
                             onShowSizeChange={handlePageChange}
                             pageSizeOptions={['10', '20', '50', '100', '500']}
                             className="ant-pagination-custom"
-                            showTotal={(total, range) => (<span className="text-gray-700 dark:text-white">
-                                Showing {range[0]}-{range[1]} of {total} records</span>)} />
+                            showTotal={(total, range) => `Showing ${range[0]}-${range[1]} of ${total} records`} />
                     </div>
                 )}
             </div>

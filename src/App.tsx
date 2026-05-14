@@ -51,27 +51,40 @@ function App() {
 
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/" element={<Dashboard />} />
+          {/* Plans */}
           <Route path="/Plans" element={<Plans />} />
           <Route path="/AddPlans" element={<AddPlans />} />
           <Route path="/EditPlans/:planId" element={<EditPlans />} />
+
+          {/* Admin */}
           <Route path="/Admin" element={<AdminsList />} />
           <Route path="/Admin/add" element={<AddAdmin />} />
           <Route path="/Admin/edit/:adminId" element={<EditAdmin />} />
           <Route path="/Admin/view/:adminId" element={<AdminDetails />} />
           <Route path="/AdminManagement" element={<AdminManagementList />} />
           <Route path="/AdminManagement/view/:adminId" element={<AdminDetails />} />
+
+          {/* Subscription */}
           <Route path="/Subscriptions" element={<Subscription />} />
           <Route path="/Subscriptions/view/:id" element={<SubscriptionDetails />} />
+
+          {/*Settings  */}
           <Route path="/settings" element={<Settings />} />
+
+          {/* Team Member */}
           <Route path="/TeamMembers" element={<TeamMemberList />} />
           <Route path="/TeamMembers/add" element={<AddTeamMember />} />
           <Route path="/TeamMembers/edit/:id" element={<EditTeamMember />} />
+
+          {/* Reports */}
           <Route path="/reports/admin" element={<AdminReport />} />
           <Route path="/reports/revenue" element={<RevenueReport />} />
           <Route path="/reports/subscriptions" element={<SubscriptionReport />} />
           <Route path="/reports/invoices" element={<InvoiceReport />} />
           <Route path="/reports/razorpay-payments" element={<RazorpayPayments />} />
           <Route path="/reports/razorpay-settlements" element={<RazorpaySettlements />} />
+
+          {/* Invoice */}
           <Route path="/Invoices" element={<Invoice />} />
           <Route path="/Invoices/view/:id" element={<InvoiceDetails />} />
         </Route>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import type { AppDispatch, RootState } from "../../store";
-import { fetchInvoices } from "./services/invoiceSlice";
+import { fetchInvoices, setSearchQuery, setStatusFilter, setPagination } from "./services/invoiceSlice";
 import AdvanceTable from "../../components/Tables/AdvanceTable";
 import ComponentCard from "../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../components/common/dateFormat";
@@ -12,26 +12,26 @@ import { encryptData } from "@/utility/crypto";
 const Invoice: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { invoices, loading, error, meta } = useSelector((state: RootState) => state.invoice);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [status, setStatus] = useState("all");
-    const [searchQuery, setSearchQuery] = useState("");
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [status]);
+    const { invoices, loading, error, meta, searchQuery, statusFilter, pagination } = useSelector((state: RootState) => state.invoice);
 
     useEffect(() => {
         dispatch(fetchInvoices({
-            page: currentPage,
-            limit: pageSize,
-            status: status === "all" ? undefined : status
+            page: pagination.currentPage,
+            limit: pagination.pageSize,
+            status: statusFilter === "all" ? undefined : statusFilter
         }));
-    }, [dispatch, currentPage, pageSize, status]);
+    }, [dispatch, pagination.currentPage, pagination.pageSize, statusFilter]);
 
     const handleSearchChange = (query: string) => {
-        setSearchQuery(query);
+        dispatch(setSearchQuery(query));
+    };
+
+    const handleStatusChange = (val: string) => {
+        dispatch(setStatusFilter(val));
+    };
+
+    const handlePageChange = (page: number, size?: number) => {
+        dispatch(setPagination({ currentPage: page, pageSize: size || pagination.pageSize }));
     };
 
     const handleViewInvoice = (id: string) => {
@@ -77,10 +77,6 @@ const Invoice: React.FC = () => {
         { label: "Due Date", key: "dueDateDisplay", value: "checked" as const },
     ];
 
-    const handlePageChange = (page: number, size?: number) => {
-        setCurrentPage(page);
-        if (size) setPageSize(size);
-    };
 
     const statusOptions = [
         { label: "All Status", value: "all" },
@@ -101,8 +97,8 @@ const Invoice: React.FC = () => {
                             {statusOptions.map((opt) => (
                                 <button
                                     key={opt.value}
-                                    onClick={() => setStatus(opt.value)}
-                                    className={`h-full px-4 rounded-md text-sm font-medium transition-all duration-200 ${status === opt.value
+                                    onClick={() => handleStatusChange(opt.value)}
+                                    className={`h-full px-4 rounded-md text-sm font-medium transition-all duration-200 ${statusFilter === opt.value
                                         ? "bg-white dark:bg-blue-600 shadow-sm text-blue-600 dark:text-white"
                                         : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                         }`}
@@ -123,9 +119,9 @@ const Invoice: React.FC = () => {
                     setSearchQuery={handleSearchChange}
                     showAddButton={false}
                     checkboxHeading="Action"
-                    currentPage={currentPage}
+                    currentPage={pagination.currentPage}
                     total={meta?.total || 0}
-                    pageSize={pageSize}
+                    pageSize={pagination.pageSize}
                     onPageChange={handlePageChange}
                     maxHeight="calc(100vh - 350px)"
                     onView={(row: any) => handleViewInvoice(row._id)}

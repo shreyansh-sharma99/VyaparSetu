@@ -118,7 +118,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = (action.payload as string) || 'Login failed. Please try again.';
       })
       .addCase(changePassword.pending, (state) => {
         state.changingPassword = true;

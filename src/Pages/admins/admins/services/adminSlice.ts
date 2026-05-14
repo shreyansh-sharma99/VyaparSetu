@@ -53,6 +53,13 @@ interface AdminState {
   submitting: boolean;
   fetchingCurrent: boolean;
   error: string | null;
+  filterStatus: string;
+  managementStatusFilter: string;
+  searchQuery: string;
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+  };
 }
 
 const initialState: AdminState = {
@@ -67,6 +74,13 @@ const initialState: AdminState = {
   submitting: false,
   fetchingCurrent: false,
   error: null,
+  filterStatus: "all",
+  managementStatusFilter: "all",
+  searchQuery: "",
+  pagination: {
+    currentPage: 1,
+    pageSize: 10,
+  },
 };
 
 export const fetchAdmins = createAsyncThunk("admin/fetchAdmins",
@@ -210,6 +224,21 @@ const adminSlice = createSlice({
       state.currentAdmin = null;
       state.razorpayData = null;
       state.auditLogs = null;
+    },
+    setFilterStatus: (state, action) => {
+      state.filterStatus = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setManagementStatusFilter: (state, action) => {
+      state.managementStatusFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setSearchQuery: (state, action) => {
+      state.searchQuery = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setPagination: (state, action) => {
+      state.pagination = { ...state.pagination, ...action.payload };
     }
   },
   extraReducers: (builder) => {
@@ -293,5 +322,5 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearCurrentAdmin } = adminSlice.actions;
+export const { clearCurrentAdmin, setFilterStatus, setManagementStatusFilter, setSearchQuery, setPagination } = adminSlice.actions;
 export default adminSlice.reducer;

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Modal, } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription } from "../admins/services/adminSlice";
+import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription, setFilterStatus, setManagementStatusFilter, setSearchQuery, setPagination } from "../admins/services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
@@ -17,44 +17,50 @@ import { SendHorizontal, CheckCircle, CalendarClock, Ban } from "lucide-react";
 const AdminManagementList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { admins, loading, error, meta } = useSelector((state: RootState) => state.admin);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const { admins, loading, error, meta, filterStatus, managementStatusFilter, searchQuery, pagination } = useSelector((state: RootState) => state.admin);
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
-    const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
     const [actionModalVisible, setActionModalVisible] = useState(false);
     const [selectedActionAdmin, setSelectedActionAdmin] = useState<any>(null);
     const [actionType, setActionType] = useState<"resend" | "suspend" | "activate" | "extend" | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [extendDays, setExtendDays] = useState<number>(1);
-    const [activeStatus, setActiveStatus] = useState("all");
 
     useEffect(() => {
-        setCurrentPage(1);
-    }, [activeStatus]);
+        const params: any = {
+            page: pagination.currentPage,
+            limit: pagination.pageSize,
+            search: searchQuery
+        };
 
-    useEffect(() => {
-        const params: any = { page: currentPage, limit: pageSize, search: searchQuery };
-
-        if (statusFilter === "pending_subscription") {
+        if (managementStatusFilter === "pending_subscription") {
             params.onboardingStatus = "pending_subscription";
-        } else if (statusFilter === "subscribed") {
+        } else if (managementStatusFilter === "subscribed") {
             params.onboardingStatus = "subscribed";
-        } else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(statusFilter)) {
-            params.subscriptionStatus = statusFilter;
+        } else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(managementStatusFilter)) {
+            params.subscriptionStatus = managementStatusFilter;
         }
 
-        if (activeStatus !== "all") {
-            params.isActive = activeStatus === "active";
+        if (filterStatus !== "all") {
+            params.isActive = filterStatus === "active";
         }
 
         dispatch(fetchAdmins(params));
-    }, [dispatch, currentPage, pageSize, searchQuery, statusFilter, activeStatus]);
+    }, [dispatch, pagination.currentPage, pagination.pageSize, searchQuery, managementStatusFilter, filterStatus]);
 
     const handleSearchChange = (query: string) => {
-        setSearchQuery(query);
-        setCurrentPage(1);
+        dispatch(setSearchQuery(query));
+    };
+
+    const handleStatusFilterChange = (val: string) => {
+        dispatch(setManagementStatusFilter(val));
+    };
+
+    const handleActiveStatusChange = (val: string) => {
+        dispatch(setFilterStatus(val));
+    };
+
+    const handlePageChange = (page: number, size?: number) => {
+        dispatch(setPagination({ currentPage: page, pageSize: size || pagination.pageSize }));
     };
 
     useEffect(() => {
@@ -119,7 +125,7 @@ const AdminManagementList: React.FC = () => {
             } else if (actionType === "suspend") {
                 const resultAction = await dispatch(suspendAdmin(selectedActionAdmin.id));
                 if (suspendAdmin.fulfilled.match(resultAction)) {
-                    toast.success("Admin suspended successfully");
+                    toast.success("Client suspended successfully");
                 } else {
                     toast.error(resultAction.payload as string || "Failed to suspend admin");
                 }
@@ -133,7 +139,7 @@ const AdminManagementList: React.FC = () => {
             } else if (actionType === "activate") {
                 const resultAction = await dispatch(activateAdmin(selectedActionAdmin.id));
                 if (activateAdmin.fulfilled.match(resultAction)) {
-                    toast.success("Admin activated successfully");
+                    toast.success("Client activated successfully");
                 } else {
                     toast.error(resultAction.payload as string || "Failed to activate admin");
                 }
@@ -146,10 +152,14 @@ const AdminManagementList: React.FC = () => {
             setSelectedActionAdmin(null);
             setActionType(null);
             setExtendDays(30);
-            const params: any = { page: currentPage, limit: pageSize, search: searchQuery };
-            if (statusFilter === "pending_subscription") params.onboardingStatus = "pending_subscription";
-            else if (statusFilter === "subscribed") params.onboardingStatus = "subscribed";
-            else if (statusFilter === "expired") params.status = "expired";
+            const params: any = {
+                page: pagination.currentPage,
+                limit: pagination.pageSize,
+                search: searchQuery
+            };
+            if (managementStatusFilter === "pending_subscription") params.onboardingStatus = "pending_subscription";
+            else if (managementStatusFilter === "subscribed") params.onboardingStatus = "subscribed";
+            else if (managementStatusFilter === "expired") params.status = "expired";
             dispatch(fetchAdmins(params));
         }
     };
@@ -199,7 +209,7 @@ const AdminManagementList: React.FC = () => {
 
 
     const headers = [
-        { label: "Admin Name", key: "name", value: "checked" as const },
+        { label: "Client Name", key: "name", value: "checked" as const },
         { label: "Email", key: "email", value: "checked" as const },
         { label: "Phone", key: "phone", value: "checked" as const },
         { label: "Business Details", key: "businessInfo", value: "checked" as const },
@@ -211,21 +221,17 @@ const AdminManagementList: React.FC = () => {
         { label: "Onboarding Status", key: "onboardingStatusBadge", value: "checked" as const }
     ];
 
-    const handlePageChange = (page: number, size?: number) => {
-        setCurrentPage(page);
-        if (size) setPageSize(size);
-    };
 
     return (
         <div className="">
-            <PageMeta title="Business Admins | VyaparSetu" description="Manage all business admins on the platform" />
+            <PageMeta title="Business Clients | VyaparSetu" description="Manage all business Clients on the platform" />
             <ComponentCard
-                title="Admin Management Lists"
+                title="Client Management Lists"
                 rightButtonNode={
                     <div className="flex items-center gap-3">
                         <div className="w-52">
                             <Select
-                                value={statusFilter}
+                                value={managementStatusFilter}
                                 options={[
                                     { label: "All Status", value: "all" },
                                     { label: "Pending Subscription", value: "pending_subscription" },
@@ -236,14 +242,11 @@ const AdminManagementList: React.FC = () => {
                                     { label: "Cancelled", value: "cancelled" },
                                     { label: "Expired", value: "expired" },
                                 ]}
-                                onChange={(val) => {
-                                    setStatusFilter(val);
-                                    setCurrentPage(1);
-                                }}
+                                onChange={handleStatusFilterChange}
                                 placeholder="Filter by Status"
                             />
                         </div>
-                        <StatusToggle status={activeStatus} onStatusChange={setActiveStatus} />
+                        <StatusToggle status={filterStatus} onStatusChange={handleActiveStatusChange} />
 
                     </div>
                 }
@@ -256,7 +259,7 @@ const AdminManagementList: React.FC = () => {
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
                     showAddButton={true}
-                    addButtonText="Add Admin"
+                    addButtonText="Add Client"
                     addButtonPath="/Admin/add"
                     onView={handleView}
                     onEdit={handleEdit}
@@ -303,9 +306,9 @@ const AdminManagementList: React.FC = () => {
                     checkboxHeading="Action"
                     selectedRows={selectedRows}
                     onSelectionChange={setSelectedRows}
-                    currentPage={currentPage}
+                    currentPage={pagination.currentPage}
                     total={meta?.total || 0}
-                    pageSize={pageSize}
+                    pageSize={pagination.pageSize}
                     onPageChange={handlePageChange}
                     maxHeight="calc(100vh - 350px)"
                 />

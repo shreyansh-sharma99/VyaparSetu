@@ -273,6 +273,19 @@
   .glass-dark {
     @apply bg-black/70 backdrop-blur-md border border-white/10 shadow-xl;
   }
+
+  .sidebar-gradient {
+    background: linear-gradient(180deg, hsl(var(--sidebar-background)) 0%, color-mix(in srgb, hsl(var(--sidebar-background)), black 5%) 100%);
+  }
+
+  .sidebar-item-active {
+    @apply relative overflow-hidden;
+  }
+
+  .sidebar-item-active::before {
+    content: '';
+    @apply absolute left-0 top-1/4 h-1/2 w-1 rounded-r-full bg-primary-foreground/40;
+  }
 }
 
 /* --- Custom Thin Scrollbar --- */
@@ -417,7 +430,11 @@
 }
 
 .ant-pagination-custom .ant-pagination-options-quick-jumper input {
-  @apply border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 h-8;
+  @apply border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-100 h-8 !important;
+}
+
+.ant-pagination-custom .ant-pagination-options-quick-jumper {
+  @apply text-gray-700 dark:text-gray-100 !important;
 }
 
 .ant-pagination-custom .ant-pagination-options-quick-jumper button {
@@ -426,6 +443,16 @@
 
 .ant-pagination-custom .ant-pagination-options-quick-jumper button:hover {
   @apply bg-blue-600 border-blue-600;
+}
+
+.ant-pagination-custom .ant-pagination-total-text,
+.ant-pagination-custom .ant-pagination-total-text * {
+  color: #344054 !important;
+}
+
+.dark .ant-pagination-custom .ant-pagination-total-text,
+.dark .ant-pagination-custom .ant-pagination-total-text * {
+  color: #ffffff !important;
 }
 
 /* --- Ant Design Modal Dark Mode Fix --- */
