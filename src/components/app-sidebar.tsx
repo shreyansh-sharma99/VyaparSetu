@@ -18,7 +18,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -156,11 +155,11 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 no-scrollbar">
+      <SidebarContent className=" no-scrollbar">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground/50 group-data-[collapsible=icon]:hidden mb-3">
+          {/* <SidebarGroupLabel className="px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.15em] text-muted-foreground/50 group-data-[collapsible=icon]:hidden mb-3">
             Main Navigation
-          </SidebarGroupLabel>
+          </SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
               {menuItems.map((item) => {
