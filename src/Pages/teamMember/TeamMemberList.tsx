@@ -55,12 +55,15 @@ const TeamMemberList: React.FC = () => {
         id: member._id,
         joinedDate: formatDateWithTiming(member.createdAt),
         status: member.isActive ? "Active" : "Inactive",
+        designation: member.designation ? (typeof member.designation === "object" ? member.designation.name || "—" : member.designation) : "—",
+        roleName: member.role?.roleName || "—",
     }));
 
     const headers = [
         { label: "Name", key: "name", value: "checked" as const },
         { label: "Email", key: "email", value: "checked" as const },
         { label: "Phone", key: "phone", value: "checked" as const },
+        { label: "Role", key: "roleName", value: "checked" as const },
         { label: "Designation", key: "designation", value: "checked" as const },
         { label: "User Type", key: "userType", value: "checked" as const },
         { label: "Joined Date", key: "joinedDate", value: "checked" as const },

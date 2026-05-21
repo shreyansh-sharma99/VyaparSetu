@@ -21,3 +21,15 @@ export const updateTeamMemberService = async (id: string, teamMemberData: any) =
 export const deleteTeamMemberService = async (id: string) => {
     return await Http.delete(`/owner/team/${id}`);
 };
+
+export const getManagersService = async () => {
+    return await Http.get(`/owner/team/list-managers`);
+};
+
+export const getHierarchyService = async () => {
+    return await Http.get(`/owner/team/hierarchy`);
+};
+
+export const getMemberHierarchyService = async (id: string) => {
+    return await Http.get(`/owner/team/${id}/hierarchy`);
+};

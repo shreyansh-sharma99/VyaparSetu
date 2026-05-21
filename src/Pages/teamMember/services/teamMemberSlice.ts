@@ -1,5 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getTeamMembersService, createTeamMemberService, getTeamMemberByIdService, updateTeamMemberService, deleteTeamMemberService } from "./teamMemberService";
+import {
+  getTeamMembersService,
+  createTeamMemberService,
+  getTeamMemberByIdService,
+  updateTeamMemberService,
+  deleteTeamMemberService,
+  getManagersService,
+  getHierarchyService,
+} from "./teamMemberService";
 import { toast } from "react-toastify";
 
 interface TeamMember {
@@ -7,10 +15,11 @@ interface TeamMember {
   name: string;
   email: string;
   phone: string;
-  designation: string;
+  designation: any;
   userType: string;
   permissions: any;
   isActive: boolean;
+  role?: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,13 +27,12 @@ interface TeamMember {
 interface TeamMemberState {
   teamMembers: TeamMember[];
   currentTeamMember: any | null;
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  } | null;
+  managers: any[];
+  hierarchy: any[];
+  meta: { total: number; page: number; limit: number; pages: number } | null;
   loading: boolean;
+  loadingManagers: boolean;
+  loadingHierarchy: boolean;
   submitting: boolean;
   fetchingCurrent: boolean;
   error: string | null;
@@ -33,14 +41,19 @@ interface TeamMemberState {
 const initialState: TeamMemberState = {
   teamMembers: [],
   currentTeamMember: null,
+  managers: [],
+  hierarchy: [],
   meta: null,
   loading: false,
+  loadingManagers: false,
+  loadingHierarchy: false,
   submitting: false,
   fetchingCurrent: false,
   error: null,
 };
 
-export const fetchTeamMembers = createAsyncThunk("teamMember/fetchTeamMembers",
+export const fetchTeamMembers = createAsyncThunk(
+  "teamMember/fetchTeamMembers",
   async ({ page, limit, search }: { page: number; limit: number; search?: string }, { rejectWithValue }) => {
     try {
       const response = await getTeamMembersService(page, limit, search);
@@ -53,7 +66,35 @@ export const fetchTeamMembers = createAsyncThunk("teamMember/fetchTeamMembers",
   }
 );
 
-export const createTeamMember = createAsyncThunk("teamMember/createTeamMember",
+export const fetchManagers = createAsyncThunk(
+  "teamMember/fetchManagers",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getManagersService();
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to fetch managers";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const fetchHierarchy = createAsyncThunk(
+  "teamMember/fetchHierarchy",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getHierarchyService();
+      return response.data.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to fetch hierarchy";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const createTeamMember = createAsyncThunk(
+  "teamMember/createTeamMember",
   async (teamMemberData: any, { rejectWithValue }) => {
     try {
       const response = await createTeamMemberService(teamMemberData);
@@ -67,7 +108,8 @@ export const createTeamMember = createAsyncThunk("teamMember/createTeamMember",
   }
 );
 
-export const fetchTeamMemberById = createAsyncThunk("teamMember/fetchTeamMemberById",
+export const fetchTeamMemberById = createAsyncThunk(
+  "teamMember/fetchTeamMemberById",
   async (id: string, { rejectWithValue }) => {
     try {
       const response = await getTeamMemberByIdService(id);
@@ -80,7 +122,8 @@ export const fetchTeamMemberById = createAsyncThunk("teamMember/fetchTeamMemberB
   }
 );
 
-export const updateTeamMember = createAsyncThunk("teamMember/updateTeamMember",
+export const updateTeamMember = createAsyncThunk(
+  "teamMember/updateTeamMember",
   async ({ id, teamMemberData }: { id: string; teamMemberData: any }, { rejectWithValue }) => {
     try {
       const response = await updateTeamMemberService(id, teamMemberData);
@@ -94,7 +137,8 @@ export const updateTeamMember = createAsyncThunk("teamMember/updateTeamMember",
   }
 );
 
-export const deleteTeamMember = createAsyncThunk("teamMember/deleteTeamMember",
+export const deleteTeamMember = createAsyncThunk(
+  "teamMember/deleteTeamMember",
   async (id: string, { rejectWithValue }) => {
     try {
       await deleteTeamMemberService(id);
@@ -114,14 +158,12 @@ const teamMemberSlice = createSlice({
   reducers: {
     clearCurrentTeamMember: (state) => {
       state.currentTeamMember = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTeamMembers.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      // Fetch list
+      .addCase(fetchTeamMembers.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(fetchTeamMembers.fulfilled, (state, action) => {
         state.loading = false;
         state.teamMembers = action.payload.data;
@@ -131,36 +173,38 @@ const teamMemberSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(createTeamMember.pending, (state) => {
-        state.submitting = true;
+      // Managers
+      .addCase(fetchManagers.pending, (state) => { state.loadingManagers = true; })
+      .addCase(fetchManagers.fulfilled, (state, action) => {
+        state.loadingManagers = false;
+        state.managers = action.payload;
       })
-      .addCase(createTeamMember.fulfilled, (state) => {
-        state.submitting = false;
+      .addCase(fetchManagers.rejected, (state) => { state.loadingManagers = false; })
+      // Hierarchy
+      .addCase(fetchHierarchy.pending, (state) => { state.loadingHierarchy = true; })
+      .addCase(fetchHierarchy.fulfilled, (state, action) => {
+        state.loadingHierarchy = false;
+        state.hierarchy = action.payload;
       })
-      .addCase(createTeamMember.rejected, (state) => {
-        state.submitting = false;
-      })
-      .addCase(fetchTeamMemberById.pending, (state) => {
-        state.fetchingCurrent = true;
-      })
+      .addCase(fetchHierarchy.rejected, (state) => { state.loadingHierarchy = false; })
+      // Create
+      .addCase(createTeamMember.pending, (state) => { state.submitting = true; })
+      .addCase(createTeamMember.fulfilled, (state) => { state.submitting = false; })
+      .addCase(createTeamMember.rejected, (state) => { state.submitting = false; })
+      // Fetch by ID
+      .addCase(fetchTeamMemberById.pending, (state) => { state.fetchingCurrent = true; })
       .addCase(fetchTeamMemberById.fulfilled, (state, action) => {
         state.fetchingCurrent = false;
         state.currentTeamMember = action.payload;
       })
-      .addCase(fetchTeamMemberById.rejected, (state) => {
-        state.fetchingCurrent = false;
-      })
-      .addCase(updateTeamMember.pending, (state) => {
-        state.submitting = true;
-      })
-      .addCase(updateTeamMember.fulfilled, (state) => {
-        state.submitting = false;
-      })
-      .addCase(updateTeamMember.rejected, (state) => {
-        state.submitting = false;
-      })
+      .addCase(fetchTeamMemberById.rejected, (state) => { state.fetchingCurrent = false; })
+      // Update
+      .addCase(updateTeamMember.pending, (state) => { state.submitting = true; })
+      .addCase(updateTeamMember.fulfilled, (state) => { state.submitting = false; })
+      .addCase(updateTeamMember.rejected, (state) => { state.submitting = false; })
+      // Delete
       .addCase(deleteTeamMember.fulfilled, (state, action) => {
-        state.teamMembers = state.teamMembers.filter(member => member._id !== action.payload);
+        state.teamMembers = state.teamMembers.filter((m) => m._id !== action.payload);
       });
   },
 });

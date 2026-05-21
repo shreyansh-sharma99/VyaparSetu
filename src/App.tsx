@@ -22,6 +22,7 @@ import Settings from './Pages/settings/Settings';
 import TeamMemberList from './Pages/teamMember/TeamMemberList';
 import AddTeamMember from './Pages/teamMember/AddTeamMember';
 import EditTeamMember from './Pages/teamMember/EditTeamMember';
+import TeamMemberHierarchy from './Pages/teamMember/TeamMemberHierarchy';
 import AdminReport from './Pages/reports/adminReports/AdminReport';
 import RevenueReport from './Pages/reports/revenueReports/RevenueReport';
 import SubscriptionReport from './Pages/reports/subscriptionReports/SubscriptionReport';
@@ -30,6 +31,10 @@ import RazorpayPayments from './Pages/reports/RazorpayPayments/RazorpayPayments'
 import RazorpaySettlements from './Pages/reports/RazorpaySettlements/RazorpaySettlements';
 import Invoice from './Pages/invoices/Invoice';
 import InvoiceDetails from './Pages/invoices/InvoiceDetails';
+import RoleAndPermissionList from './Pages/RolesAndPermission/RoleAndPermissionList';
+import CreateRolesAndPermission from './Pages/RolesAndPermission/CreateRolesAndPermission';
+import RoleDetails from './Pages/RolesAndPermission/RoleDetails';
+import UpdateRoleAndPermission from './Pages/RolesAndPermission/UpdateRoleAndPermission';
 
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -75,6 +80,7 @@ function App() {
           <Route path="/TeamMembers" element={<TeamMemberList />} />
           <Route path="/TeamMembers/add" element={<AddTeamMember />} />
           <Route path="/TeamMembers/edit/:id" element={<EditTeamMember />} />
+          <Route path="/TeamMembers/hierarchy" element={<TeamMemberHierarchy />} />
 
           {/* Reports */}
           <Route path="/reports/admin" element={<AdminReport />} />
@@ -87,6 +93,12 @@ function App() {
           {/* Invoice */}
           <Route path="/Invoices" element={<Invoice />} />
           <Route path="/Invoices/view/:id" element={<InvoiceDetails />} />
+
+          {/* Roles & Permissions */}
+          <Route path="/roles" element={<RoleAndPermissionList />} />
+          <Route path="/roles/create" element={<CreateRolesAndPermission />} />
+          <Route path="/roles/view/:roleId" element={<RoleDetails />} />
+          <Route path="/roles/edit/:roleId" element={<UpdateRoleAndPermission />} />
         </Route>
         <Route path="/onboarding" element={<Onboarding />} />
 

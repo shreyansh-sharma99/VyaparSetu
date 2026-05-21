@@ -11,6 +11,9 @@ import {
   BarChart3,
   TrendingUp,
   Receipt,
+  ShieldCheck,
+  Shield,
+  GitBranch,
 } from "lucide-react";
 import {
   Sidebar,
@@ -87,7 +90,12 @@ const menuItems: MenuItem[] = [
   {
     title: "Team Members",
     icon: Users,
-    url: "/TeamMembers",
+    url: "#",
+    subItems: [
+      { title: "All Members", icon: Users, url: "/TeamMembers" },
+      { title: "Org Hierarchy", icon: GitBranch, url: "/TeamMembers/hierarchy" },
+      // { title: "Add Member", icon: UserPlus, url: "/TeamMembers/add" },
+    ],
   },
   {
     title: "Reports",
@@ -106,6 +114,15 @@ const menuItems: MenuItem[] = [
     title: "Invoices",
     icon: Receipt,
     url: "/Invoices",
+  },
+  {
+    title: "Roles & Permissions",
+    icon: ShieldCheck,
+    url: "#",
+    subItems: [
+      { title: "All Roles", icon: Shield, url: "/roles" },
+      { title: "Create Role", icon: ShieldCheck, url: "/roles/create" },
+    ],
   },
   {
     title: "Settings",
@@ -135,6 +152,12 @@ export function AppSidebar() {
   const isItemActive = (url: string) => {
     if (url === "/" || url === "#") return location.pathname === url;
     return location.pathname === url || location.pathname.startsWith(url + "/");
+  };
+
+  // Exact match only for sub-items — prevents sibling routes from lighting up
+  const isSubItemActive = (url: string) => {
+    if (url === "/" || url === "#") return location.pathname === url;
+    return location.pathname === url;
   };
 
   return (
@@ -193,8 +216,8 @@ export function AppSidebar() {
                                 <SidebarMenuSubItem key={subItem.title} className="group/menu-sub-item">
                                   <SidebarMenuSubButton
                                     asChild
-                                    isActive={isItemActive(subItem.url)}
-                                    className={isItemActive(subItem.url) ? "sidebar-item-active" : ""}
+                                    isActive={isSubItemActive(subItem.url)}
+                                    className={isSubItemActive(subItem.url) ? "sidebar-item-active" : ""}
                                   >
                                     <Link to={subItem.url} className="flex items-center gap-3">
                                       <subItem.icon className="h-4 w-4 opacity-70 z-999999 group-hover/menu-sub-item:opacity-100" />
