@@ -4,3 +4,8 @@ export const getDashboardData = async () => {
     const response = await apiClient.get('/owner/dashboard');
     return response.data;
 };
+
+export const getTeamDashboardData = async () => {
+    const response = await apiClient.get('/owner/dashboard/team');
+    return response.data;
+};

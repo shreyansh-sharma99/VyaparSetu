@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getDashboardData } from './dashboardServices';
+import { getDashboardData, getTeamDashboardData } from './dashboardServices';
 
 export interface DashboardData {
     generatedAt: string;
@@ -184,14 +184,32 @@ export interface DashboardData {
     };
 }
 
+export interface TeamDashboardData {
+    generatedAt: string;
+    wallet: {
+        cashInHand: number;
+        cashInHandINR: string;
+        pendingApprovalGiven: number;
+        pendingApprovalGivenINR: string;
+        pendingApprovalsToReview: number;
+    };
+    clients: {
+        totalOnboarded: number;
+        onboardedThisMonth: number;
+        recent: any[];
+    };
+}
+
 interface DashboardState {
     data: DashboardData | null;
+    teamData: TeamDashboardData | null;
     loading: boolean;
     error: string | null;
 }
 
 const initialState: DashboardState = {
     data: null,
+    teamData: null,
     loading: false,
     error: null,
 };
@@ -208,6 +226,22 @@ export const fetchDashboardData = createAsyncThunk(
             }
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch dashboard data');
+        }
+    }
+);
+
+export const fetchTeamDashboardData = createAsyncThunk(
+    'dashboard/fetchTeamDashboardData',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await getTeamDashboardData();
+            if (response.success) {
+                return response.data;
+            } else {
+                return rejectWithValue(response.message || 'Failed to fetch team dashboard data');
+            }
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch team dashboard data');
         }
     }
 );
@@ -231,6 +265,18 @@ const dashboardSlice = createSlice({
                 state.data = action.payload;
             })
             .addCase(fetchDashboardData.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchTeamDashboardData.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchTeamDashboardData.fulfilled, (state, action) => {
+                state.loading = false;
+                state.teamData = action.payload;
+            })
+            .addCase(fetchTeamDashboardData.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

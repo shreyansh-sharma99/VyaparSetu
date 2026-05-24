@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal } from 'antd';
+import { Modal, ConfigProvider, theme } from 'antd';
 import { ShieldCheck, User, KeyRound, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -18,6 +18,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
   const dispatch = useDispatch<AppDispatch>();
   const { profile } = useSelector((state: RootState) => state.user);
   const { changingPassword } = useSelector((state: RootState) => state.auth);
+  const currentTheme = useSelector((state: RootState) => state.ui.theme);
+  const isDark = currentTheme === 'dark';
 
   const [step, setStep] = useState<1 | 2>(1);
   const [oldPassword, setOldPassword] = useState("");
@@ -76,16 +78,16 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
     }
 
     if (newPassword.length < 6) {
-        toast.warning("Password must be at least 6 characters long");
-        return;
+      toast.warning("Password must be at least 6 characters long");
+      return;
     }
 
     try {
-      const resultAction = await dispatch(changePassword({ 
-        currentPassword: oldPassword, 
-        newPassword 
+      const resultAction = await dispatch(changePassword({
+        currentPassword: oldPassword,
+        newPassword
       }));
-      
+
       if (changePassword.fulfilled.match(resultAction)) {
         toast.success("Password changed successfully");
         onClose();
@@ -99,24 +101,38 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
   };
 
   return (
-    <Modal
-      title={
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="text-primary" size={20} />
-          <span className="text-xl font-bold">Change Password</span>
-        </div>
-      }
-      open={isOpen}
-      onCancel={() => {
-        onClose();
-        resetForm();
+    <ConfigProvider
+      theme={{
+        algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        components: {
+          Modal: {
+            contentBg: isDark ? '#111827' : '#ffffff',
+            headerBg: isDark ? '#111827' : '#ffffff',
+          },
+        },
       }}
-      footer={null}
-      centered
-      width={450}
-      styles={{ body: { padding: '24px' } }}
     >
-      <div className="space-y-6">
+      <Modal
+        title={
+          <div className={`flex items-center gap-2 ${isDark ? "text-gray-100" : ""}`}>
+            <ShieldCheck className="text-primary" size={20} />
+            <span className="text-xl font-bold">Change Password</span>
+          </div>
+        }
+        open={isOpen}
+        onCancel={() => {
+          onClose();
+          resetForm();
+        }}
+        footer={null}
+        centered
+        width={450}
+        styles={{ body: { padding: '24px' } }}
+        classNames={{
+          header: 'dark:border-b dark:border-gray-800 pb-2',
+        }}
+      >
+        <div className="space-y-6">
         {step === 1 ? (
           <>
             <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 mb-2">
@@ -242,7 +258,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
           </>
         )}
       </div>
-    </Modal>
+      </Modal>
+    </ConfigProvider>
   );
 };
 

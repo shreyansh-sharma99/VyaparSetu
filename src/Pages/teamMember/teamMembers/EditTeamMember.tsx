@@ -4,17 +4,18 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
-  Loader2, User, MapPin, CreditCard, ShieldCheck, ChevronDown,
+  Loader2, ChevronDown,
 } from "lucide-react";
 
-import type { AppDispatch, RootState } from "../../store";
+import type { AppDispatch, RootState } from "../../../store";
 import { updateTeamMember, fetchTeamMemberById, clearCurrentTeamMember, fetchManagers } from "./services/teamMemberSlice";
-import { fetchRoles } from "../RolesAndPermission/services/rolesSlice";
+import { fetchRoles } from "../../RolesAndPermission/services/rolesSlice";
+import { fetchDesignations } from "../designations/services/designationSlice";
 import { decryptData } from "@/utility/crypto";
 
-import ComponentCard from "../../components/common/ComponentCard";
-import Input from "../../components/form/input/InputField";
-import Button from "../../components/UI/button/Button";
+import ComponentCard from "../../../components/common/ComponentCard";
+import Input from "../../../components/form/input/InputField";
+import Button from "../../../components/UI/button/Button";
 import { Label } from "@/components/layout/label";
 import PageMeta from "@/components/common/PageMeta";
 
@@ -86,12 +87,7 @@ const StyledSelect = ({
   );
 };
 
-const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
-  <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-    <div className="p-1.5 rounded-lg bg-primary/10"><Icon size={15} className="text-primary" /></div>
-    <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">{title}</h3>
-  </div>
-);
+
 
 const EditTeamMember: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -101,11 +97,13 @@ const EditTeamMember: React.FC = () => {
   const [decryptedId, setDecryptedId] = useState("");
   const [roleId, setRoleId] = useState("");
   const [reportingManager, setReportingManager] = useState("");
+  const [designationId, setDesignationId] = useState("");
 
   const { currentTeamMember: member, submitting, fetchingCurrent, managers, loadingManagers } = useSelector(
     (state: RootState) => state.teamMember
   );
   const { roles, loading: loadingRoles } = useSelector((state: RootState) => state.roles);
+  const { designations, loading: loadingDesignations } = useSelector((state: RootState) => state.designation);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<EditTeamMemberForm>({
     defaultValues: {
@@ -134,6 +132,7 @@ const EditTeamMember: React.FC = () => {
     }
     dispatch(fetchManagers());
     dispatch(fetchRoles({ page: 1, limit: 100 }));
+    dispatch(fetchDesignations({ page: 1, limit: 100 }));
     return () => { dispatch(clearCurrentTeamMember()); };
   }, [id, dispatch, navigate]);
 
@@ -160,6 +159,7 @@ const EditTeamMember: React.FC = () => {
       });
       setRoleId(member.role?._id || "");
       setReportingManager(member.reportingManager?._id || "");
+      setDesignationId(member.designation?._id || member.designation || "");
     }
   }, [member, reset]);
 
@@ -171,6 +171,10 @@ const EditTeamMember: React.FC = () => {
       label: m.name,
       sub: m.email + (m.userType === "owner" ? " · Owner" : ""),
     }));
+  const designationOptions = (designations || []).map((d: any) => ({
+    value: d._id,
+    label: d.name,
+  }));
 
   const onSubmit = async (data: EditTeamMemberForm) => {
     const payload: any = {
@@ -181,6 +185,7 @@ const EditTeamMember: React.FC = () => {
     };
     if (roleId) payload.roleId = roleId;
     if (reportingManager) payload.reportingManager = reportingManager;
+    if (designationId) payload.designationId = designationId;
 
     const result = await dispatch(updateTeamMember({ id: decryptedId, teamMemberData: payload }));
     if (updateTeamMember.fulfilled.match(result)) navigate("/TeamMembers");
@@ -204,8 +209,7 @@ const EditTeamMember: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4" autoComplete="off">
 
           {/* Basic Info */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={User} title="Basic Information" />
+          <ComponentCard title="Basic Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <Label>Full Name <span className="text-red-500">*</span></Label>
@@ -231,16 +235,25 @@ const EditTeamMember: React.FC = () => {
                   placeholder="9876543210" error={!!errors.phone} hint={errors.phone?.message} />
               </div>
             </div>
-          </div>
+          </ComponentCard>
 
           {/* Role & Manager */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={ShieldCheck} title="Role & Reporting" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <ComponentCard title="Role & Reporting">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
                 <Label>Role</Label>
                 <StyledSelect value={roleId} onChange={setRoleId} options={roleOptions}
                   placeholder="Select a role" loading={loadingRoles} />
+              </div>
+              <div>
+                <Label>Designation</Label>
+                <StyledSelect
+                  value={designationId}
+                  onChange={setDesignationId}
+                  options={designationOptions}
+                  placeholder="Select a designation"
+                  loading={loadingDesignations}
+                />
               </div>
               <div>
                 <Label>Reporting Manager</Label>
@@ -248,11 +261,10 @@ const EditTeamMember: React.FC = () => {
                   options={managerOptions} placeholder="Select manager (optional)" loading={loadingManagers} />
               </div>
             </div>
-          </div>
+          </ComponentCard>
 
           {/* Address */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={MapPin} title="Address" />
+          <ComponentCard title="Address">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="md:col-span-2">
                 <Label>Street</Label>
@@ -263,11 +275,10 @@ const EditTeamMember: React.FC = () => {
               <div><Label>ZIP Code</Label><Input {...register("address.zipCode")} placeholder="400001" /></div>
               <div><Label>Country</Label><Input {...register("address.country")} placeholder="India" /></div>
             </div>
-          </div>
+          </ComponentCard>
 
           {/* Bank Details */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={CreditCard} title="Bank Details" />
+          <ComponentCard title="Bank Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div><Label>Account Holder Name</Label><Input {...register("bankDetails.accountHolderName")} placeholder="John Doe" /></div>
               <div><Label>Account Number</Label><Input {...register("bankDetails.accountNumber")} placeholder="1234567890" /></div>
@@ -275,7 +286,7 @@ const EditTeamMember: React.FC = () => {
               <div><Label>IFSC Code</Label><Input {...register("bankDetails.ifscCode")} placeholder="HDFC0001234" /></div>
               <div><Label>Branch Name</Label><Input {...register("bankDetails.branchName")} placeholder="Andheri West" /></div>
             </div>
-          </div>
+          </ComponentCard>
 
           <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
             <Button variant="outline" type="button" onClick={() => navigate("/TeamMembers")}>Cancel</Button>

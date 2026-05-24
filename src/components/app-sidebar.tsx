@@ -94,7 +94,7 @@ const menuItems: MenuItem[] = [
     subItems: [
       { title: "All Members", icon: Users, url: "/TeamMembers" },
       { title: "Org Hierarchy", icon: GitBranch, url: "/TeamMembers/hierarchy" },
-      // { title: "Add Member", icon: UserPlus, url: "/TeamMembers/add" },
+      { title: "Designations", icon: UserCheck, url: "/designations" },
     ],
   },
   {
@@ -121,7 +121,7 @@ const menuItems: MenuItem[] = [
     url: "#",
     subItems: [
       { title: "All Roles", icon: Shield, url: "/roles" },
-      { title: "Create Role", icon: ShieldCheck, url: "/roles/create" },
+      // { title: "Create Role", icon: ShieldCheck, url: "/roles/create" },
     ],
   },
   {
@@ -142,6 +142,7 @@ export function AppSidebar() {
   const dispatch = useDispatch<AppDispatch>();
   const { profile } = useSelector((state: RootState) => state.user);
   const location = useLocation();
+  // console.log(profile.user.email)
 
   React.useEffect(() => {
     if (!profile) {
@@ -206,7 +207,7 @@ export function AppSidebar() {
                               className={isParentActive ? "sidebar-item-active" : ""}
                             >
                               <item.icon className="h-[18px] w-[18px]" />
-                              <span>{item.title}</span>
+                              <span className="whitespace-nowrap tracking-wide">{item.title}</span>
                               <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-300 group-data-[state=open]/collapsible:rotate-90 opacity-70 group-hover:opacity-100 group-data-[collapsible=icon]:hidden" />
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
@@ -263,12 +264,12 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden min-w-0">
             <span className="text-[14px] font-bold text-sidebar-foreground truncate leading-none mb-1">
-              {profile?.name || "Platform Owner"}
+              {profile?.user?.name || ""}
             </span>
             <div className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-              <span className="text-[10px] text-muted-foreground/80 uppercase tracking-widest font-black">
-                {profile?.role || "OWNER"}
+              <span className="text-[10px] text-muted-foreground/80  tracking-widest font-black">
+                {profile?.user?.email || ""}
               </span>
             </div>
           </div>

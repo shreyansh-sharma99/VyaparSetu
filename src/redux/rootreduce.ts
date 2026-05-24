@@ -8,7 +8,8 @@ import adminReducer from '@/Pages/admins/admins/services/adminSlice';
 import subscriptionReducer from '@/Pages/subscription/services/subscriptionSlice';
 import settingsReducer from '@/Pages/settings/services/settingsSlice';
 
-import teamMemberReducer from '@/Pages/teamMember/services/teamMemberSlice';
+import teamMemberReducer from '@/Pages/teamMember/teamMembers/services/teamMemberSlice';
+import designationReducer from '@/Pages/teamMember/designations/services/designationSlice';
 import dashboardReducer from '@/Pages/dashboard/services/dashboardSlice';
 
 import adminReportReducer from '@/Pages/reports/adminReports/services/adminReportSlice';
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   subscription: subscriptionReducer,
   settings: settingsReducer,
   teamMember: teamMemberReducer,
+  designation: designationReducer,
   dashboard: dashboardReducer,
   adminReport: adminReportReducer,
   revenueReport: revenueReportReducer,

@@ -33,3 +33,7 @@ export const getHierarchyService = async () => {
 export const getMemberHierarchyService = async (id: string) => {
     return await Http.get(`/owner/team/${id}/hierarchy`);
 };
+
+export const toggleTeamMemberStatusService = async (id: string) => {
+    return await Http.post(`/owner/team/${id}/toggle-status`);
+};

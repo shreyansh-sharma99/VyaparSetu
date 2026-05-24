@@ -606,7 +606,7 @@ export default function AdvanceTable<T extends Record<string, any>>({
                                                                     title="Click to toggle full text"
                                                                 >
                                                                     {typeof value === "string" && !expandedCells[`${rowIndex}-${header.key.toString()}`]
-                                                                        ? truncateWords(value, 4)
+                                                                        ? truncateWords(value, 8)
                                                                         : value}
                                                                 </span>
                                                             )}

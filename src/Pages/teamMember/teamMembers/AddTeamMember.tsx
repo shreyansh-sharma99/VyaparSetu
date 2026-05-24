@@ -3,20 +3,18 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import {
-  Loader2, Eye, EyeOff, User, MapPin,
-  CreditCard, ChevronDown, ShieldCheck,
-} from "lucide-react";
+import { Loader2, Eye, EyeOff, ChevronDown, } from "lucide-react";
 
-import type { AppDispatch, RootState } from "../../store";
-import { createTeamMember, fetchManagers } from "./services/teamMemberSlice";
-import { fetchRoles } from "../RolesAndPermission/services/rolesSlice";
+import type { AppDispatch, RootState } from "../../../store";
+import { fetchRoles } from "../../../Pages/RolesAndPermission/services/rolesSlice";
+import { fetchDesignations } from "../designations/services/designationSlice";
 
-import ComponentCard from "../../components/common/ComponentCard";
-import Input from "../../components/form/input/InputField";
-import Button from "../../components/UI/button/Button";
+import ComponentCard from "../../../components/common/ComponentCard";
+import Input from "../../../components/form/input/InputField";
+import Button from "../../../components/UI/button/Button";
 import { Label } from "@/components/layout/label";
 import PageMeta from "@/components/common/PageMeta";
+import { createTeamMember, fetchManagers } from "./services/teamMemberSlice";
 
 interface AddTeamMemberForm {
   name: string;
@@ -25,6 +23,7 @@ interface AddTeamMemberForm {
   confirmPassword: string;
   phone: string;
   roleId: string;
+  designationId: string;
   reportingManager: string;
   address: {
     street: string;
@@ -76,8 +75,8 @@ const StyledSelect = ({
         type="button"
         onClick={() => setOpen((p) => !p)}
         className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-sm transition-all bg-white dark:bg-gray-900 ${error
-            ? "border-red-400 dark:border-red-500"
-            : "border-gray-200 dark:border-gray-700 hover:border-primary/50 focus:border-primary"
+          ? "border-red-400 dark:border-red-500"
+          : "border-gray-200 dark:border-gray-700 hover:border-primary/50 focus:border-primary"
           } ${open ? "border-primary ring-2 ring-primary/20" : ""}`}
       >
         {loading ? (
@@ -107,8 +106,8 @@ const StyledSelect = ({
               type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
               className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex flex-col gap-0.5 ${opt.value === value
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
             >
               <span>{opt.label}</span>
@@ -121,14 +120,7 @@ const StyledSelect = ({
   );
 };
 
-const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
-  <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-    <div className="p-1.5 rounded-lg bg-primary/10">
-      <Icon size={15} className="text-primary" />
-    </div>
-    <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 uppercase tracking-wider">{title}</h3>
-  </div>
-);
+
 
 const AddTeamMember: React.FC = () => {
   const navigate = useNavigate();
@@ -138,9 +130,11 @@ const AddTeamMember: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [roleId, setRoleId] = useState("");
   const [reportingManager, setReportingManager] = useState("");
+  const [designationId, setDesignationId] = useState("");
 
   const { submitting, managers, loadingManagers } = useSelector((state: RootState) => state.teamMember);
   const { roles, loading: loadingRoles } = useSelector((state: RootState) => state.roles);
+  const { designations, loading: loadingDesignations } = useSelector((state: RootState) => state.designation);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<AddTeamMemberForm>({
     defaultValues: {
@@ -153,6 +147,7 @@ const AddTeamMember: React.FC = () => {
   useEffect(() => {
     dispatch(fetchManagers());
     dispatch(fetchRoles({ page: 1, limit: 100 }));
+    dispatch(fetchDesignations({ page: 1, limit: 100 }));
   }, [dispatch]);
 
   const roleOptions = (roles || []).map((r: any) => ({ value: r._id, label: r.roleName, sub: r.description }));
@@ -160,6 +155,10 @@ const AddTeamMember: React.FC = () => {
     value: m._id,
     label: m.name,
     sub: m.email + (m.userType === "owner" ? " · Owner" : ""),
+  }));
+  const designationOptions = (designations || []).map((d: any) => ({
+    value: d._id,
+    label: d.name,
   }));
 
   const onSubmit = async (data: AddTeamMemberForm) => {
@@ -174,6 +173,7 @@ const AddTeamMember: React.FC = () => {
       bankDetails: data.bankDetails,
     };
     if (reportingManager) payload.reportingManager = reportingManager;
+    if (designationId) payload.designationId = designationId;
 
     const result = await dispatch(createTeamMember(payload));
     if (createTeamMember.fulfilled.match(result)) navigate("/TeamMembers");
@@ -190,9 +190,7 @@ const AddTeamMember: React.FC = () => {
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4" autoComplete="off">
 
-          {/* Basic Info */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={User} title="Basic Information" />
+          <ComponentCard title="Basic Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <Label>Full Name <span className="text-red-500">*</span></Label>
@@ -246,13 +244,11 @@ const AddTeamMember: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
+            </div></ComponentCard>
 
           {/* Role & Manager */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={ShieldCheck} title="Role & Reporting" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <ComponentCard title="Role & Reporting">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
                 <Label>Role <span className="text-red-500">*</span></Label>
                 <StyledSelect
@@ -265,6 +261,16 @@ const AddTeamMember: React.FC = () => {
                 />
               </div>
               <div>
+                <Label>Designation</Label>
+                <StyledSelect
+                  value={designationId}
+                  onChange={setDesignationId}
+                  options={designationOptions}
+                  placeholder="Select a designation"
+                  loading={loadingDesignations}
+                />
+              </div>
+              <div>
                 <Label>Reporting Manager</Label>
                 <StyledSelect
                   value={reportingManager}
@@ -274,12 +280,10 @@ const AddTeamMember: React.FC = () => {
                   loading={loadingManagers}
                 />
               </div>
-            </div>
-          </div>
+            </div></ComponentCard>
 
           {/* Address */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={MapPin} title="Address" />
+          <ComponentCard title="Address">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="md:col-span-2">
                 <Label>Street</Label>
@@ -301,12 +305,10 @@ const AddTeamMember: React.FC = () => {
                 <Label>Country</Label>
                 <Input {...register("address.country")} placeholder="India" />
               </div>
-            </div>
-          </div>
+            </div></ComponentCard>
 
           {/* Bank Details */}
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
-            <SectionHeader icon={CreditCard} title="Bank Details" />
+          <ComponentCard title="Bank Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <Label>Account Holder Name</Label>
@@ -329,7 +331,7 @@ const AddTeamMember: React.FC = () => {
                 <Input {...register("bankDetails.branchName")} placeholder="Andheri West" />
               </div>
             </div>
-          </div>
+          </ComponentCard>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">

@@ -105,12 +105,19 @@ const authSlice = createSlice({
         state.loading = false;
         if (action.payload?.data) {
           state.isAuthenticated = true;
-          state.user = action.payload.data.owner || action.payload.data.user;
+          const loggedInUser = action.payload.data.owner || action.payload.data.user;
+          state.user = loggedInUser;
           const token = action.payload.data.accessToken;
 
           if (token) {
             localStorage.setItem('accessToken', token);
           }
+          if (loggedInUser?.userType) {
+            localStorage.setItem('userType', loggedInUser.userType);
+          }
+          
+          const lastLoginAt = loggedInUser?.lastLoginAt || action.payload.data?.lastLoginAt || new Date().toISOString();
+          localStorage.setItem('lastLoginAt', lastLoginAt);
           
           const encryptedString = encryptData(JSON.stringify(action.payload.data));
           localStorage.setItem('vyaparsetu', encryptedString);

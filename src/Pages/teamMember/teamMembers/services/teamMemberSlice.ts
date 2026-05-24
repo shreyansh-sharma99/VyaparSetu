@@ -7,6 +7,7 @@ import {
   deleteTeamMemberService,
   getManagersService,
   getHierarchyService,
+  toggleTeamMemberStatusService,
 } from "./teamMemberService";
 import { toast } from "react-toastify";
 
@@ -152,6 +153,21 @@ export const deleteTeamMember = createAsyncThunk(
   }
 );
 
+export const toggleTeamMemberStatus = createAsyncThunk(
+  "teamMember/toggleTeamMemberStatus",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await toggleTeamMemberStatusService(id);
+      toast.success(response.data?.message || "Status updated successfully");
+      return id;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to update status";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const teamMemberSlice = createSlice({
   name: "teamMember",
   initialState,
@@ -205,6 +221,13 @@ const teamMemberSlice = createSlice({
       // Delete
       .addCase(deleteTeamMember.fulfilled, (state, action) => {
         state.teamMembers = state.teamMembers.filter((m) => m._id !== action.payload);
+      })
+      // Toggle Status
+      .addCase(toggleTeamMemberStatus.fulfilled, (state, action) => {
+        const member = state.teamMembers.find((m) => m._id === action.payload);
+        if (member) {
+          member.isActive = !member.isActive;
+        }
       });
   },
 });

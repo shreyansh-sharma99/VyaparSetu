@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import type { AppDispatch, RootState } from "../../store";
-import { fetchTeamMembers, deleteTeamMember } from "./services/teamMemberSlice";
-import AdvanceTable from "../../components/Tables/AdvanceTable";
-import ComponentCard from "../../components/common/ComponentCard";
-import { formatDateWithTiming } from "../../components/common/dateFormat";
+import type { AppDispatch, RootState } from "../../../store";
+import { fetchTeamMembers, deleteTeamMember, toggleTeamMemberStatus } from "./services/teamMemberSlice";
+import AdvanceTable from "../../../components/Tables/AdvanceTable";
+import ComponentCard from "../../../components/common/ComponentCard";
+import { formatDateWithTiming } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
-import { encryptData } from "../../utility/crypto";
-import { Modal } from "antd";
+import { encryptData } from "../../../utility/crypto";
+import { Modal, Switch } from "antd";
 
 const TeamMemberList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -37,24 +37,40 @@ const TeamMemberList: React.FC = () => {
     };
 
     const handleDelete = (id: string) => {
-        Modal.confirm({
+        const modal = Modal.confirm({
             title: 'Are you sure you want to delete this team member?',
             content: 'This action cannot be undone.',
             okText: 'Delete',
             okType: 'danger',
             cancelText: 'Cancel',
             centered: true,
-            onOk: () => {
-                dispatch(deleteTeamMember(id));
+            onOk: async () => {
+                modal.update({ okText: 'Deleting...' });
+                try {
+                    await dispatch(deleteTeamMember(id)).unwrap();
+                } catch (error) {
+                    modal.update({ okText: 'Delete' });
+                    throw error; // Prevents the modal from closing if there's an error
+                }
             },
         });
+    };
+
+    const handleToggleStatus = (id: string) => {
+        dispatch(toggleTeamMemberStatus(id));
     };
 
     const tableRows = (teamMembers || []).map((member) => ({
         ...member,
         id: member._id,
         joinedDate: formatDateWithTiming(member.createdAt),
-        status: member.isActive ? "Active" : "Inactive",
+        status: (
+            <Switch
+                checked={member.isActive}
+                onChange={() => handleToggleStatus(member._id)}
+                size="small"
+            />
+        ),
         designation: member.designation ? (typeof member.designation === "object" ? member.designation.name || "—" : member.designation) : "—",
         roleName: member.role?.roleName || "—",
     }));

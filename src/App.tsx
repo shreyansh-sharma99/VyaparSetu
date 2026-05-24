@@ -19,10 +19,10 @@ import AdminManagementList from './Pages/admins/adminManagement/AdminManagementL
 import Subscription from './Pages/subscription/Subscription';
 import SubscriptionDetails from './Pages/subscription/SubscriptionDetails';
 import Settings from './Pages/settings/Settings';
-import TeamMemberList from './Pages/teamMember/TeamMemberList';
-import AddTeamMember from './Pages/teamMember/AddTeamMember';
-import EditTeamMember from './Pages/teamMember/EditTeamMember';
-import TeamMemberHierarchy from './Pages/teamMember/TeamMemberHierarchy';
+import TeamMemberList from './Pages/teamMember/teamMembers/TeamMemberList';
+import AddTeamMember from './Pages/teamMember/teamMembers/AddTeamMember';
+import EditTeamMember from './Pages/teamMember/teamMembers/EditTeamMember';
+import TeamMemberHierarchy from './Pages/teamMember/teamMembers/TeamMemberHierarchy';
 import AdminReport from './Pages/reports/adminReports/AdminReport';
 import RevenueReport from './Pages/reports/revenueReports/RevenueReport';
 import SubscriptionReport from './Pages/reports/subscriptionReports/SubscriptionReport';
@@ -35,7 +35,9 @@ import RoleAndPermissionList from './Pages/RolesAndPermission/RoleAndPermissionL
 import CreateRolesAndPermission from './Pages/RolesAndPermission/CreateRolesAndPermission';
 import RoleDetails from './Pages/RolesAndPermission/RoleDetails';
 import UpdateRoleAndPermission from './Pages/RolesAndPermission/UpdateRoleAndPermission';
-
+import DesignationList from './Pages/teamMember/designations/DesignationList';
+import AddDesignation from './Pages/teamMember/designations/AddDesignation';
+import EditDesignation from './Pages/teamMember/designations/EditDesignation';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -81,6 +83,9 @@ function App() {
           <Route path="/TeamMembers/add" element={<AddTeamMember />} />
           <Route path="/TeamMembers/edit/:id" element={<EditTeamMember />} />
           <Route path="/TeamMembers/hierarchy" element={<TeamMemberHierarchy />} />
+          <Route path="/designations" element={<DesignationList />} />
+          <Route path="/designations/add" element={<AddDesignation />} />
+          <Route path="/designations/edit/:id" element={<EditDesignation />} />
 
           {/* Reports */}
           <Route path="/reports/admin" element={<AdminReport />} />
