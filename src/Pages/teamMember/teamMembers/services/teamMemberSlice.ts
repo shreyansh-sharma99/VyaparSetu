@@ -8,6 +8,7 @@ import {
   getManagersService,
   getHierarchyService,
   toggleTeamMemberStatusService,
+  resetTeamMemberPasswordService,
 } from "./teamMemberService";
 import { toast } from "react-toastify";
 
@@ -162,6 +163,21 @@ export const toggleTeamMemberStatus = createAsyncThunk(
       return id;
     } catch (error: any) {
       const message = error.response?.data?.message || "Failed to update status";
+      toast.error(message);
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const resetTeamMemberPassword = createAsyncThunk(
+  "teamMember/resetTeamMemberPassword",
+  async ({ id, newPassword }: { id: string; newPassword: string }, { rejectWithValue }) => {
+    try {
+      const response = await resetTeamMemberPasswordService(id, newPassword);
+      toast.success("Password reset successfully");
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to reset password";
       toast.error(message);
       return rejectWithValue(message);
     }

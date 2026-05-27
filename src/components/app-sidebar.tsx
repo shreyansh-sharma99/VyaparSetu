@@ -11,7 +11,6 @@ import {
   BarChart3,
   TrendingUp,
   Receipt,
-  ShieldCheck,
   Shield,
   GitBranch,
 } from "lucide-react";
@@ -59,15 +58,8 @@ const menuItems: MenuItem[] = [
     url: "/",
     isActive: true,
   },
-  // {
-  //   title: "User",
-  //   icon: User,
-  //   url: "#",
-  //   subItems: [
-  //     { title: "BA", icon: UserCheck, url: "#" },
-  //     { title: "Company", icon: Building2, url: "#" },
-  //   ],
-  // },
+
+  // Core Management
   {
     title: "Client",
     icon: User,
@@ -77,26 +69,37 @@ const menuItems: MenuItem[] = [
       { title: "Client Management", icon: Building2, url: "/AdminManagement" },
     ],
   },
-  {
-    title: "Plans",
-    icon: IndianRupee,
-    url: "/Plans",
-  },
-  {
-    title: "Subscriptions",
-    icon: CreditCard,
-    url: "/Subscriptions",
-  },
+
   {
     title: "Team Members",
     icon: Users,
     url: "#",
     subItems: [
-      { title: "All Members", icon: Users, url: "/TeamMembers" },
+      { title: "Members", icon: Users, url: "/TeamMembers" },
       { title: "Org Hierarchy", icon: GitBranch, url: "/TeamMembers/hierarchy" },
-      { title: "Designations", icon: UserCheck, url: "/designations" },
     ],
   },
+
+  // Plans & Billing
+  {
+    title: "Plans",
+    icon: IndianRupee,
+    url: "/Plans",
+  },
+
+  {
+    title: "Subscriptions",
+    icon: CreditCard,
+    url: "/Subscriptions",
+  },
+
+  {
+    title: "Invoices",
+    icon: Receipt,
+    url: "/Invoices",
+  },
+
+  // Analytics & Reports
   {
     title: "Reports",
     icon: BarChart3,
@@ -106,28 +109,21 @@ const menuItems: MenuItem[] = [
       { title: "Revenue Report", icon: TrendingUp, url: "/reports/revenue" },
       { title: "Subscription Report", icon: CreditCard, url: "/reports/subscriptions" },
       { title: "Invoice Report", icon: Receipt, url: "/reports/invoices" },
-      { title: "Razorepay Payements", icon: IndianRupee, url: "/reports/razorpay-payments" },
-      { title: "Razorepay Settelment", icon: IndianRupee, url: "/reports/razorpay-settlements" },
+      { title: "Razorpay Payments", icon: IndianRupee, url: "/reports/razorpay-payments" },
+      { title: "Razorpay Settlements", icon: IndianRupee, url: "/reports/razorpay-settlements" },
     ],
   },
+
+  // System Configuration
   {
-    title: "Invoices",
-    icon: Receipt,
-    url: "/Invoices",
-  },
-  {
-    title: "Roles & Permissions",
-    icon: ShieldCheck,
+    title: "Master",
+    icon: Settings,
     url: "#",
     subItems: [
-      { title: "All Roles", icon: Shield, url: "/roles" },
-      // { title: "Create Role", icon: ShieldCheck, url: "/roles/create" },
+      { title: "Settings", icon: Settings, url: "/settings" },
+      { title: "Designations", icon: UserCheck, url: "/designations" },
+      { title: "Roles & Permissions", icon: Shield, url: "/roles" },
     ],
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    url: "/settings",
   },
 ];
 
@@ -160,6 +156,8 @@ export function AppSidebar() {
     if (url === "/" || url === "#") return location.pathname === url;
     return location.pathname === url;
   };
+
+  console.log(profile)
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/10 bg-gradient-to-b from-sidebar via-sidebar/95 to-sidebar/90 backdrop-blur-2xl no-scrollbar shadow-2xl">

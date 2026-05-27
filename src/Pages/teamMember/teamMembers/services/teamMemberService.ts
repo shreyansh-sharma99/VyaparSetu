@@ -37,3 +37,7 @@ export const getMemberHierarchyService = async (id: string) => {
 export const toggleTeamMemberStatusService = async (id: string) => {
     return await Http.post(`/owner/team/${id}/toggle-status`);
 };
+
+export const resetTeamMemberPasswordService = async (id: string, newPassword: string) => {
+    return await Http.post(`/owner/team/${id}/reset-password`, { newPassword });
+};

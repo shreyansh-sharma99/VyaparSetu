@@ -3,12 +3,11 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import {
-  Loader2, ChevronDown,
-} from "lucide-react";
+import { Loader2, ChevronDown, Lock } from "lucide-react";
+import { Modal, ConfigProvider, theme } from "antd";
 
 import type { AppDispatch, RootState } from "../../../store";
-import { updateTeamMember, fetchTeamMemberById, clearCurrentTeamMember, fetchManagers } from "./services/teamMemberSlice";
+import { updateTeamMember, fetchTeamMemberById, clearCurrentTeamMember, fetchManagers, resetTeamMemberPassword } from "./services/teamMemberSlice";
 import { fetchRoles } from "../../RolesAndPermission/services/rolesSlice";
 import { fetchDesignations } from "../designations/services/designationSlice";
 import { decryptData } from "@/utility/crypto";
@@ -18,6 +17,7 @@ import Input from "../../../components/form/input/InputField";
 import Button from "../../../components/UI/button/Button";
 import { Label } from "@/components/layout/label";
 import PageMeta from "@/components/common/PageMeta";
+import Loader from "@/components/UI/Loader";
 
 interface EditTeamMemberForm {
   name: string;
@@ -90,9 +90,18 @@ const StyledSelect = ({
 
 
 const EditTeamMember: React.FC = () => {
+  // State for Reset Password modal
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState('NewPass@123');
+  const [confirmPassword, setConfirmPassword] = useState('NewPass@123');
+  const [resetLoading, setResetLoading] = useState(false);
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+
+  const currentTheme = useSelector((state: RootState) => state.ui.theme);
+  const isDark = currentTheme === 'dark';
 
   const [decryptedId, setDecryptedId] = useState("");
   const [roleId, setRoleId] = useState("");
@@ -193,9 +202,9 @@ const EditTeamMember: React.FC = () => {
 
   if (fetchingCurrent) {
     return (
-      <div className="flex h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <ComponentCard title="">
+        <Loader />
+      </ComponentCard>
     );
   }
 
@@ -204,7 +213,14 @@ const EditTeamMember: React.FC = () => {
       <PageMeta title="Edit Team Member | VyaparSetu" description="Edit team member details" />
       <ComponentCard
         title={`Edit: ${member?.name || "Team Member"}`}
-        rightButtonNode={<Button variant="danger" size="xs" onClick={() => navigate(-1)}>Back</Button>}
+        rightButtonNode={
+          <>
+            <Button variant="danger" size="xs" onClick={() => navigate(-1)}>Back</Button>
+            <Button size="xs" className="ml-2" onClick={() => setIsResetModalOpen(true)}>
+              Reset Password
+            </Button>
+          </>
+        }
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4" autoComplete="off">
 
@@ -287,6 +303,79 @@ const EditTeamMember: React.FC = () => {
               <div><Label>Branch Name</Label><Input {...register("bankDetails.branchName")} placeholder="Andheri West" /></div>
             </div>
           </ComponentCard>
+          {/* Reset Password Modal */}
+          <ConfigProvider
+            theme={{
+              algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+              components: {
+                Modal: {
+                  contentBg: isDark ? '#111827' : '#ffffff',
+                  headerBg: isDark ? '#111827' : '#ffffff',
+                },
+              },
+            }}
+          >
+            <Modal
+              title={<div className={`flex items-center gap-2 ${isDark ? "text-gray-100" : ""}`}><Lock className="w-5 h-5 text-primary" /><span className="text-lg font-semibold text-primary">Reset Password</span></div>}
+              open={isResetModalOpen}
+              onCancel={() => setIsResetModalOpen(false)}
+              footer={null}
+              classNames={{
+                header: 'dark:border-b dark:border-gray-800 pb-2',
+              }}
+            >
+              <div className="space-y-4 pt-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 dark:text-gray-200">New Password</label>
+                  <input
+                    type="text"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 outline-none focus:border-primary transition-all"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 dark:text-gray-200">Confirm Password</label>
+                  <input
+                    type="text"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 outline-none focus:border-primary transition-all"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+                {newPassword !== confirmPassword && (
+                  <p className="text-red-500 text-sm">Passwords do not match</p>
+                )}
+                <div className="flex justify-end space-x-2 pt-2">
+                  <Button size="xs" variant="outline" onClick={() => setIsResetModalOpen(false)} disabled={resetLoading}>Cancel</Button>
+                  <Button
+                    variant="primary"
+                    size="xs"
+                    loading={resetLoading}
+                    onClick={async () => {
+                      if (newPassword !== confirmPassword) {
+                        toast.error('Passwords do not match');
+                        return;
+                      }
+                      setResetLoading(true);
+                      try {
+                        const resultAction = await dispatch(resetTeamMemberPassword({ id: decryptedId, newPassword }));
+                        if (resetTeamMemberPassword.fulfilled.match(resultAction)) {
+                          setIsResetModalOpen(false);
+                        }
+                      } catch (e) {
+                        // Error is handled in the thunk
+                      } finally {
+                        setResetLoading(false);
+                      }
+                    }}
+                  >
+                    {resetLoading ? "Resetting..." : "Reset"}
+                  </Button>
+                </div>
+              </div>
+            </Modal>
+          </ConfigProvider>
 
           <div className="flex justify-end gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
             <Button variant="outline" type="button" onClick={() => navigate("/TeamMembers")}>Cancel</Button>
