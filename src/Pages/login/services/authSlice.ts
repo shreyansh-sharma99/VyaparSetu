@@ -92,7 +92,7 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
-      localStorage.clear(); 
+      localStorage.clear();
     },
   },
   extraReducers: (builder) => {
@@ -115,10 +115,7 @@ const authSlice = createSlice({
           if (loggedInUser?.userType) {
             localStorage.setItem('userType', loggedInUser.userType);
           }
-          
-          const lastLoginAt = loggedInUser?.lastLoginAt || action.payload.data?.lastLoginAt || new Date().toISOString();
-          localStorage.setItem('lastLoginAt', lastLoginAt);
-          
+
           const encryptedString = encryptData(JSON.stringify(action.payload.data));
           localStorage.setItem('vyaparsetu', encryptedString);
         }

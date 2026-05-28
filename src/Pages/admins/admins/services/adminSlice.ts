@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getAdminsService, createAdminService, getAdminByIdService, updateAdminService, deleteAdminService, resendOnboardingService, suspendAdminService, activateAdminService, extendSubscriptionService, getAdminRazorpayService, getAdminAuditLogsService } from "./adminService";
+import { getAdminsService, createAdminService, getAdminByIdService, updateAdminService, deleteAdminService, resendOnboardingService, suspendAdminService, activateAdminService, extendSubscriptionService, getAdminRazorpayService, getAdminAuditLogsService, assignCashPlanService } from "./adminService";
 import { toast } from "react-toastify";
 
 interface Admin {
@@ -216,6 +216,18 @@ export const fetchAdminAuditLogs = createAsyncThunk("admin/fetchAdminAuditLogs",
   }
 );
 
+export const assignCashPlan = createAsyncThunk("admin/assignCashPlan",
+  async ({ id, planData }: { id: string; planData: any }, { rejectWithValue }) => {
+    try {
+      const response = await assignCashPlanService(id, planData);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || "Failed to assign cash plan";
+      return rejectWithValue(message);
+    }
+  }
+);
+
 const adminSlice = createSlice({
   name: "admin",
   initialState,
@@ -318,6 +330,18 @@ const adminSlice = createSlice({
       })
       .addCase(fetchAdminAuditLogs.rejected, (state) => {
         state.fetchingAuditLogs = false;
+      })
+      .addCase(assignCashPlan.pending, (state) => {
+        state.submitting = true;
+      })
+      .addCase(assignCashPlan.fulfilled, (state, action) => {
+        state.submitting = false;
+        if (state.currentAdmin && state.currentAdmin.admin) {
+          state.currentAdmin.admin.planId = action.payload?.data?.planId;
+        }
+      })
+      .addCase(assignCashPlan.rejected, (state) => {
+        state.submitting = false;
       });
   },
 });

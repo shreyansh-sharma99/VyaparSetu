@@ -38,6 +38,12 @@ import UpdateRoleAndPermission from './Pages/RolesAndPermission/UpdateRoleAndPer
 import DesignationList from './Pages/teamMember/designations/DesignationList';
 import AddDesignation from './Pages/teamMember/designations/AddDesignation';
 import EditDesignation from './Pages/teamMember/designations/EditDesignation';
+import CashWallet from './Pages/cash/CashWallet';
+import CashLedger from './Pages/cash/CashLedger';
+import CashReport from './Pages/cash/CashReport';
+import HelpDesk from './Pages/HelpDesk/helpDeskManagement/HelpDesk';
+import HelpDeskStats from './Pages/HelpDesk/helpDeskManagement/HelpDeskStats';
+import HelpDeskDetails from './Pages/HelpDesk/helpDeskManagement/HelpDeskDetails';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -104,6 +110,16 @@ function App() {
           <Route path="/roles/create" element={<CreateRolesAndPermission />} />
           <Route path="/roles/view/:roleId" element={<RoleDetails />} />
           <Route path="/roles/edit/:roleId" element={<UpdateRoleAndPermission />} />
+
+          {/* Cash Management */}
+          <Route path="/Cash/wallet" element={<CashWallet />} />
+          <Route path="/Cash/ledger" element={<CashLedger />} />
+          <Route path="/Cash/report/:userId" element={<CashReport />} />
+
+          {/* HelpDesk */}
+          <Route path="/HelpDesk" element={<HelpDesk />} />
+          <Route path="/HelpDesk/stats" element={<HelpDeskStats />} />
+          <Route path="/HelpDesk/view/:id" element={<HelpDeskDetails />} />
         </Route>
         <Route path="/onboarding" element={<Onboarding />} />
 

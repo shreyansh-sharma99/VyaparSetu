@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Users,
@@ -74,15 +74,6 @@ export function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { data, loading, error } = useSelector((state: RootState) => state.dashboard);
-
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const currentUserType = user?.userType || localStorage.getItem('userType');
 
@@ -241,39 +232,7 @@ export function Dashboard() {
 
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
         {/* Header Card */}
-        <ComponentCard 
-          title="Dashboard"
-          rightButtonNode={
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500/10 to-blue-500/5 dark:from-blue-500/20 dark:to-blue-500/10 border border-blue-200/50 dark:border-blue-500/20 rounded-xl shadow-sm backdrop-blur-sm transition-all hover:shadow-md">
-                <div className="p-1 sm:p-1.5 bg-blue-500/20 rounded-lg">
-                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div className="flex flex-col justify-center">
-                  <span className="text-[9px] uppercase tracking-widest font-black text-blue-600/70 dark:text-blue-400/70 leading-none mb-1">
-                    {currentTime.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-                  </span>
-                  <span className="font-mono text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300 tracking-tight leading-none">
-                    {currentTime.toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
-              
-              {localStorage.getItem('lastLoginAt') && (
-                <div className="hidden sm:flex items-center px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 dark:from-emerald-500/20 dark:to-emerald-500/10 border border-emerald-200/50 dark:border-emerald-500/20 rounded-xl shadow-sm backdrop-blur-sm transition-all hover:shadow-md">
-                  <div className="flex flex-col justify-center">
-                    <span className="text-[9px] uppercase tracking-widest font-black text-emerald-600/70 dark:text-emerald-400/70 leading-none mb-1">
-                      Last Login
-                    </span>
-                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 leading-none">
-                      {new Date(localStorage.getItem('lastLoginAt') as string).toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          }
-        >
+        <ComponentCard title="Dashboard">
           {/* Hero Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-2">
             {mainStats.map((stat, i) => (

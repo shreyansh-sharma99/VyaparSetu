@@ -13,6 +13,10 @@ import {
   Receipt,
   Shield,
   GitBranch,
+  Wallet,
+  Book,
+  Headphones,
+  Ticket,
 } from "lucide-react";
 import {
   Sidebar,
@@ -50,6 +54,15 @@ interface MenuItem {
   isActive?: boolean;
   subItems?: SubItem[];
 }
+
+const getInitials = (name?: string) => {
+  if (!name) return "AD";
+  const parts = name.trim().split(" ");
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
 
 const menuItems: MenuItem[] = [
   {
@@ -99,6 +112,16 @@ const menuItems: MenuItem[] = [
     url: "/Invoices",
   },
 
+  {
+    title: "Cash Management",
+    icon: Wallet,
+    url: "#",
+    subItems: [
+      { title: "Wallet", icon: Wallet, url: "/Cash/wallet" },
+      { title: "Ledger", icon: Book, url: "/Cash/ledger" },
+    ],
+  },
+
   // Analytics & Reports
   {
     title: "Reports",
@@ -111,6 +134,17 @@ const menuItems: MenuItem[] = [
       { title: "Invoice Report", icon: Receipt, url: "/reports/invoices" },
       { title: "Razorpay Payments", icon: IndianRupee, url: "/reports/razorpay-payments" },
       { title: "Razorpay Settlements", icon: IndianRupee, url: "/reports/razorpay-settlements" },
+    ],
+  },
+
+  // Help Desk
+  {
+    title: "Help Desk",
+    icon: Headphones,
+    url: "#",
+    subItems: [
+      { title: "Dashboard Stats", icon: BarChart3, url: "/HelpDesk/stats" },
+      { title: "Tickets", icon: Ticket, url: "/HelpDesk" },
     ],
   },
 
@@ -183,7 +217,7 @@ export function AppSidebar() {
             Main Navigation
           </SidebarGroupLabel> */}
           <SidebarGroupContent>
-            <SidebarMenu className="gap-2 group-data-[collapsible=icon]:items-center">
+            <SidebarMenu className="gap-1.5 group-data-[collapsible=icon]:items-center">
               {menuItems.map((item) => {
                 const isParentActive = item.subItems
                   ? item.subItems.some(sub => isItemActive(sub.url))
@@ -256,7 +290,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-4 group-data-[collapsible=icon]:justify-center">
           <div className="relative group/avatar">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-600 flex shrink-0 items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/30 transition-transform duration-300 group-hover/avatar:scale-105">
-              {profile?.name?.charAt(0)?.toUpperCase() || "P"}
+              {getInitials(profile?.user?.name)}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-success-500 shadow-sm" />
           </div>

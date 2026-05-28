@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getSettings, updateSettings } from './settingsService';
+import { getSettings, updateSettings, updatePlanFeatureDefinitions } from './settingsService';
 
 interface RazorpaySettings {
   keyId: string;
@@ -103,6 +103,21 @@ export const updateSettingsAction = createAsyncThunk(
   }
 );
 
+export const updatePlanFeaturesAction = createAsyncThunk(
+  'settings/updatePlanFeatures',
+  async (data: any, { rejectWithValue }) => {
+    try {
+      const response = await updatePlanFeatureDefinitions(data);
+      if (response.success) {
+        return response.data;
+      }
+      return rejectWithValue(response.message || 'Failed to update plan feature definitions');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Update failed');
+    }
+  }
+);
+
 const settingsSlice = createSlice({
   name: 'settings',
   initialState,
@@ -130,6 +145,18 @@ const settingsSlice = createSlice({
         state.settings = action.payload;
       })
       .addCase(updateSettingsAction.rejected, (state, action) => {
+        state.updating = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updatePlanFeaturesAction.pending, (state) => {
+        state.updating = true;
+        state.error = null;
+      })
+      .addCase(updatePlanFeaturesAction.fulfilled, (state, action) => {
+        state.updating = false;
+        state.settings = action.payload;
+      })
+      .addCase(updatePlanFeaturesAction.rejected, (state, action) => {
         state.updating = false;
         state.error = action.payload as string;
       });

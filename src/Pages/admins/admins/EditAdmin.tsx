@@ -16,6 +16,11 @@ import { Label } from '@/components/layout/label';
 import PageMeta from '@/components/common/PageMeta';
 import { Loader2 } from 'lucide-react';
 import { decryptData } from '@/utility/crypto';
+// import { Loader } from '@/components/UI/Loader';
+import { Modal, ConfigProvider, theme } from 'antd';
+import { assignCashPlan } from './services/adminSlice';
+import { getPlans } from '../../Plans/services/PlanServices';
+import { getManagersService } from '../../teamMember/teamMembers/services/teamMemberService';
 import Loader from '@/components/UI/Loader';
 
 interface AdminFormData {
@@ -49,8 +54,47 @@ const EditAdmin: React.FC = () => {
 
     const [decryptedId, setDecryptedId] = useState<string>('');
     const { currentAdmin, submitting, fetchingCurrent } = useSelector((state: RootState) => state.admin);
+    const currentTheme = useSelector((state: any) => state.ui?.theme);
+    const isDark = currentTheme === 'dark';
 
     const { register, handleSubmit, control, reset, formState: { errors } } = useForm<AdminFormData>();
+
+    // Cash Plan state
+    const [isCashPlanModalOpen, setIsCashPlanModalOpen] = useState(false);
+    const [plansList, setPlansList] = useState<any[]>([]);
+    const [managersList, setManagersList] = useState<any[]>([]);
+    const [fetchingCashPlanData, setFetchingCashPlanData] = useState(false);
+
+    const {
+        register: registerCash,
+        handleSubmit: handleCashSubmit,
+        control: controlCash,
+        reset: resetCash,
+        setValue: setCashValue,
+        watch: watchCash,
+        formState: { errors: cashErrors }
+    } = useForm({
+        defaultValues: {
+            planId: '',
+            tenure: '',
+            paidAt: new Date().toISOString().split('T')[0],
+            note: 'Cash received from client at office',
+            collectedBy: ''
+        }
+    });
+
+    const selectedPlanId = watchCash('planId');
+
+    // Compute dynamic tenure options based on selected plan
+    const selectedPlan = plansList.find(p => p._id === selectedPlanId);
+    const tenureOptions = selectedPlan?.billingCycles
+        ?.filter((c: any) => c.isEnabled)
+        .map((c: any) => ({ label: c.label, value: c.tenure })) || [];
+
+    useEffect(() => {
+        // Reset tenure when plan changes
+        setCashValue('tenure', '');
+    }, [selectedPlanId, setCashValue]);
 
     useEffect(() => {
         if (adminId) {
@@ -110,6 +154,45 @@ const EditAdmin: React.FC = () => {
         }
     };
 
+    const openCashPlanModal = async () => {
+        setFetchingCashPlanData(true);
+        try {
+            const [plansRes, managersRes] = await Promise.all([
+                getPlans(),
+                getManagersService()
+            ]);
+
+            if (plansRes?.data) {
+                setPlansList(plansRes.data);
+            }
+            if (managersRes?.data?.data) {
+                setManagersList(managersRes.data.data);
+            }
+            setIsCashPlanModalOpen(true);
+        } catch (error) {
+            toast.error("Failed to load required data for Cash Plan");
+        } finally {
+            setFetchingCashPlanData(false);
+        }
+    };
+
+    const onCashPlanSubmit = async (data: any) => {
+        try {
+            const resultAction = await dispatch(assignCashPlan({ id: decryptedId, planData: data }));
+            if (assignCashPlan.fulfilled.match(resultAction)) {
+                toast.success('Cash Plan assigned successfully!');
+                setIsCashPlanModalOpen(false);
+                resetCash();
+                // Refresh admin data
+                dispatch(fetchAdminById(decryptedId));
+            } else {
+                toast.error(resultAction.payload as string || 'Failed to assign Cash Plan');
+            }
+        } catch (error) {
+            toast.error('An unexpected error occurred');
+        }
+    };
+
     if (fetchingCurrent) { return (<ComponentCard title="Edit Client"><Loader /></ComponentCard>); }
 
     return (
@@ -119,9 +202,22 @@ const EditAdmin: React.FC = () => {
             <ComponentCard
                 title="Edit Client Details"
                 rightButtonNode={
-                    <Button variant="danger" size="xs" onClick={() => navigate(-1)}>
-                        Back
-                    </Button>
+                    <div className="flex gap-2">
+                        {currentAdmin?.admin && !currentAdmin.admin.planId && !currentAdmin.admin.plan && (
+                            <Button
+                                variant="primary"
+                                size="xs"
+                                onClick={openCashPlanModal}
+                                disabled={fetchingCashPlanData}
+                            >
+                                {fetchingCashPlanData ? <Loader2 className="w-4 h-4 animate-spin mr-1 inline" /> : null}
+                                Cash Plan
+                            </Button>
+                        )}
+                        <Button variant="danger" size="xs" onClick={() => navigate(-1)}>
+                            Back
+                        </Button>
+                    </div>
                 }
             >
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
@@ -289,6 +385,124 @@ const EditAdmin: React.FC = () => {
                     </div>
                 </form>
             </ComponentCard>
+
+            {/* Cash Plan Modal */}
+            <ConfigProvider
+                theme={{
+                    algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                    components: {
+                        Modal: {
+                            contentBg: isDark ? '#0B0F19' : '#ffffff',
+                            headerBg: isDark ? '#0B0F19' : '#ffffff',
+                        },
+                    },
+                }}
+            >
+                <Modal
+                    title={<span className="text-xl font-bold text-blue-600 dark:text-blue-400">Assign Cash Plan</span>}
+                    open={isCashPlanModalOpen}
+                    onCancel={() => setIsCashPlanModalOpen(false)}
+                    footer={null}
+                    destroyOnClose
+                    width={700}
+                    classNames={{
+                        header: 'dark:bg-[#0B0F19] dark:border-b dark:border-gray-800 pb-2',
+                        body: 'dark:bg-[#0B0F19]',
+                    }}
+                >
+                    <form onSubmit={handleCashSubmit(onCashPlanSubmit)} className="mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {/* Row 1 */}
+                            <div>
+                                <Label>Select Plan <span className="text-red-500">*</span></Label>
+                                <Controller
+                                    name="planId"
+                                    control={controlCash}
+                                    rules={{ required: 'Plan is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={plansList.map(p => ({ label: p.name, value: p._id }))}
+                                            placeholder="Select a plan"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!cashErrors.planId}
+                                        />
+                                    )}
+                                />
+                                {cashErrors.planId && <span className="text-xs text-red-500">{cashErrors.planId.message}</span>}
+                            </div>
+
+                            <div>
+                                <Label>Tenure <span className="text-red-500">*</span></Label>
+                                <Controller
+                                    name="tenure"
+                                    control={controlCash}
+                                    rules={{ required: 'Tenure is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={tenureOptions}
+                                            placeholder="Select tenure"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!cashErrors.tenure}
+                                            disabled={!selectedPlanId}
+                                        />
+                                    )}
+                                />
+                                {cashErrors.tenure && <span className="text-xs text-red-500">{cashErrors.tenure.message}</span>}
+                            </div>
+
+                            {/* Row 2 */}
+                            <div>
+                                <Label>Paid At</Label>
+                                <Input
+                                    {...registerCash('paidAt')}
+                                    type="date"
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <Label>Collected By <span className="text-red-500">*</span></Label>
+                                <Controller
+                                    name="collectedBy"
+                                    control={controlCash}
+                                    rules={{ required: 'Collected by is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={managersList.map(m => ({ label: `${m.name} (${m.userType})`, value: m._id }))}
+                                            placeholder="Select team member"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!cashErrors.collectedBy}
+                                        />
+                                    )}
+                                />
+                                {cashErrors.collectedBy && <span className="text-xs text-red-500">{cashErrors.collectedBy.message}</span>}
+                            </div>
+
+                            {/* Row 3 - Full Width */}
+                            <div className="col-span-1 md:col-span-2">
+                                <Label>Note</Label>
+                                <TextArea
+                                    {...registerCash('note')}
+                                    rows={2}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-800">
+                            <Button variant="outline" type="button" onClick={() => setIsCashPlanModalOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" type="submit" disabled={submitting}>
+                                {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                                {submitting ? 'Assigning...' : 'Assign Plan'}
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+            </ConfigProvider>
         </div>
     );
 };

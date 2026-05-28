@@ -53,3 +53,7 @@ export const getAdminRazorpayService = async (id: string) => {
 export const getAdminAuditLogsService = async (id: string, page: number = 1, limit: number = 20) => {
     return await Http.get(`/owner/admins/${id}/audit-logs?page=${page}&limit=${limit}`);
 };
+
+export const assignCashPlanService = async (id: string, planData: any) => {
+    return await Http.post(`/owner/admins/${id}/assign-cash-plan`, planData);
+};

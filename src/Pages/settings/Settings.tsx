@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import { fetchSettings, updateSettingsAction } from "./services/settingsSlice";
+import { fetchSettings, updateSettingsAction, updatePlanFeaturesAction } from "./services/settingsSlice";
 import type { PlanFeatureDefinition } from "./services/settingsSlice";
 import { fetchUserProfile } from "@/Pages/login/services/userSlice";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -130,7 +130,24 @@ const Settings: React.FC = () => {
 
   const handleFeatureSave = async () => {
     try {
-      const values = await featureForm.validateFields();
+      const formValues = await featureForm.validateFields();
+
+      let generatedKey = formValues.label
+        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word: string, index: number) => {
+          return index === 0 ? word.toLowerCase() : word.toUpperCase();
+        })
+        .replace(/\s+/g, '');
+
+      const values = {
+        ...(editingFeature || EMPTY_FEATURE),
+        ...formValues,
+      };
+
+      if (!editingFeature) {
+        values.key = generatedKey;
+        // Backend enforces a strict enum for systemHook. New UI features must default to "none"
+        values.systemHook = "none";
+      }
 
       // Convert string boolean back to actual boolean if type is boolean
       if (values.type === 'boolean' && typeof values.defaultValue === 'string') {
@@ -149,8 +166,8 @@ const Settings: React.FC = () => {
         updatedDefs = [...currentDefs, { ...values, _id: undefined }];
       }
 
-      const resultAction = await dispatch(updateSettingsAction({ planFeatureDefinitions: updatedDefs }));
-      if (updateSettingsAction.fulfilled.match(resultAction)) {
+      const resultAction = await dispatch(updatePlanFeaturesAction({ planFeatureDefinitions: updatedDefs }));
+      if (updatePlanFeaturesAction.fulfilled.match(resultAction)) {
         toast.success(editingFeature ? "Feature definition updated." : "Feature definition added.");
         setIsFeatureModalOpen(false);
         dispatch(fetchSettings());
@@ -167,8 +184,8 @@ const Settings: React.FC = () => {
     const updatedDefs = currentDefs.map(d =>
       d._id === feature._id ? { ...d, isActive: checked } : d
     );
-    const resultAction = await dispatch(updateSettingsAction({ planFeatureDefinitions: updatedDefs }));
-    if (updateSettingsAction.fulfilled.match(resultAction)) {
+    const resultAction = await dispatch(updatePlanFeaturesAction({ planFeatureDefinitions: updatedDefs }));
+    if (updatePlanFeaturesAction.fulfilled.match(resultAction)) {
       toast.success(`"${feature.label}" ${checked ? "activated" : "deactivated"}.`);
       dispatch(fetchSettings());
     } else {
@@ -197,6 +214,7 @@ const Settings: React.FC = () => {
   if (!settings) return null;
 
   const renderTable = (title: string, sectionKey: string, data: Record<string, any>) => {
+    if (!data) return null;
     const keys = Object.keys(data).filter(key => key !== "_id" && key !== "__v");
 
     return (

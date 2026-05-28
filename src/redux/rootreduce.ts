@@ -20,6 +20,8 @@ import razorpayPaymentsReducer from '@/Pages/reports/RazorpayPayments/services/r
 import razorpaySettlementsReducer from '@/Pages/reports/RazorpaySettlements/services/razorpaySettlementsSlice';
 import invoiceReducer from '@/Pages/invoices/services/invoiceSlice';
 import rolesReducer from '@/Pages/RolesAndPermission/services/rolesSlice';
+import cashReducer from '@/Pages/cash/services/cashSlice';
+import helpDeskReducer from '@/Pages/HelpDesk/services/helpDeskSlice';
 
 const rootReducer = combineReducers({
   ui: uiReducer,
@@ -40,6 +42,8 @@ const rootReducer = combineReducers({
   razorpaySettlements: razorpaySettlementsReducer,
   invoice: invoiceReducer,
   roles: rolesReducer,
+  cash: cashReducer,
+  helpDesk: helpDeskReducer,
 });
 
 export default rootReducer;

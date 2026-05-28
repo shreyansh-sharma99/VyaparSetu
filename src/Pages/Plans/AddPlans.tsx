@@ -53,10 +53,10 @@ interface PlanFormData {
     isActive: boolean;
     basePrice: number | string;
     currency: string;
-    trial: {
-        enabled: boolean;
-        durationDays: number | string;
-    };
+    // trial: {
+    //     enabled: boolean;
+    //     durationDays: number | string;
+    // };
     billingCycles: BillingCycle[];
     accessMode: string;
     capabilities: Record<string, any>;
@@ -81,7 +81,7 @@ const AddPlans: React.FC = () => {
             isActive: true,
             basePrice: '',
             currency: 'INR',
-            trial: { enabled: false, durationDays: 0 },
+            // trial: { enabled: false, durationDays: 0 },
             billingCycles: [
                 { tenure: 'monthly', label: 'Monthly', durationMonths: 1, discountPercent: '', isEnabled: false },
                 { tenure: 'quarterly', label: 'Quarterly', durationMonths: 3, discountPercent: '', isEnabled: false },
@@ -103,7 +103,7 @@ const AddPlans: React.FC = () => {
         }
     }, [schema, setValue]);
 
-    const trialEnabled = watch('trial.enabled');
+    // const trialEnabled = watch('trial.enabled');
 
     const onSubmit = async (data: PlanFormData) => {
         const hasEnabledCycle = data.billingCycles.some(cycle => cycle.isEnabled);
@@ -116,10 +116,10 @@ const AddPlans: React.FC = () => {
             ...data,
             isActive: true,
             basePrice: Number(data.basePrice) * 100,
-            trial: {
-                ...data.trial,
-                durationDays: data.trial.enabled ? Number(data.trial.durationDays) : 0
-            },
+            // trial: {
+            //     ...data.trial,
+            //     durationDays: data.trial.enabled ? Number(data.trial.durationDays) : 0
+            // },
             billingCycles: data.billingCycles.map(cycle => ({
                 ...cycle,
                 discountPercent: cycle.isEnabled ? Number(cycle.discountPercent || 0) : 0
@@ -300,7 +300,7 @@ const AddPlans: React.FC = () => {
                     </ComponentCard>
 
                     {/* Trial & Discounts */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <ComponentCard title="Trial Settings">
                             <div className="space-y-4">
                                 <Controller
@@ -331,7 +331,7 @@ const AddPlans: React.FC = () => {
                                 )}
                             </div>
                         </ComponentCard>
-                    </div>
+                    </div> */}
 
                     {/* Access Mode */}
                     <ComponentCard title="Access Configuration">

@@ -12,11 +12,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/layout/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/layout/avatar";
+import { Avatar, AvatarFallback } from "@/components/layout/avatar";
 import type { RootState, AppDispatch } from "@/store";
 import { toggleTheme } from "@/store/slices/uiSlice";
 import { logoutUser } from "@/Pages/login/services/authSlice";
 import ChangePasswordModal from "./common/ChangePasswordModal";
+
+const getInitials = (name?: string) => {
+  if (!name) return "AD";
+  const parts = name.trim().split(" ");
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+};
 
 export function AppHeader() {
   const dispatch = useDispatch<AppDispatch>();
@@ -53,8 +62,8 @@ export function AppHeader() {
           </Button>
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center">
-          <span className="text-[28px] font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-800 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
+        <div onClick={() => navigate("/Dashboard")} className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center">
+          <span className="text-[28px] font-extrabold cursor-pointer tracking-tight bg-gradient-to-r from-primary to-blue-800 bg-clip-text text-transparent transform hover:scale-[1.02] transition-transform duration-300">
             {/* {import.meta.env.VITE_PLATFORM_NAME} */}
             Vyapar<span style={{ color: "#ff5a1f" }}>Setu</span>
             {/* Platform CR2 */}
@@ -89,8 +98,9 @@ export function AppHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 hover:border-primary/30 transition-all">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="/avatar.png" alt={profile?.name || "User"} />
-                    <AvatarFallback>{profile?.name?.charAt(0) || "AD"}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {getInitials(profile?.user?.name)}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -98,10 +108,10 @@ export function AppHeader() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {profile?.name || "Admin User"}
+                      {profile?.user?.name || "Admin User"}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {profile?.email || "admin@vyaparsetu.com"}
+                      {profile?.user?.email || "admin@vyaparsetu.com"}
                     </p>
                   </div>
                 </DropdownMenuLabel>
