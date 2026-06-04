@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getCashLedger, getCashReport, approveHandover, rejectHandover, getCashWallet } from './cashService';
+import { getCashLedger, getCashReport, approveHandover, rejectHandover, getCashWallet, initiateHandover } from './cashService';
 
 export interface LedgerItem {
   _id: string;
@@ -35,6 +35,12 @@ export interface WalletData {
   pendingApprovalCash: number;
   cashToApprove: number;
   cashToApproveCount: number;
+  incomingRequests?: any[];
+  outgoingRequests?: any[];
+  handovers?: any[];
+  collections?: any[];
+  recentHandovers?: any[];
+  recentCollections?: any[];
 }
 
 interface CashState {
@@ -47,6 +53,7 @@ interface CashState {
   walletLoading: boolean;
   actionLoading: boolean;
   error: string | null;
+  reportError: string | null;
 }
 
 const initialState: CashState = {
@@ -59,6 +66,7 @@ const initialState: CashState = {
   walletLoading: false,
   actionLoading: false,
   error: null,
+  reportError: null,
 };
 
 export const fetchCashLedger = createAsyncThunk(
@@ -136,6 +144,21 @@ export const handleRejectHandover = createAsyncThunk(
   }
 );
 
+export const handleInitiateHandover = createAsyncThunk(
+  'cash/initiateHandover',
+  async (payload: { amount: number; toUserId?: string; notes?: string }, { rejectWithValue }) => {
+    try {
+      const response = await initiateHandover(payload);
+      if (response.success) {
+        return response.data;
+      }
+      return rejectWithValue(response.message || 'Failed to initiate handover');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Something went wrong');
+    }
+  }
+);
+
 const cashSlice = createSlice({
   name: 'cash',
   initialState,
@@ -158,15 +181,16 @@ const cashSlice = createSlice({
       // Report
       .addCase(fetchCashReport.pending, (state) => {
         state.reportLoading = true;
-        state.error = null;
+        state.reportError = null;
       })
       .addCase(fetchCashReport.fulfilled, (state, action) => {
         state.reportLoading = false;
         state.report = action.payload;
+        state.reportError = null; // Clear on success
       })
       .addCase(fetchCashReport.rejected, (state, action) => {
         state.reportLoading = false;
-        state.error = action.payload as string;
+        state.reportError = action.payload as string;
       })
       // Wallet
       .addCase(fetchCashWallet.pending, (state) => {
@@ -200,6 +224,17 @@ const cashSlice = createSlice({
         state.actionLoading = false;
       })
       .addCase(handleRejectHandover.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.error = action.payload as string;
+      })
+      // Initiate Handover
+      .addCase(handleInitiateHandover.pending, (state) => {
+        state.actionLoading = true;
+      })
+      .addCase(handleInitiateHandover.fulfilled, (state) => {
+        state.actionLoading = false;
+      })
+      .addCase(handleInitiateHandover.rejected, (state, action) => {
         state.actionLoading = false;
         state.error = action.payload as string;
       });

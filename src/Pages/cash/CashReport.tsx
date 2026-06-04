@@ -9,13 +9,15 @@ import PageMeta from "@/components/common/PageMeta";
 import { decryptData } from "../../utility/crypto";
 import { formatDateWithTiming } from "../../components/common/dateFormat";
 import { toast } from "react-toastify";
+import { Loader2 } from "lucide-react";
 
 const CashReport: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const { userId } = useParams<{ userId: string }>();
-    const { report, reportLoading, error } = useSelector((state: RootState) => state.cash);
+    const { report, reportLoading, reportError, actionLoading } = useSelector((state: RootState) => state.cash);
     const [activeTab, setActiveTab] = useState<'collections' | 'handovers'>('collections');
+    const [pendingAction, setPendingAction] = useState<{ id: string, type: 'approve' | 'reject' } | null>(null);
 
     useEffect(() => {
         if (userId) {
@@ -32,32 +34,42 @@ const CashReport: React.FC = () => {
     }, [dispatch, userId, navigate]);
 
     const handleApprove = async (handoverId: string) => {
-        const result = await dispatch(handleApproveHandover(handoverId));
-        if (handleApproveHandover.fulfilled.match(result)) {
-            toast.success("Handover approved successfully");
-            if (userId) {
-                const decryptedId = decryptData(decodeURIComponent(userId));
-                if (decryptedId) {
-                    dispatch(fetchCashReport(decryptedId));
+        setPendingAction({ id: handoverId, type: 'approve' });
+        try {
+            const result = await dispatch(handleApproveHandover(handoverId));
+            if (handleApproveHandover.fulfilled.match(result)) {
+                toast.success("Handover approved successfully");
+                if (userId) {
+                    const decryptedId = decryptData(decodeURIComponent(userId));
+                    if (decryptedId) {
+                        dispatch(fetchCashReport(decryptedId));
+                    }
                 }
+            } else {
+                toast.error(result.payload as string || "Failed to approve");
             }
-        } else {
-            toast.error(result.payload as string || "Failed to approve");
+        } finally {
+            setPendingAction(null);
         }
     };
 
     const handleReject = async (handoverId: string) => {
-        const result = await dispatch(handleRejectHandover(handoverId));
-        if (handleRejectHandover.fulfilled.match(result)) {
-            toast.success("Handover rejected successfully");
-            if (userId) {
-                const decryptedId = decryptData(decodeURIComponent(userId));
-                if (decryptedId) {
-                    dispatch(fetchCashReport(decryptedId));
+        setPendingAction({ id: handoverId, type: 'reject' });
+        try {
+            const result = await dispatch(handleRejectHandover(handoverId));
+            if (handleRejectHandover.fulfilled.match(result)) {
+                toast.success("Handover rejected successfully");
+                if (userId) {
+                    const decryptedId = decryptData(decodeURIComponent(userId));
+                    if (decryptedId) {
+                        dispatch(fetchCashReport(decryptedId));
+                    }
                 }
+            } else {
+                toast.error(result.payload as string || "Failed to reject");
             }
-        } else {
-            toast.error(result.payload as string || "Failed to reject");
+        } finally {
+            setPendingAction(null);
         }
     };
 
@@ -67,7 +79,7 @@ const CashReport: React.FC = () => {
         adminName: item.admin?.name || "N/A",
         businessName: item.admin?.businessName || "N/A",
         planName: item.plan?.name || "N/A",
-        amountStr: `₹${item.amount.toLocaleString('en-IN')}`,
+        amountStr: `₹${(item.amount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
         date: formatDateWithTiming(item.createdAt),
     })) || [];
 
@@ -83,15 +95,47 @@ const CashReport: React.FC = () => {
     const handoverRows = report?.handovers.map((item: any) => ({
         ...item,
         id: item._id,
-        amountStr: `₹${item.amount?.toLocaleString('en-IN') || 0}`,
-        status: item.status || "Pending",
+        amountStr: `₹${((item.amount || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+        status: item.status === 'pending_approval' ? 'Pending Approval' : item.status.replace('_', ' ').toUpperCase(),
         date: formatDateWithTiming(item.createdAt),
-        action: item.status === 'pending' ? (
+        action: (item.status === 'pending' || item.status === 'pending_approval') ? (
             <div className="flex gap-2">
-                <button onClick={() => handleApprove(item._id)} className="px-3 py-1 bg-green-500 text-white rounded text-xs">Approve</button>
-                <button onClick={() => handleReject(item._id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs">Reject</button>
+                <button
+                    onClick={() => handleApprove(item._id)}
+                    disabled={actionLoading || !!pendingAction}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                >
+                    {pendingAction?.id === item._id && pendingAction?.type === 'approve' ? (
+                        <>
+                            <Loader2 className="h-3 w-3 animate-spin" /> Approving...
+                        </>
+                    ) : (
+                        "Approve"
+                    )}
+                </button>
+                <button
+                    onClick={() => handleReject(item._id)}
+                    disabled={actionLoading || !!pendingAction}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-rose-500/20 active:scale-95 disabled:opacity-50"
+                >
+                    {pendingAction?.id === item._id && pendingAction?.type === 'reject' ? (
+                        <>
+                            <Loader2 className="h-3 w-3 animate-spin" /> Rejecting...
+                        </>
+                    ) : (
+                        "Reject"
+                    )}
+                </button>
             </div>
-        ) : item.status
+        ) : (
+            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                item.status === 'approved' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                item.status === 'rejected' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
+                'bg-gray-100 text-gray-500 dark:bg-gray-800'
+            }`}>
+                {item.status.replace('_', ' ')}
+            </span>
+        )
     })) || [];
 
     const handoverHeaders = [
@@ -126,7 +170,7 @@ const CashReport: React.FC = () => {
                         headers={collectionHeaders as any}
                         rows={collectionRows}
                         loading={reportLoading}
-                        error={error}
+                        error={reportError}
                         showAddButton={false}
                         maxHeight="calc(100vh - 280px)"
                     />
@@ -135,7 +179,7 @@ const CashReport: React.FC = () => {
                         headers={handoverHeaders as any}
                         rows={handoverRows}
                         loading={reportLoading}
-                        error={error}
+                        error={reportError}
                         showAddButton={false}
                         maxHeight="calc(100vh - 280px)"
                     />

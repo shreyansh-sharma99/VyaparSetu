@@ -191,7 +191,23 @@ export function AppSidebar() {
     return location.pathname === url;
   };
 
-  console.log(profile)
+  const userType = profile?.user?.userType || profile?.userType || localStorage.getItem('userType');
+  const isOwner = userType === 'owner';
+
+  const filteredMenuItems = menuItems.map(item => {
+    if (item.title === "Cash Management" && item.subItems) {
+      return {
+        ...item,
+        subItems: item.subItems.filter(sub => {
+          if (sub.title === "Ledger") {
+            return isOwner;
+          }
+          return true;
+        })
+      };
+    }
+    return item;
+  });
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/10 bg-gradient-to-b from-sidebar via-sidebar/95 to-sidebar/90 backdrop-blur-2xl no-scrollbar shadow-2xl">
@@ -218,7 +234,7 @@ export function AppSidebar() {
           </SidebarGroupLabel> */}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5 group-data-[collapsible=icon]:items-center">
-              {menuItems.map((item) => {
+              {filteredMenuItems.map((item) => {
                 const isParentActive = item.subItems
                   ? item.subItems.some(sub => isItemActive(sub.url))
                   : isItemActive(item.url);
@@ -290,18 +306,18 @@ export function AppSidebar() {
         <div className="flex items-center gap-4 group-data-[collapsible=icon]:justify-center">
           <div className="relative group/avatar">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-600 flex shrink-0 items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/30 transition-transform duration-300 group-hover/avatar:scale-105">
-              {getInitials(profile?.user?.name)}
+              {getInitials(profile?.user?.name || profile?.name)}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-success-500 shadow-sm" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden min-w-0">
             <span className="text-[14px] font-bold text-sidebar-foreground truncate leading-none mb-1">
-              {profile?.user?.name || ""}
+              {profile?.user?.name || profile?.name}
             </span>
             <div className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
               <span className="text-[10px] text-muted-foreground/80  tracking-widest font-black">
-                {profile?.user?.email || ""}
+                {profile?.user?.email || profile?.email}
               </span>
             </div>
           </div>

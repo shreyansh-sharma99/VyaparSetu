@@ -95,6 +95,13 @@ export default function InvoiceReport() {
 
   const agingTotal = data.aging["0_30"] + data.aging["30_60"] + data.aging["60_plus"];
 
+  const showCollectionHealth = data && (data.totalPaid > 0 || data.totalPending > 0 || data.totalOverdue > 0);
+  const showAging = data && agingTotal > 0;
+  const showRecentInvoices = data.recentInvoices && data.recentInvoices.length > 0;
+
+  const visibleCardsCount = [showCollectionHealth, showAging].filter(Boolean).length;
+  const gridColsClass = visibleCardsCount === 2 ? "lg:grid-cols-2" : "grid-cols-1";
+
   return (
     <>
       <PageMeta
@@ -133,109 +140,117 @@ export default function InvoiceReport() {
         </ComponentCard>
 
         {/* ── Collection Health + Aging ──────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {(showCollectionHealth || showAging) && (
+          <div className={`grid grid-cols-1 ${gridColsClass} gap-4 sm:gap-6`}>
 
-          {/* Collection Health */}
-          <ComponentCard title="Collection Health" desc="Ratio of paid vs pending invoices">
-            <div className="mt-3 sm:mt-4 space-y-4 sm:space-y-5">
+            {/* Collection Health */}
+            {showCollectionHealth && (
+              <ComponentCard title="Collection Health" desc="Ratio of paid vs pending invoices">
+                <div className="mt-3 sm:mt-4 space-y-4 sm:space-y-5">
 
-              {/* Rate + Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
-                <div className="shrink-0">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Collection Rate</p>
-                  <p className="text-3xl sm:text-4xl font-black text-emerald-600 mt-1">{collectionPct}%</p>
-                </div>
-                <div className="flex-1 sm:pb-1">
-                  <div className="h-3 sm:h-4 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
-                      style={{ width: `${collectionPct}%` }}
-                    />
+                  {/* Rate + Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
+                    <div className="shrink-0">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Collection Rate</p>
+                      <p className="text-3xl sm:text-4xl font-black text-emerald-600 mt-1">{collectionPct}%</p>
+                    </div>
+                    <div className="flex-1 sm:pb-1">
+                      <div className="h-3 sm:h-4 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
+                          style={{ width: `${collectionPct}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Paid / Pending mini-cards */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
-                  <p className="text-[10px] font-black text-emerald-600 uppercase">Paid</p>
-                  <p className="text-base sm:text-xl font-black text-emerald-700 dark:text-emerald-300 mt-1 break-all">
-                    ₹{data.totalPaid.toLocaleString("en-IN")}
-                  </p>
-                </div>
-                <div className="p-3 sm:p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20">
-                  <p className="text-[10px] font-black text-amber-600 uppercase">Pending</p>
-                  <p className="text-base sm:text-xl font-black text-amber-700 dark:text-amber-300 mt-1 break-all">
-                    ₹{data.totalPending.toLocaleString("en-IN")}
-                  </p>
-                </div>
-              </div>
+                  {/* Paid / Pending mini-cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 sm:p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+                      <p className="text-[10px] font-black text-emerald-600 uppercase">Paid</p>
+                      <p className="text-base sm:text-xl font-black text-emerald-700 dark:text-emerald-300 mt-1 break-all">
+                        ₹{data.totalPaid.toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                    <div className="p-3 sm:p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20">
+                      <p className="text-[10px] font-black text-amber-600 uppercase">Pending</p>
+                      <p className="text-base sm:text-xl font-black text-amber-700 dark:text-amber-300 mt-1 break-all">
+                        ₹{data.totalPending.toLocaleString("en-IN")}
+                      </p>
+                    </div>
+                  </div>
 
-              {/* Overdue alert */}
-              {data.totalOverdue > 0 && (
-                <div className="flex items-start gap-3 p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 text-rose-600">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span className="text-xs font-bold uppercase leading-snug">
-                    Overdue: ₹{data.totalOverdue.toLocaleString("en-IN")} — Requires attention
-                  </span>
-                </div>
-              )}
-            </div>
-          </ComponentCard>
-
-          {/* Aging Buckets */}
-          <ComponentCard title="Invoice Aging" desc="Pending invoice distribution by age">
-            <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
-              {[
-                { label: "0–30 Days", value: data.aging["0_30"], color: "bg-amber-400", textColor: "text-amber-700", bg: "bg-amber-50 dark:bg-amber-900/20" },
-                { label: "30–60 Days", value: data.aging["30_60"], color: "bg-orange-500", textColor: "text-orange-700", bg: "bg-orange-50 dark:bg-orange-900/20" },
-                { label: "60+ Days", value: data.aging["60_plus"], color: "bg-rose-600", textColor: "text-rose-700", bg: "bg-rose-50 dark:bg-rose-900/20" },
-              ].map((bucket, i) => {
-                const pct = agingTotal > 0 ? ((bucket.value / agingTotal) * 100).toFixed(1) : "0";
-                return (
-                  <div key={i} className={`p-3 sm:p-4 rounded-2xl border ${bucket.bg}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`text-sm font-bold ${bucket.textColor}`}>{bucket.label}</span>
-                      <span className={`text-base sm:text-lg font-black ${bucket.textColor} break-all ml-2`}>
-                        ₹{bucket.value.toLocaleString("en-IN")}
+                  {/* Overdue alert */}
+                  {data.totalOverdue > 0 && (
+                    <div className="flex items-start gap-3 p-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 text-rose-600">
+                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                      <span className="text-xs font-bold uppercase leading-snug">
+                        Overdue: ₹{data.totalOverdue.toLocaleString("en-IN")} — Requires attention
                       </span>
                     </div>
-                    <div className="h-1.5 w-full bg-white/60 dark:bg-black/20 rounded-full overflow-hidden">
-                      <div className={`h-full ${bucket.color} rounded-full`} style={{ width: `${pct}%` }} />
-                    </div>
-                    <p className={`text-[10px] font-bold ${bucket.textColor} mt-1 opacity-70`}>{pct}% of aging</p>
-                  </div>
-                );
-              })}
-            </div>
-          </ComponentCard>
-        </div>
+                  )}
+                </div>
+              </ComponentCard>
+            )}
+
+            {/* Aging Buckets */}
+            {showAging && (
+              <ComponentCard title="Invoice Aging" desc="Pending invoice distribution by age">
+                <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                  {[
+                    { label: "0–30 Days", value: data.aging["0_30"], color: "bg-amber-400", textColor: "text-amber-700", bg: "bg-amber-50 dark:bg-amber-900/20" },
+                    { label: "30–60 Days", value: data.aging["30_60"], color: "bg-orange-500", textColor: "text-orange-700", bg: "bg-orange-50 dark:bg-orange-900/20" },
+                    { label: "60+ Days", value: data.aging["60_plus"], color: "bg-rose-600", textColor: "text-rose-700", bg: "bg-rose-50 dark:bg-rose-900/20" },
+                  ].map((bucket, i) => {
+                    const pct = agingTotal > 0 ? ((bucket.value / agingTotal) * 100).toFixed(1) : "0";
+                    return (
+                      <div key={i} className={`p-3 sm:p-4 rounded-2xl border ${bucket.bg}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-sm font-bold ${bucket.textColor}`}>{bucket.label}</span>
+                          <span className={`text-base sm:text-lg font-black ${bucket.textColor} break-all ml-2`}>
+                            ₹{bucket.value.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/60 dark:bg-black/20 rounded-full overflow-hidden">
+                          <div className={`h-full ${bucket.color} rounded-full`} style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className={`text-[10px] font-bold ${bucket.textColor} mt-1 opacity-70`}>{pct}% of aging</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ComponentCard>
+            )}
+          </div>
+        )}
 
         {/* ── Recent Invoices Table ──────────────────── */}
-        <ComponentCard
-          title="Recent Invoices"
-          desc="Latest invoice transactions across all admins"
-          rightButtonNode={
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
-              <Receipt className="h-3.5 w-3.5 text-blue-600" />
-              <span className="text-xs font-black text-blue-600">{filteredRows.length} Records</span>
+        {showRecentInvoices && (
+          <ComponentCard
+            title="Recent Invoices"
+            desc="Latest invoice transactions across all admins"
+            rightButtonNode={
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                <Receipt className="h-3.5 w-3.5 text-blue-600" />
+                <span className="text-xs font-black text-blue-600">{filteredRows.length} Records</span>
+              </div>
+            }
+          >
+            {/* Horizontal scroll on mobile */}
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-[700px] sm:min-w-0 px-4 sm:px-0">
+                <AdvanceTable
+                  headers={tableHeaders}
+                  rows={filteredRows}
+                  loading={loading}
+                  maxHeight="420px"
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                />
+              </div>
             </div>
-          }
-        >
-          {/* Horizontal scroll on mobile */}
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="min-w-[700px] sm:min-w-0 px-4 sm:px-0">
-              <AdvanceTable
-                headers={tableHeaders}
-                rows={filteredRows}
-                loading={loading}
-                maxHeight="420px"
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-              />
-            </div>
-          </div>
-        </ComponentCard>
+          </ComponentCard>
+        )}
 
       </div>
     </>

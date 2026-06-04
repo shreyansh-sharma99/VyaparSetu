@@ -178,111 +178,134 @@ export default function RevenueReport() {
 
         {data && (
           <>
-            {/* ── Monthly Trend + By Plan ──────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+            {/* Visibility checks */}
+            {(() => {
+              const showMonthlyTrend = data.monthlyTrend && data.monthlyTrend.length > 0;
+              const showByPlan = data.byPlan && data.byPlan.length > 0;
+              const totalByTenure = Object.values(data.byTenure || {}).reduce((a, b) => a + b, 0);
+              const showByTenure = totalByTenure > 0;
 
-              {/* Area chart — full width on mobile */}
-              <ComponentCard
-                title="Monthly Revenue Trend"
-                desc="Revenue collected month by month"
-                className="lg:col-span-7"
-              >
-                <div className="h-[200px] sm:h-[260px] mt-3 sm:mt-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={data.monthlyTrend.map((t) => ({
-                        name: `${MONTHS[t._id.month - 1]} ${String(t._id.year).slice(-2)}`,
-                        total: t.total,
-                      }))}
-                      margin={{ left: 0, right: 8, top: 0, bottom: 0 }}
+              const trendColSpan = showByPlan ? "lg:col-span-7" : "lg:col-span-12";
+              const planColSpan = showMonthlyTrend ? "lg:col-span-5" : "lg:col-span-12";
+
+              return (
+                <>
+                  {/* ── Monthly Trend + By Plan ──────────── */}
+                  {(showMonthlyTrend || showByPlan) && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+
+                      {/* Area chart — full width on mobile */}
+                      {showMonthlyTrend && (
+                        <ComponentCard
+                          title="Monthly Revenue Trend"
+                          desc="Revenue collected month by month"
+                          className={trendColSpan}
+                        >
+                          <div className="h-[200px] sm:h-[260px] mt-3 sm:mt-4">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart
+                                data={data.monthlyTrend.map((t) => ({
+                                  name: `${MONTHS[t._id.month - 1]} ${String(t._id.year).slice(-2)}`,
+                                  total: t.total,
+                                }))}
+                                margin={{ left: 0, right: 8, top: 0, bottom: 0 }}
+                              >
+                                <defs>
+                                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                                <XAxis
+                                  dataKey="name"
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
+                                />
+                                <YAxis
+                                  axisLine={false}
+                                  tickLine={false}
+                                  tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                  tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                                  width={48}
+                                />
+                                <Tooltip
+                                  contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)", fontSize: "12px" }}
+                                  formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, "Revenue"]}
+                                />
+                                <Area
+                                  type="monotone"
+                                  dataKey="total"
+                                  stroke="#3b82f6"
+                                  strokeWidth={3}
+                                  fill="url(#revGrad)"
+                                  dot={{ r: 4, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }}
+                                  activeDot={{ r: 6, strokeWidth: 3, stroke: "#fff" }}
+                                  animationDuration={1500}
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </ComponentCard>
+                      )}
+
+                      {/* Plan progress bars */}
+                      {showByPlan && (
+                        <ComponentCard
+                          title="Revenue by Plan"
+                          desc="Plan-wise revenue contribution"
+                          className={planColSpan}
+                        >
+                          <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                            {data.byPlan.map((p, i) => {
+                              const pct = ((p.total / (data.totalCollected || 1)) * 100).toFixed(1);
+                              return (
+                                <div key={i} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs font-bold gap-2">
+                                    <span className="text-gray-600 dark:text-gray-300 truncate">{p.planName}</span>
+                                    <span className="text-gray-900 dark:text-white whitespace-nowrap shrink-0">{formatRaw(p.total)}</span>
+                                  </div>
+                                  <div className="h-2 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full rounded-full transition-all duration-700"
+                                      style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }}
+                                    />
+                                  </div>
+                                  <p className="text-[10px] font-bold text-gray-400">{pct}% of collected</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </ComponentCard>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── By Tenure ─────────────────────────── */}
+                  {showByTenure && (
+                    <ComponentCard
+                      title="Revenue by Tenure"
+                      desc="Breakdown of revenue by subscription tenure"
                     >
-                      <defs>
-                        <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
-                      <XAxis
-                        dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: "#94a3b8", fontSize: 10 }}
-                        tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
-                        width={48}
-                      />
-                      <Tooltip
-                        contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)", fontSize: "12px" }}
-                        formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, "Revenue"]}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="total"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        fill="url(#revGrad)"
-                        dot={{ r: 4, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }}
-                        activeDot={{ r: 6, strokeWidth: 3, stroke: "#fff" }}
-                        animationDuration={1500}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </ComponentCard>
-
-              {/* Plan progress bars */}
-              <ComponentCard
-                title="Revenue by Plan"
-                desc="Plan-wise revenue contribution"
-                className="lg:col-span-5"
-              >
-                <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
-                  {data.byPlan.map((p, i) => {
-                    const pct = ((p.total / (data.totalCollected || 1)) * 100).toFixed(1);
-                    return (
-                      <div key={i} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs font-bold gap-2">
-                          <span className="text-gray-600 dark:text-gray-300 truncate">{p.planName}</span>
-                          <span className="text-gray-900 dark:text-white whitespace-nowrap shrink-0">{formatRaw(p.total)}</span>
-                        </div>
-                        <div className="h-2 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                      {/* Wraps: 1 col on xs, then flex-wrap on larger */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-3 sm:mt-4">
+                        {Object.entries(data.byTenure).map(([tenure, amount], i) => (
                           <div
-                            className="h-full rounded-full transition-all duration-700"
-                            style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }}
-                          />
-                        </div>
-                        <p className="text-[10px] font-bold text-gray-400">{pct}% of collected</p>
+                            key={tenure}
+                            className="p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-center hover:border-blue-200 transition-all"
+                          >
+                            <div className="h-3 w-3 rounded-full mx-auto mb-2 sm:mb-3" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 capitalize">{tenure}</p>
+                            <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mt-1">{formatRaw(amount)}</p>
+                          </div>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
-              </ComponentCard>
-            </div>
-
-            {/* ── By Tenure ─────────────────────────── */}
-            <ComponentCard
-              title="Revenue by Tenure"
-              desc="Breakdown of revenue by subscription tenure"
-            >
-              {/* Wraps: 1 col on xs, then flex-wrap on larger */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mt-3 sm:mt-4">
-                {Object.entries(data.byTenure).map(([tenure, amount], i) => (
-                  <div
-                    key={tenure}
-                    className="p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5 text-center hover:border-blue-200 transition-all"
-                  >
-                    <div className="h-3 w-3 rounded-full mx-auto mb-2 sm:mb-3" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 capitalize">{tenure}</p>
-                    <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mt-1">{formatRaw(amount)}</p>
-                  </div>
-                ))}
-              </div>
-            </ComponentCard>
+                    </ComponentCard>
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
       </div>

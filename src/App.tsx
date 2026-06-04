@@ -51,6 +51,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function OwnerRoute({ children }: { children: React.ReactNode }) {
+  const { profile } = useSelector((state: RootState) => state.user);
+  const userType = profile?.user?.userType || profile?.userType || localStorage.getItem('userType');
+  
+  if (userType !== 'owner') {
+    return <Navigate to="/Cash/wallet" replace />;
+  }
+  return <>{children}</>;
+}
+
 function App() {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
@@ -113,8 +123,8 @@ function App() {
 
           {/* Cash Management */}
           <Route path="/Cash/wallet" element={<CashWallet />} />
-          <Route path="/Cash/ledger" element={<CashLedger />} />
-          <Route path="/Cash/report/:userId" element={<CashReport />} />
+          <Route path="/Cash/ledger" element={<OwnerRoute><CashLedger /></OwnerRoute>} />
+          <Route path="/Cash/report/:userId" element={<OwnerRoute><CashReport /></OwnerRoute>} />
 
           {/* HelpDesk */}
           <Route path="/HelpDesk" element={<HelpDesk />} />

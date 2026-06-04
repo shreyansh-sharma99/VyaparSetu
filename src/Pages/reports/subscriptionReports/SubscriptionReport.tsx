@@ -80,6 +80,9 @@ export default function SubscriptionReport() {
 
   const totalByTenure = Object.values(data.byTenure).reduce((a, b) => a + b, 0);
 
+  const showTenureCharts = data && totalByTenure > 0;
+  const showActivitySummary = data && (data.newThisMonth > 0 || data.cancellations > 0 || data.renewals > 0 || data.upgrades > 0);
+
   return (
     <>
       <PageMeta
@@ -117,122 +120,126 @@ export default function SubscriptionReport() {
         </ComponentCard>
 
         {/* ── Tenure Distribution ────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        {showTenureCharts && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 
-          {/* Pie chart */}
-          <ComponentCard title="Tenure Distribution" desc="Subscription breakdown by billing cycle">
-            <div className="h-[240px] sm:h-[280px] mt-3 sm:mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={60}
-                    outerRadius={95}
-                    paddingAngle={6}
-                    dataKey="value"
-                    nameKey="name"
-                    stroke="none"
-                    cornerRadius={8}
-                    animationDuration={1500}
-                  >
-                    {pieData.map((entry, i) => (
-                      <Cell key={i} fill={TENURE_COLORS[entry.tenure] || COLORS[i % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)", fontSize: "12px" }}
-                  />
-                  <Legend
-                    iconType="circle"
-                    iconSize={8}
-                    formatter={(value) => (
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#6b7280" }}>{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </ComponentCard>
-
-          {/* Progress bars */}
-          <ComponentCard title="Tenure Breakdown" desc="Detailed count per billing frequency">
-            <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
-              {Object.entries(data.byTenure).map(([tenure, count], i) => {
-                const pct = ((count / (totalByTenure || 1)) * 100).toFixed(1);
-                const color = TENURE_COLORS[tenure] || COLORS[i % COLORS.length];
-                return (
-                  <div key={tenure} className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                        <span className="text-sm font-bold text-gray-600 dark:text-gray-300 capitalize">{tenure}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-gray-900 dark:text-white">{count}</span>
-                        <span className="text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full">{pct}%</span>
-                      </div>
-                    </div>
-                    <div className="h-2 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: color }} />
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div className="mt-4 p-3 sm:p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 flex items-center justify-between">
-                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">Total Subscriptions</span>
-                <span className="text-xl font-black text-blue-700 dark:text-blue-300">{totalByTenure}</span>
+            {/* Pie chart */}
+            <ComponentCard title="Tenure Distribution" desc="Subscription breakdown by billing cycle">
+              <div className="h-[240px] sm:h-[280px] mt-3 sm:mt-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="45%"
+                      innerRadius={60}
+                      outerRadius={95}
+                      paddingAngle={6}
+                      dataKey="value"
+                      nameKey="name"
+                      stroke="none"
+                      cornerRadius={8}
+                      animationDuration={1500}
+                    >
+                      {pieData.map((entry, i) => (
+                        <Cell key={i} fill={TENURE_COLORS[entry.tenure] || COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15)", fontSize: "12px" }}
+                    />
+                    <Legend
+                      iconType="circle"
+                      iconSize={8}
+                      formatter={(value) => (
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#6b7280" }}>{value}</span>
+                      )}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            </div>
-          </ComponentCard>
-        </div>
+            </ComponentCard>
+
+            {/* Progress bars */}
+            <ComponentCard title="Tenure Breakdown" desc="Detailed count per billing frequency">
+              <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+                {Object.entries(data.byTenure).map(([tenure, count], i) => {
+                  const pct = ((count / (totalByTenure || 1)) * 100).toFixed(1);
+                  const color = TENURE_COLORS[tenure] || COLORS[i % COLORS.length];
+                  return (
+                    <div key={tenure} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                          <span className="text-sm font-bold text-gray-600 dark:text-gray-300 capitalize">{tenure}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-gray-900 dark:text-white">{count}</span>
+                          <span className="text-[10px] font-bold text-gray-400 bg-gray-50 dark:bg-white/5 px-2 py-0.5 rounded-full">{pct}%</span>
+                        </div>
+                      </div>
+                      <div className="h-2 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="mt-4 p-3 sm:p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 flex items-center justify-between">
+                  <span className="text-sm font-bold text-blue-700 dark:text-blue-300">Total Subscriptions</span>
+                  <span className="text-xl font-black text-blue-700 dark:text-blue-300">{totalByTenure}</span>
+                </div>
+              </div>
+            </ComponentCard>
+          </div>
+        )}
 
         {/* ── Monthly Activity Summary ───────────────── */}
-        <ComponentCard
-          title="Monthly Activity Summary"
-          desc="Key lifecycle events this month at a glance"
-        >
-          {/* 2 col mobile → 4 col sm */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-3 sm:mt-4">
-            {[
-              {
-                label: "Net New",
-                value: data.newThisMonth - data.cancellations,
-                bg: data.newThisMonth - data.cancellations >= 0
-                  ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100"
-                  : "bg-rose-50 dark:bg-rose-900/20 border-rose-100",
-                textColor: data.newThisMonth - data.cancellations >= 0 ? "text-emerald-700" : "text-rose-700",
-              },
-              {
-                label: "Churn",
-                value: `${((data.cancellations / (data.newThisMonth || 1)) * 100).toFixed(1)}%`,
-                bg: "bg-amber-50 dark:bg-amber-900/20 border-amber-100",
-                textColor: "text-amber-700",
-              },
-              {
-                label: "Renewal Rate",
-                value: data.renewals,
-                bg: "bg-blue-50 dark:bg-blue-900/20 border-blue-100",
-                textColor: "text-blue-700",
-              },
-              {
-                label: "Upgrades",
-                value: data.upgrades,
-                bg: "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100",
-                textColor: "text-indigo-700",
-              },
-            ].map((item, i) => (
-              <div key={i} className={`p-4 sm:p-5 rounded-2xl border ${item.bg} text-center`}>
-                <p className={`text-[10px] font-black uppercase tracking-widest ${item.textColor} opacity-70 leading-tight`}>
-                  {item.label}
-                </p>
-                <p className={`text-xl sm:text-2xl font-black ${item.textColor} mt-2`}>{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </ComponentCard>
+        {showActivitySummary && (
+          <ComponentCard
+            title="Monthly Activity Summary"
+            desc="Key lifecycle events this month at a glance"
+          >
+            {/* 2 col mobile → 4 col sm */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-3 sm:mt-4">
+              {[
+                {
+                  label: "Net New",
+                  value: data.newThisMonth - data.cancellations,
+                  bg: data.newThisMonth - data.cancellations >= 0
+                    ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100"
+                    : "bg-rose-50 dark:bg-rose-900/20 border-rose-100",
+                  textColor: data.newThisMonth - data.cancellations >= 0 ? "text-emerald-700" : "text-rose-700",
+                },
+                {
+                  label: "Churn",
+                  value: `${((data.cancellations / (data.newThisMonth || 1)) * 100).toFixed(1)}%`,
+                  bg: "bg-amber-50 dark:bg-amber-900/20 border-amber-100",
+                  textColor: "text-amber-700",
+                },
+                {
+                  label: "Renewal Rate",
+                  value: data.renewals,
+                  bg: "bg-blue-50 dark:bg-blue-900/20 border-blue-100",
+                  textColor: "text-blue-700",
+                },
+                {
+                  label: "Upgrades",
+                  value: data.upgrades,
+                  bg: "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100",
+                  textColor: "text-indigo-700",
+                },
+              ].map((item, i) => (
+                <div key={i} className={`p-4 sm:p-5 rounded-2xl border ${item.bg} text-center`}>
+                  <p className={`text-[10px] font-black uppercase tracking-widest ${item.textColor} opacity-70 leading-tight`}>
+                    {item.label}
+                  </p>
+                  <p className={`text-xl sm:text-2xl font-black ${item.textColor} mt-2`}>{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </ComponentCard>
+        )}
 
       </div>
     </>

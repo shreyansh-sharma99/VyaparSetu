@@ -99,7 +99,7 @@ export function AppHeader() {
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 hover:border-primary/30 transition-all">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {getInitials(profile?.user?.name)}
+                      {getInitials(profile?.user?.name || profile?.name)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -108,10 +108,10 @@ export function AppHeader() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {profile?.user?.name || "Admin User"}
+                      {profile?.user?.name || profile?.name}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {profile?.user?.email || "admin@vyaparsetu.com"}
+                      {profile?.user?.email || profile?.email}
                     </p>
                   </div>
                 </DropdownMenuLabel>

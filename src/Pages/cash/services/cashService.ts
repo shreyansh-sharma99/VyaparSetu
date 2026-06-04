@@ -24,3 +24,8 @@ export const getCashWallet = async () => {
   const response = await apiClient.get('/owner/cash/wallet');
   return response.data;
 };
+
+export const initiateHandover = async (data: { amount: number; toUserId?: string; notes?: string }) => {
+  const response = await apiClient.post('/owner/cash/handover', data);
+  return response.data;
+};

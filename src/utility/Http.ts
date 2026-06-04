@@ -117,7 +117,8 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as any;
 
     // Handle 401 Unauthorized (Token Expiry)
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthRequest = originalRequest?.url?.includes('owner/auth/login') || originalRequest?.url?.includes('owner/auth/refresh');
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
