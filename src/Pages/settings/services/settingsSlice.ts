@@ -46,6 +46,9 @@ interface BillingSettings {
   gracePeriodDays: number;
   maxExtensionDays: number;
   maxTrialExtensions: number;
+  freeTrialEnabled: boolean;
+  freeTrialDays: number;
+  reminderDaysBeforeExpiry: number[];
 }
 
 export interface SettingsData {

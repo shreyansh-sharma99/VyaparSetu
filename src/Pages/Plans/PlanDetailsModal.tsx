@@ -80,9 +80,9 @@ const PlanDetailsModal: React.FC<PlanDetailsModalProps> = ({ visible, onClose, p
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {plan.currency} {(plan.basePrice / 100).toLocaleString()} <span className="text-sm font-normal text-gray-500">/ base</span>
                 </p>
-                {plan.trial.enabled && (
+                {plan.trial?.enabled && (
                   <p className="text-sm text-green-600 mt-2 flex items-center gap-1 font-medium">
-                    <CheckCircle className="w-3.3 h-3.3" /> {plan.trial.durationDays} Days Free Trial Included
+                    <CheckCircle className="w-3.3 h-3.3" /> {plan.trial?.durationDays} Days Free Trial Included
                   </p>
                 )}
               </div>

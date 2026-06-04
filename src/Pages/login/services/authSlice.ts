@@ -21,8 +21,12 @@ const getInitialAuth = () => {
       if (decrypted) {
         const parsed = JSON.parse(decrypted);
         user = parsed.owner || (parsed.data ? parsed.data.owner : null);
-        if (localStorage.getItem('accessToken')) {
-          isAuthenticated = true;
+        const encryptedToken = localStorage.getItem('_v_at');
+        if (encryptedToken) {
+          const decryptedToken = decryptData(encryptedToken);
+          if (decryptedToken) {
+            isAuthenticated = true;
+          }
         }
       }
     } catch {
@@ -108,9 +112,13 @@ const authSlice = createSlice({
           const loggedInUser = action.payload.data.owner || action.payload.data.user;
           state.user = loggedInUser;
           const token = action.payload.data.accessToken;
+          const refreshToken = action.payload.data.refreshToken;
 
           if (token) {
-            localStorage.setItem('accessToken', token);
+            localStorage.setItem('_v_at', encryptData(token));
+          }
+          if (refreshToken) {
+            localStorage.setItem('_v_rt', encryptData(refreshToken));
           }
           if (loggedInUser?.userType) {
             localStorage.setItem('userType', loggedInUser.userType);

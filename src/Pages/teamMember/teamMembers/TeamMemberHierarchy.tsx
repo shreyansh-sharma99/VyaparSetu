@@ -144,7 +144,7 @@ const TeamsPopoverCard = ({
   const grad = GRADIENTS[depth % GRADIENTS.length];
   const designation = resolveDesignation(member.designation);
 
-  const cardContent = (
+  return (
     <div
       className={`relative w-[220px] h-[130px] rounded-2xl border p-3.5 bg-white dark:bg-gray-900 transition-all duration-300 select-none flex flex-col justify-between ${isOwner
         ? "border-primary/50 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.03]"
@@ -156,14 +156,24 @@ const TeamsPopoverCard = ({
 
       {/* Upper part of card */}
       <div className="flex gap-2.5 items-start pl-1.5">
-        {/* Initials Avatar */}
-        <div
-          onClick={(e) => { e.stopPropagation(); onOpenModal(member); }}
-          title="View Profile"
-          className={`w-11 h-11 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center text-[15px] font-bold text-white shadow cursor-pointer shrink-0 transition-transform hover:scale-105`}
+        {/* Initials Avatar Popover */}
+        <Popover
+          content={<TeamsProfileCard member={member} onOpenModal={onOpenModal} />}
+          trigger="hover"
+          placement="right"
+          mouseEnterDelay={0.3}
+          mouseLeaveDelay={0.3}
+          overlayStyle={{ padding: 0 }}
+          overlayInnerStyle={{ background: "transparent", padding: 0, boxShadow: "none" }}
         >
-          {getInitials(member.name)}
-        </div>
+          <div
+            onClick={(e) => { e.stopPropagation(); onOpenModal(member); }}
+            title="View Profile"
+            className={`w-11 h-11 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center text-[15px] font-bold text-white shadow cursor-pointer shrink-0 transition-transform hover:scale-105`}
+          >
+            {getInitials(member.name)}
+          </div>
+        </Popover>
 
         {/* Name and Email */}
         <div className="min-w-0 flex-1">
@@ -221,20 +231,6 @@ const TeamsPopoverCard = ({
         </div>
       )}
     </div>
-  );
-
-  return (
-    <Popover
-      content={<TeamsProfileCard member={member} onOpenModal={onOpenModal} />}
-      trigger="hover"
-      placement="right"
-      mouseEnterDelay={0.3}
-      mouseLeaveDelay={0.3}
-      overlayStyle={{ padding: 0 }}
-      overlayInnerStyle={{ background: "transparent", padding: 0, boxShadow: "none" }}
-    >
-      {cardContent}
-    </Popover>
   );
 };
 
@@ -565,9 +561,9 @@ const D3HierarchyTree: React.FC<D3HierarchyTreeProps> = ({
                 key={`link-${i}`}
                 d={drawElbowLink(link)}
                 fill="none"
-                stroke="url(#elbow-gradient)"
+                stroke="currentColor"
                 strokeWidth={2}
-                className="transition-all duration-500 ease-in-out"
+                className="text-primary/40 dark:text-primary/50 transition-all duration-500 ease-in-out"
               />
             ))}
 

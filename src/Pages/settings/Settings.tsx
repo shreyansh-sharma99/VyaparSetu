@@ -60,14 +60,33 @@ const Settings: React.FC = () => {
 
   const openEditModal = (section: string, data: any) => {
     setEditSection(section);
-    form.setFieldsValue(data);
+    let formData = { ...data };
+    if (section === 'billing' && Array.isArray(data.reminderDaysBeforeExpiry)) {
+      formData.reminderDaysBeforeExpiry = data.reminderDaysBeforeExpiry.join(', ');
+    }
+    form.setFieldsValue(formData);
     setIsModalOpen(true);
   };
 
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      const payload = { [editSection!]: values };
+      let processedValues = { ...values };
+      if (editSection === 'billing') {
+        if (typeof processedValues.reminderDaysBeforeExpiry === 'string') {
+          processedValues.reminderDaysBeforeExpiry = processedValues.reminderDaysBeforeExpiry
+            .split(',')
+            .map((item: string) => item.trim())
+            .filter((item: string) => item !== "")
+            .map((item: string) => Number(item))
+            .filter((item: number) => !isNaN(item));
+        } else if (typeof processedValues.reminderDaysBeforeExpiry === 'number') {
+          processedValues.reminderDaysBeforeExpiry = [processedValues.reminderDaysBeforeExpiry];
+        } else if (!Array.isArray(processedValues.reminderDaysBeforeExpiry)) {
+          processedValues.reminderDaysBeforeExpiry = [];
+        }
+      }
+      const payload = { [editSection!]: processedValues };
 
       const resultAction = await dispatch(updateSettingsAction(payload));
       if (updateSettingsAction.fulfilled.match(resultAction)) {
@@ -264,7 +283,9 @@ const Settings: React.FC = () => {
                               ? "••••••••••••••••"
                               : typeof data[key] === 'boolean'
                                 ? (data[key] ? "Yes" : "No")
-                                : data[key]?.toString() || "—"}
+                                : Array.isArray(data[key])
+                                  ? data[key].join(', ')
+                                  : data[key]?.toString() || "—"}
                           </span>
                           {isSecret && !isSecretsRevealed && (
                             <button
@@ -433,6 +454,7 @@ const Settings: React.FC = () => {
                       <div className="flex items-center justify-between w-full">
                         <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
                           {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                          {key === 'reminderDaysBeforeExpiry' && " (comma-separated, e.g. 7, 3, 1)"}
                         </span>
                         {isSecret && (
                           <button
@@ -448,8 +470,21 @@ const Settings: React.FC = () => {
                         )}
                       </div>
                     }
-                    rules={[{ required: typeof (settings as any)[editSection][key] !== 'boolean', message: `Please enter ${key}` }]}
-                    getValueFromEvent={key === 'port' || typeof (settings as any)[editSection][key] === 'number' ? (e) => Number(e.target.value) : undefined}
+                    rules={[
+                      { required: typeof (settings as any)[editSection][key] !== 'boolean', message: `Please enter ${key}` },
+                      ...(key === 'reminderDaysBeforeExpiry' ? [{
+                        validator: (_: any, value: any) => {
+                          if (!value) return Promise.resolve();
+                          const parts = String(value).split(',').map(s => s.trim());
+                          const hasInvalid = parts.some(p => p !== '' && (isNaN(Number(p)) || Number(p) <= 0 || !Number.isInteger(Number(p))));
+                          if (hasInvalid) {
+                            return Promise.reject(new Error('Please enter a comma-separated list of positive integers'));
+                          }
+                          return Promise.resolve();
+                        }
+                      }] : [])
+                    ]}
+                    getValueFromEvent={key === 'port' || (typeof (settings as any)[editSection][key] === 'number' && key !== 'reminderDaysBeforeExpiry') ? (e) => Number(e.target.value) : undefined}
                   >
                     {typeof (settings as any)[editSection][key] === 'boolean' ? (
                       <Checkbox className="text-gray-600 dark:text-gray-400">

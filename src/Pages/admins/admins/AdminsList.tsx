@@ -105,7 +105,7 @@ const AdminsList: React.FC = () => {
         id: admin._id,
         planName: admin.plan?.name || "N/A",
         subStatus: admin.subscription?.status || "inactive",
-        joinedDate: formatDateWithTiming(admin.createdAt),
+        createdAt: formatDateWithTiming(admin.createdAt),
         statusIcon: admin.isActive ? "Active" : "Inactive",
         businessInfo: `${admin.businessName} (${admin.businessType})`,
     }));
@@ -119,8 +119,10 @@ const AdminsList: React.FC = () => {
         { label: "Business Details", key: "businessInfo", value: "checked" as const },
         { label: "Current Plan", key: "planName", value: "checked" as const },
         { label: "Subscription", key: "subStatus", value: "checked" as const },
-        { label: "Joining Date", key: "joinedDate", value: "checked" as const },
+        { label: "created At", key: "createdAt", value: "checked" as const },
         { label: "Status", key: "statusIcon", value: "checked" as const },
+        { label: "createdBy", key: "createdBy", value: "checked" as const },
+        // {label: "createdAt", key: "createdAt", value: "checked" as const },
     ];
 
 

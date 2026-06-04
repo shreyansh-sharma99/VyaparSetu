@@ -296,6 +296,17 @@ const UpdateRoleAndPermission: React.FC = () => {
             [field]: value,
         };
 
+        // Rule 1: If canWrite, canUpdate, or canDelete becomes true, canRead must become true
+        if (value === true && (field === "canWrite" || field === "canUpdate" || field === "canDelete")) {
+            updatedPerms[slug].canRead = true;
+        }
+        // Rule 2: If canRead becomes false, canWrite, canUpdate, and canDelete must become false
+        if (value === false && field === "canRead") {
+            updatedPerms[slug].canWrite = false;
+            updatedPerms[slug].canUpdate = false;
+            updatedPerms[slug].canDelete = false;
+        }
+
         // If it's a group, toggle this specific permission for all children
         if (updatedPerms[slug].isGroup) {
             Object.keys(updatedPerms).forEach((k) => {
@@ -304,6 +315,14 @@ const UpdateRoleAndPermission: React.FC = () => {
                         ...updatedPerms[k],
                         [field]: value,
                     };
+                    if (value === true && (field === "canWrite" || field === "canUpdate" || field === "canDelete")) {
+                        updatedPerms[k].canRead = true;
+                    }
+                    if (value === false && field === "canRead") {
+                        updatedPerms[k].canWrite = false;
+                        updatedPerms[k].canUpdate = false;
+                        updatedPerms[k].canDelete = false;
+                    }
                 }
             });
         }
@@ -315,6 +334,9 @@ const UpdateRoleAndPermission: React.FC = () => {
                 ...updatedPerms[parentSlug],
                 [field]: true,
             };
+            if (field === "canWrite" || field === "canUpdate" || field === "canDelete") {
+                updatedPerms[parentSlug].canRead = true;
+            }
         }
 
         setValue("permissions", updatedPerms, { shouldDirty: true });

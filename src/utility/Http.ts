@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import CryptoJS from 'crypto-js';
+import { encryptData, decryptData } from './crypto';
 
 const IS_ENCRYPTION = import.meta.env.VITE_IS_ENCRYPTION === 'true';
 const HEX_KEY = import.meta.env.VITE_ENCRYPTION_KEY || '';
@@ -87,7 +88,8 @@ const processQueue = (error: any, token: string | null = null) => {
 // Request Interceptor: Attach token & Encrypt body
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('accessToken');
+    const encryptedToken = localStorage.getItem('_v_at');
+    const token = encryptedToken ? decryptData(encryptedToken) : null;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -134,16 +136,32 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await apiClient.post('/owner/auth/refresh');
+        const encryptedRefreshToken = localStorage.getItem('_v_rt');
+        const decryptedRefreshToken = encryptedRefreshToken ? decryptData(encryptedRefreshToken) : '';
+
+        const { data } = await apiClient.post('/owner/auth/refresh', {
+          refreshToken: decryptedRefreshToken || ''
+        });
         const newToken = data.data.accessToken;
-        localStorage.setItem('accessToken', newToken);
+        const newRefreshToken = data.data.refreshToken;
+        if (newToken) {
+          localStorage.setItem('_v_at', encryptData(newToken));
+        }
+        if (newRefreshToken) {
+          localStorage.setItem('_v_rt', encryptData(newRefreshToken));
+        }
         apiClient.defaults.headers.Authorization = `Bearer ${newToken}`;
         processQueue(null, newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         processQueue(refreshError, null);
-        localStorage.removeItem('accessToken');
+        if (refreshError?.response?.status === 401) {
+          localStorage.clear();
+        } else {
+          localStorage.removeItem('_v_at');
+          localStorage.removeItem('_v_rt');
+        }
         window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
