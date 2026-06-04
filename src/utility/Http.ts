@@ -142,13 +142,19 @@ apiClient.interceptors.response.use(
         const { data } = await apiClient.post('/owner/auth/refresh', {
           refreshToken: decryptedRefreshToken || ''
         });
-        const newToken = data.data.accessToken;
-        const newRefreshToken = data.data.refreshToken;
+        const responseData = data?.data || data;
+        const newToken = responseData?.accessToken;
+        const newRefreshToken = responseData?.refreshToken;
+        const userType = responseData?.userType;
+
         if (newToken) {
           localStorage.setItem('_v_at', encryptData(newToken));
         }
         if (newRefreshToken) {
           localStorage.setItem('_v_rt', encryptData(newRefreshToken));
+        }
+        if (userType) {
+          localStorage.setItem('userType', userType);
         }
         apiClient.defaults.headers.Authorization = `Bearer ${newToken}`;
         processQueue(null, newToken);
