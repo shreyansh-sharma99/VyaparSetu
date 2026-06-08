@@ -310,6 +310,7 @@ const AdminDetails: React.FC = () => {
                 <div className="w-[1px] h-6 bg-gray-200 dark:bg-gray-800 mx-1 hidden sm:block"></div>
               </div>
             )}
+            
             <Button variant="danger" size="xs" onClick={() => navigate(-1)} className="flex items-center gap-2 !rounded-xl !px-4 shadow-lg shadow-red-500/10">
               <span className="hidden sm:inline">Back</span>
             </Button>

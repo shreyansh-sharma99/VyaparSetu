@@ -487,7 +487,7 @@ const AdminManagementList: React.FC = () => {
                             );
                         }
 
-                        if (row.canShowCashPlanAssign) {
+                        if (row.canShowCashpLanAssign) {
                             actions.push(
                                 <button
                                     key="cashplan"

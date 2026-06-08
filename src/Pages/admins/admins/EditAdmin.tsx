@@ -203,7 +203,7 @@ const EditAdmin: React.FC = () => {
                 title="Edit Client Details"
                 rightButtonNode={
                     <div className="flex gap-2">
-                        {currentAdmin?.admin?.canShowCashPlanAssign && (
+                        {currentAdmin?.admin?.canShowCashpLanAssign && (
                             <Button
                                 variant="primary"
                                 size="xs"

@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { addNewPlan, fetchPlanFormSchema } from './services/PlanSlice';
 import PageMeta from '@/components/common/PageMeta';
+import { InfoIcon } from '@/icons/icons';
 
 const CURRENCY_OPTIONS = [
     { label: "₹ Indian Rupee (INR)", value: "INR" },
@@ -361,7 +362,7 @@ const AddPlans: React.FC = () => {
                     </ComponentCard>
 
                     {/* Features & Capabilities */}
-                    {/* <ComponentCard title="Plan Capabilities & Features">
+                    <ComponentCard title="Plan Capabilities & Features">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[...(schema?.featureDefinitions || [])].sort((a, b) => a.sortOrder - b.sortOrder).map((feature) => (
                                 <div key={feature.key} className="flex flex-col justify-center">
@@ -372,7 +373,7 @@ const AddPlans: React.FC = () => {
                                                     {feature.label}
                                                 </Label>
                                                 <div className="group relative flex items-center">
-                                                    <Info size={16} className="text-blue-500 cursor-help transition-colors hover:text-blue-600" />
+                                                    <InfoIcon size={16} className="text-blue-500 cursor-help transition-colors hover:text-blue-600" />
                                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-56 p-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-md shadow-xl z-50 text-center leading-relaxed">
                                                         {feature.description}
                                                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900 dark:border-t-white"></div>
@@ -404,7 +405,7 @@ const AddPlans: React.FC = () => {
                                                 )}
                                             />
                                             <div className="group relative flex items-center ml-2">
-                                                <Info size={16} className="text-blue-500 cursor-help transition-colors hover:text-blue-600" />
+                                                <InfoIcon size={16} className="text-blue-500 cursor-help transition-colors hover:text-blue-600" />
                                                 <div className="absolute bottom-full right-[-8px] mb-2 hidden group-hover:block w-56 p-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs rounded-md shadow-xl z-50 text-center leading-relaxed">
                                                     {feature.description}
                                                     <div className="absolute top-full right-[10px] border-8 border-transparent border-t-gray-900 dark:border-t-white"></div>
@@ -415,7 +416,7 @@ const AddPlans: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                    </ComponentCard> */}
+                    </ComponentCard>
 
                     <div className="flex justify-end gap-4 pb-4">
                         <Button variant="outline" type="button" onClick={() => navigate('/Plans')}>Cancel</Button>

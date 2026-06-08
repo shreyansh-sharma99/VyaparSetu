@@ -34,7 +34,7 @@ interface Admin {
   };
   onboardingStatus?: string;
   status?: string;
-  canShowCashPlanAssign?: boolean;
+  canShowCashpLanAssign?: boolean;
   createdBy?: {
     _id: string;
     name: string;
