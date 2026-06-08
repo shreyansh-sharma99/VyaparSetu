@@ -489,8 +489,46 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
+/* --- Ant Design Confirm Modal Dark Mode Fix --- */
+.dark .ant-modal-confirm .ant-modal-content {
+  background-color: #0B0F19 !important;
+  color: #f9fafb !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .ant-modal-confirm-body .ant-modal-confirm-title {
+  color: #ffffff !important;
+}
+
+.dark .ant-modal-confirm-body .ant-modal-confirm-content {
+  color: #98a2b3 !important;
+}
+
+.dark .ant-modal-confirm-btns .ant-btn-default {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .ant-modal-confirm-btns .ant-btn-default:hover {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #ffffff !important;
+}
+
+.dark .ant-modal-confirm-btns .ant-btn-primary,
+.dark .ant-modal-confirm-btns .ant-btn-dangerous {
+  color: #ffffff !important;
+}
+
 /* Hide native browser password reveal & text clear buttons */
 input::-ms-reveal,
 input::-ms-clear {
+  display: none !important;
+}
+
+/* Hide Jodit Branding */
+.jodit-status-bar-link,
+a[href*="xdsoft.net/jodit"] {
   display: none !important;
 }

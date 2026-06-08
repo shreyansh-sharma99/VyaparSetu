@@ -22,6 +22,8 @@ import invoiceReducer from '@/Pages/invoices/services/invoiceSlice';
 import rolesReducer from '@/Pages/RolesAndPermission/services/rolesSlice';
 import cashReducer from '@/Pages/cash/services/cashSlice';
 import helpDeskReducer from '@/Pages/HelpDesk/services/helpDeskSlice';
+import emailTemplateReducer from '@/Pages/settings/emailTemplate/services/emailTemplateSlice';
+import emailReducer from '@/Pages/email/services/emailSlice';
 
 const rootReducer = combineReducers({
   ui: uiReducer,
@@ -44,6 +46,8 @@ const rootReducer = combineReducers({
   roles: rolesReducer,
   cash: cashReducer,
   helpDesk: helpDeskReducer,
+  emailTemplate: emailTemplateReducer,
+  email: emailReducer,
 });
 
 export default rootReducer;

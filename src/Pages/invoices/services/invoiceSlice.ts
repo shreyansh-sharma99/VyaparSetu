@@ -163,9 +163,9 @@ const initialState: InvoiceState = {
 
 export const fetchInvoices = createAsyncThunk(
     "invoice/fetchInvoices",
-    async ({ page, limit, status }: { page: number; limit: number; status?: string }, { rejectWithValue }) => {
+    async ({ page, limit, status, search }: { page: number; limit: number; status?: string; search?: string }, { rejectWithValue }) => {
         try {
-            const response = await getInvoicesService(page, limit, status);
+            const response = await getInvoicesService(page, limit, status, search);
             return response.data;
         } catch (error: any) {
             const message = error.response?.data?.message || "Failed to fetch invoices";

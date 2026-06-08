@@ -8,21 +8,26 @@ import ComponentCard from "../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import { encryptData } from "@/utility/crypto";
+import { usePermission } from "@/utility/permission";
+import Select from "../../components/form/Select";
 
 const Invoice: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const { pagePermissions } = usePermission();
     const { invoices, loading, error, meta, searchQuery, statusFilter, pagination } = useSelector((state: RootState) => state.invoice);
 
     useEffect(() => {
         dispatch(fetchInvoices({
             page: pagination.currentPage,
             limit: pagination.pageSize,
-            status: statusFilter === "all" ? undefined : statusFilter
+            status: statusFilter === "all" ? undefined : statusFilter,
+            search: searchQuery
         }));
-    }, [dispatch, pagination.currentPage, pagination.pageSize, statusFilter]);
+    }, [dispatch, pagination.currentPage, pagination.pageSize, statusFilter, searchQuery]);
 
     const handleSearchChange = (query: string) => {
+        console.log(query, "query")
         dispatch(setSearchQuery(query));
     };
 
@@ -80,10 +85,12 @@ const Invoice: React.FC = () => {
 
     const statusOptions = [
         { label: "All Status", value: "all" },
+        { label: "Draft", value: "draft" },
+        { label: "Open", value: "open" },
         { label: "Paid", value: "paid" },
-        { label: "Pending", value: "pending" },
-        { label: "Failed", value: "failed" },
-        { label: "Free", value: "free" },
+        { label: "Overdue", value: "overdue" },
+        { label: "Cancelled", value: "cancelled" },
+        { label: "Waived", value: "waived" },
     ];
 
     return (
@@ -92,21 +99,13 @@ const Invoice: React.FC = () => {
             <ComponentCard
                 title="Invoice List"
                 rightButtonNode={
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center bg-gray-100 dark:bg-white/5 p-1 rounded-lg h-11">
-                            {statusOptions.map((opt) => (
-                                <button
-                                    key={opt.value}
-                                    onClick={() => handleStatusChange(opt.value)}
-                                    className={`h-full px-4 rounded-md text-sm font-medium transition-all duration-200 ${statusFilter === opt.value
-                                        ? "bg-white dark:bg-blue-600 shadow-sm text-blue-600 dark:text-white"
-                                        : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                        }`}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
-                        </div>
+                    <div className="w-44">
+                        <Select
+                            options={statusOptions}
+                            value={statusFilter}
+                            onChange={handleStatusChange}
+                            placeholder="Filter by Status"
+                        />
                     </div>
                 }
             >
@@ -124,7 +123,7 @@ const Invoice: React.FC = () => {
                     pageSize={pagination.pageSize}
                     onPageChange={handlePageChange}
                     maxHeight="calc(100vh - 350px)"
-                    onView={(row: any) => handleViewInvoice(row._id)}
+                    onView={pagePermissions.canRead ? (row: any) => handleViewInvoice(row._id) : undefined}
                 />
             </ComponentCard>
         </div>

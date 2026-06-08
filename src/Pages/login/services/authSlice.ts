@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { loginApi, logoutApi, changePasswordApi } from './authService';
 import { encryptData, decryptData } from '@/utility/crypto';
+import { storePermissions } from '@/utility/permission';
 
 interface AuthState {
   user: any;
@@ -20,7 +21,7 @@ const getInitialAuth = () => {
       const decrypted = decryptData(vsetu);
       if (decrypted) {
         const parsed = JSON.parse(decrypted);
-        user = parsed.owner || (parsed.data ? parsed.data.owner : null);
+        user = parsed.owner || parsed.user || (parsed.data ? (parsed.data.owner || parsed.data.user) : null);
         const encryptedToken = localStorage.getItem('_v_at');
         if (encryptedToken) {
           const decryptedToken = decryptData(encryptedToken);
@@ -126,6 +127,7 @@ const authSlice = createSlice({
 
           const encryptedString = encryptData(JSON.stringify(action.payload.data));
           localStorage.setItem('vyaparsetu', encryptedString);
+          storePermissions(action.payload.data);
         }
       })
       .addCase(loginUser.rejected, (state, action) => {

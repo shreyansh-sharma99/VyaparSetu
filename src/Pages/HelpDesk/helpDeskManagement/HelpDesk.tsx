@@ -8,10 +8,12 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import Select from "../../../components/form/Select";
+import { usePermission } from "@/utility/permission";
 
 const HelpDesk: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const { pagePermissions } = usePermission();
 
     const { tickets, loading, error, pagination } = useSelector((state: RootState) => state.helpDesk);
 
@@ -139,7 +141,7 @@ const HelpDesk: React.FC = () => {
                     error={error}
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
-                    onView={handleView}
+                    onView={pagePermissions.canRead ? handleView : undefined}
                     // customActions={(row: any) => (
                     //     <button onClick={() => handleView(row)} className="text-blue-600 hover:text-blue-800 transition-colors" title="View Ticket">
                     //         <Eye className="w-5 h-5" strokeWidth={1.75} />

@@ -26,6 +26,8 @@
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
     "d3": "^7.9.0",
+    "jodit": "^4.12.17",
+    "jodit-react": "^5.3.21",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^1.8.0",

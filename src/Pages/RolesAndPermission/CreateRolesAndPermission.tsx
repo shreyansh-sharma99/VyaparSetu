@@ -55,6 +55,14 @@ const MODULE_HIERARCHY = [
             { module: "Razorpay Settlements", slug: "/reports/razorpay-settlements" },
         ]
     },
+    {
+        module: "Help Desk",
+        slug: "#helpdesk",
+        subModules: [
+            { module: "Dashboard Stats", slug: "/HelpDesk/stats" },
+            { module: "Tickets", slug: "/HelpDesk" },
+        ]
+    },
     // {
     //     module: "Master",
     //     slug: "#master",

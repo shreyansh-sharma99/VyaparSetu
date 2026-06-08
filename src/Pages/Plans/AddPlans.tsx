@@ -12,7 +12,6 @@ import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../store';
 import { addNewPlan, fetchPlanFormSchema } from './services/PlanSlice';
-import { Info } from 'lucide-react';
 import PageMeta from '@/components/common/PageMeta';
 
 const CURRENCY_OPTIONS = [
@@ -362,7 +361,7 @@ const AddPlans: React.FC = () => {
                     </ComponentCard>
 
                     {/* Features & Capabilities */}
-                    <ComponentCard title="Plan Capabilities & Features">
+                    {/* <ComponentCard title="Plan Capabilities & Features">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {[...(schema?.featureDefinitions || [])].sort((a, b) => a.sortOrder - b.sortOrder).map((feature) => (
                                 <div key={feature.key} className="flex flex-col justify-center">
@@ -416,7 +415,7 @@ const AddPlans: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                    </ComponentCard>
+                    </ComponentCard> */}
 
                     <div className="flex justify-end gap-4 pb-4">
                         <Button variant="outline" type="button" onClick={() => navigate('/Plans')}>Cancel</Button>

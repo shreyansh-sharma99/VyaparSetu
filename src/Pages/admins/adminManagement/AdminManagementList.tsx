@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Modal, } from "antd";
+import { Modal, ConfigProvider, theme } from "antd";
 import type { AppDispatch, RootState } from "../../../store";
-import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription, setFilterStatus, setManagementStatusFilter, setSearchQuery, setPagination } from "../admins/services/adminSlice";
+import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription, setFilterStatus, setManagementStatusFilter, setSearchQuery, setPagination, assignCashPlan, setPlanFilter, setPaymentMethodFilter, setExpiringSoonFilter, setCreatedByFilter } from "../admins/services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
@@ -11,19 +11,85 @@ import PageMeta from "@/components/common/PageMeta";
 import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
 import Select from "../../../components/form/Select";
+import { usePermission } from "@/utility/permission";
 import StatusToggle from "../../../components/form/input/StatusToggle";
-import { SendHorizontal, CheckCircle, CalendarClock, Ban } from "lucide-react";
+import { SendHorizontal, CheckCircle, CalendarClock, Ban, Loader2, IndianRupee } from "lucide-react";
+
+import { useForm, Controller } from "react-hook-form";
+import Button from "../../../components/UI/button/Button";
+import { Label } from "@/components/layout/label";
+import Input from "../../../components/form/input/InputField";
+import TextArea from "../../../components/form/input/TextArea";
+import { getPlans } from "../../Plans/services/PlanServices";
+import { getManagersService } from "../../teamMember/teamMembers/services/teamMemberService";
 
 const AdminManagementList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { admins, loading, error, meta, filterStatus, managementStatusFilter, searchQuery, pagination } = useSelector((state: RootState) => state.admin);
+    const { pagePermissions } = usePermission();
+
+    const currentTheme = useSelector((state: any) => state.ui?.theme);
+    const isDark = currentTheme === 'dark';
+
+    const { admins, loading, error, meta, filterStatus, managementStatusFilter, planFilter, paymentMethodFilter, expiringSoonFilter, createdByFilter, searchQuery, pagination, submitting } = useSelector((state: RootState) => state.admin);
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
     const [actionModalVisible, setActionModalVisible] = useState(false);
     const [selectedActionAdmin, setSelectedActionAdmin] = useState<any>(null);
     const [actionType, setActionType] = useState<"resend" | "suspend" | "activate" | "extend" | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [extendDays, setExtendDays] = useState<number>(1);
+
+    // Cash Plan state
+    const [isCashPlanModalOpen, setIsCashPlanModalOpen] = useState(false);
+    const [selectedAdminId, setSelectedAdminId] = useState<string>('');
+    const [plansList, setPlansList] = useState<any[]>([]);
+    const [managersList, setManagersList] = useState<any[]>([]);
+    const [fetchingCashPlanData, setFetchingCashPlanData] = useState(false);
+
+    const {
+        register: registerCash,
+        handleSubmit: handleCashSubmit,
+        control: controlCash,
+        reset: resetCash,
+        setValue: setCashValue,
+        watch: watchCash,
+        formState: { errors: cashErrors }
+    } = useForm({
+        defaultValues: {
+            planId: '',
+            tenure: '',
+            paidAt: new Date().toISOString().split('T')[0],
+            note: 'Cash received from client at office',
+            collectedBy: ''
+        }
+    });
+
+    const selectedPlanId = watchCash('planId');
+
+    const selectedPlan = plansList.find(p => p._id === selectedPlanId);
+    const tenureOptions = selectedPlan?.billingCycles
+        ?.filter((c: any) => c.isEnabled)
+        .map((c: any) => ({ label: c.label, value: c.tenure })) || [];
+
+    useEffect(() => {
+        setCashValue('tenure', '');
+    }, [selectedPlanId, setCashValue]);
+
+    useEffect(() => {
+        const fetchFilterData = async () => {
+            try {
+                const [plansRes, managersRes] = await Promise.all([
+                    getPlans(),
+                    getManagersService()
+                ]);
+                if (plansRes?.data) setPlansList(plansRes.data);
+                if (managersRes?.data?.data) setManagersList(managersRes.data.data);
+            } catch (error) {
+                console.error("Failed to load filter data", error);
+            }
+        };
+        fetchFilterData();
+    }, []);
 
     useEffect(() => {
         const params: any = {
@@ -32,20 +98,27 @@ const AdminManagementList: React.FC = () => {
             search: searchQuery
         };
 
-        if (managementStatusFilter === "pending_subscription") {
-            params.onboardingStatus = "pending_subscription";
-        } else if (managementStatusFilter === "subscribed") {
-            params.onboardingStatus = "subscribed";
-        } else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(managementStatusFilter)) {
-            params.subscriptionStatus = managementStatusFilter;
+        if (managementStatusFilter && managementStatusFilter !== "all") {
+            if (managementStatusFilter === "pending_subscription") {
+                params.onboardingStatus = "pending_subscription";
+            } else if (managementStatusFilter === "subscribed") {
+                params.onboardingStatus = "subscribed";
+            } else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(managementStatusFilter)) {
+                params.subscriptionStatus = managementStatusFilter;
+            }
         }
 
         if (filterStatus !== "all") {
             params.isActive = filterStatus === "active";
         }
 
+        if (planFilter && planFilter !== "all") params.plan = planFilter;
+        if (paymentMethodFilter && paymentMethodFilter !== "all") params.paymentMethod = paymentMethodFilter;
+        if (expiringSoonFilter && expiringSoonFilter !== "all") params.expiringSoon = expiringSoonFilter === "true";
+        if (createdByFilter && createdByFilter !== "all") params.createdBy = createdByFilter;
+
         dispatch(fetchAdmins(params));
-    }, [dispatch, pagination.currentPage, pagination.pageSize, searchQuery, managementStatusFilter, filterStatus]);
+    }, [dispatch, pagination.currentPage, pagination.pageSize, searchQuery, managementStatusFilter, filterStatus, planFilter, paymentMethodFilter, expiringSoonFilter, createdByFilter]);
 
     const handleSearchChange = (query: string) => {
         dispatch(setSearchQuery(query));
@@ -110,6 +183,64 @@ const AdminManagementList: React.FC = () => {
         setActionModalVisible(true);
     };
 
+    const openCashPlanModal = async (admin: any) => {
+        setSelectedAdminId(admin.id || admin._id);
+        setFetchingCashPlanData(true);
+        try {
+            const [plansRes, managersRes] = await Promise.all([
+                getPlans(),
+                getManagersService()
+            ]);
+
+            if (plansRes?.data) {
+                setPlansList(plansRes.data);
+            }
+            if (managersRes?.data?.data) {
+                setManagersList(managersRes.data.data);
+            }
+            setIsCashPlanModalOpen(true);
+        } catch (error) {
+            toast.error("Failed to load required data for Cash Plan");
+        } finally {
+            setFetchingCashPlanData(false);
+        }
+    };
+
+    const onCashPlanSubmit = async (data: any) => {
+        try {
+            const resultAction = await dispatch(assignCashPlan({ id: selectedAdminId, planData: data }));
+            if (assignCashPlan.fulfilled.match(resultAction)) {
+                toast.success('Cash Plan assigned successfully!');
+                setIsCashPlanModalOpen(false);
+                resetCash();
+                // Refresh list
+                const params: any = {
+                    page: pagination.currentPage,
+                    limit: pagination.pageSize,
+                    search: searchQuery
+                };
+                if (managementStatusFilter && managementStatusFilter !== "all") {
+                    if (managementStatusFilter === "pending_subscription") params.onboardingStatus = "pending_subscription";
+                    else if (managementStatusFilter === "subscribed") params.onboardingStatus = "subscribed";
+                    else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(managementStatusFilter)) {
+                        params.subscriptionStatus = managementStatusFilter;
+                    }
+                }
+                if (filterStatus !== "all") params.isActive = filterStatus === "active";
+                if (planFilter && planFilter !== "all") params.plan = planFilter;
+                if (paymentMethodFilter && paymentMethodFilter !== "all") params.paymentMethod = paymentMethodFilter;
+                if (expiringSoonFilter && expiringSoonFilter !== "all") params.expiringSoon = expiringSoonFilter === "true";
+                if (createdByFilter && createdByFilter !== "all") params.createdBy = createdByFilter;
+
+                dispatch(fetchAdmins(params));
+            } else {
+                toast.error(resultAction.payload as string || 'Failed to assign Cash Plan');
+            }
+        } catch (error) {
+            toast.error('An unexpected error occurred');
+        }
+    };
+
     const handleActionConfirm = async () => {
         if (!selectedActionAdmin || !actionType) return;
 
@@ -157,9 +288,19 @@ const AdminManagementList: React.FC = () => {
                 limit: pagination.pageSize,
                 search: searchQuery
             };
-            if (managementStatusFilter === "pending_subscription") params.onboardingStatus = "pending_subscription";
-            else if (managementStatusFilter === "subscribed") params.onboardingStatus = "subscribed";
-            else if (managementStatusFilter === "expired") params.status = "expired";
+            if (managementStatusFilter && managementStatusFilter !== "all") {
+                if (managementStatusFilter === "pending_subscription") params.onboardingStatus = "pending_subscription";
+                else if (managementStatusFilter === "subscribed") params.onboardingStatus = "subscribed";
+                else if (["trialing", "active", "past_due", "cancelled", "expired"].includes(managementStatusFilter)) {
+                    params.subscriptionStatus = managementStatusFilter;
+                }
+            }
+            if (filterStatus !== "all") params.isActive = filterStatus === "active";
+            if (planFilter && planFilter !== "all") params.plan = planFilter;
+            if (paymentMethodFilter && paymentMethodFilter !== "all") params.paymentMethod = paymentMethodFilter;
+            if (expiringSoonFilter && expiringSoonFilter !== "all") params.expiringSoon = expiringSoonFilter === "true";
+            if (createdByFilter && createdByFilter !== "all") params.createdBy = createdByFilter;
+
             dispatch(fetchAdmins(params));
         }
     };
@@ -204,6 +345,7 @@ const AdminManagementList: React.FC = () => {
                     admin.onboardingStatus === "subscribed" ? "SUBSCRIBED" : (admin.onboardingStatus || "N/A").toUpperCase()}
             </span>
         ),
+        createdBy: admin.createdBy?.name || "N/A",
     }));
 
 
@@ -216,9 +358,10 @@ const AdminManagementList: React.FC = () => {
         { label: "Current Plan", key: "planName", value: "checked" as const },
         { label: "Joining Date", key: "joinedDate", value: "checked" as const },
         { label: "Trial End Date", key: "trialEndsAt", value: "checked" as const },
+        { label: "Created By", key: "createdBy", value: "checked" as const },
         { label: "Status", key: "statusBadge", value: "checked" as const },
         { label: "Subscription", key: "subStatusBadge", value: "checked" as const },
-        { label: "Onboarding Status", key: "onboardingStatusBadge", value: "checked" as const }
+        { label: "Onboarding Status", key: "onboardingStatusBadge", value: "checked" as const },
     ];
 
 
@@ -228,29 +371,69 @@ const AdminManagementList: React.FC = () => {
             <ComponentCard
                 title="Client Management Lists"
                 rightButtonNode={
-                    <div className="flex items-center gap-3">
-                        <div className="w-52">
-                            <Select
-                                value={managementStatusFilter}
-                                options={[
-                                    { label: "All Status", value: "all" },
-                                    { label: "Pending Subscription", value: "pending_subscription" },
-                                    { label: "Subscribed", value: "subscribed" },
-                                    { label: "Trialing", value: "trialing" },
-                                    { label: "Active", value: "active" },
-                                    { label: "Past Due", value: "past_due" },
-                                    { label: "Cancelled", value: "cancelled" },
-                                    { label: "Expired", value: "expired" },
-                                ]}
-                                onChange={handleStatusFilterChange}
-                                placeholder="Filter by Status"
-                            />
-                        </div>
-                        <StatusToggle status={filterStatus} onStatusChange={handleActiveStatusChange} />
-
-                    </div>
+                    <StatusToggle status={filterStatus} onStatusChange={handleActiveStatusChange} />
                 }
             >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                    <div>
+                        <Label className="text-xs mb-1 block text-gray-500">Status / Sub</Label>
+                        <Select
+                            value={managementStatusFilter}
+                            options={[
+                                { label: "All Status", value: "all" },
+                                { label: "Pending Subscription", value: "pending_subscription" },
+                                { label: "Subscribed", value: "subscribed" },
+                                { label: "Trialing", value: "trialing" },
+                                { label: "Active", value: "active" },
+                                { label: "Past Due", value: "past_due" },
+                                { label: "Cancelled", value: "cancelled" },
+                                { label: "Expired", value: "expired" },
+                            ]}
+                            onChange={handleStatusFilterChange}
+                        />
+                    </div>
+                    <div>
+                        <Label className="text-xs mb-1 block text-gray-500">Plan</Label>
+                        <Select
+                            value={planFilter}
+                            options={[{ label: "All Plans", value: "all" }, ...plansList.map(p => ({ label: p.name, value: p._id }))]}
+                            onChange={(val) => dispatch(setPlanFilter(val))}
+                        />
+                    </div>
+                    <div>
+                        <Label className="text-xs mb-1 block text-gray-500">Payment Method</Label>
+                        <Select
+                            value={paymentMethodFilter}
+                            options={[
+                                { label: "All Methods", value: "all" },
+                                { label: "Cash", value: "cash" },
+                                // { label: "Online", value: "online" },
+                                { label: "Trial", value: "trial" }
+                            ]}
+                            onChange={(val) => dispatch(setPaymentMethodFilter(val))}
+                        />
+                    </div>
+                    <div>
+                        <Label className="text-xs mb-1 block text-gray-500">Expiring Soon</Label>
+                        <Select
+                            value={expiringSoonFilter}
+                            options={[
+                                { label: "All", value: "all" },
+                                { label: "Expiring Soon", value: "true" },
+                                { label: "Not Expiring", value: "false" }
+                            ]}
+                            onChange={(val) => dispatch(setExpiringSoonFilter(val))}
+                        />
+                    </div>
+                    <div>
+                        <Label className="text-xs mb-1 block text-gray-500">Created By</Label>
+                        <Select
+                            value={createdByFilter}
+                            options={[{ label: "All Creators", value: "all" }, ...managersList.map(m => ({ label: m.name, value: m._id }))]}
+                            onChange={(val) => dispatch(setCreatedByFilter(val))}
+                        />
+                    </div>
+                </div>
                 <AdvanceTable
                     headers={headers as any}
                     rows={tableRows}
@@ -258,50 +441,72 @@ const AdminManagementList: React.FC = () => {
                     error={error}
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
-                    showAddButton={true}
+                    showAddButton={pagePermissions.canWrite}
                     addButtonText="Add Client"
                     addButtonPath="/Admin/add"
-                    onView={handleView}
-                    onEdit={handleEdit}
+                    onView={pagePermissions.canRead ? handleView : undefined}
+                    onEdit={pagePermissions.canUpdate ? handleEdit : undefined}
                     // onDelete={handleDelete}
                     customActions={(row: any) => {
+                        if (!pagePermissions.canUpdate) return null;
                         const onboardingStatus = row.onboardingStatusRaw || row.onboardingStatus;
                         const status = row.statusRaw || row.status;
+                        const actions = [];
 
                         if (!row.isActive && row?.subscription?.status === "cancelled") {
-                            return (
-                                <button onClick={() => handleActionClick(row, "activate")} className="text-emerald-600 hover:text-emerald-800 transition-colors" title="Activate Account">
+                            actions.push(
+                                <button key="activate" onClick={() => handleActionClick(row, "activate")} className="text-emerald-600 hover:text-emerald-800 transition-colors" title="Activate Account">
                                     <CheckCircle className="w-5 h-5" strokeWidth={1.75} />
                                 </button>
                             );
                         } else if (onboardingStatus === "pending_subscription") {
-                            return (
-                                <button onClick={() => handleActionClick(row, "resend")} className="text-blue-600 hover:text-blue-800 transition-colors" title="Resend Onboarding">
+                            actions.push(
+                                <button key="resend" onClick={() => handleActionClick(row, "resend")} className="text-blue-600 hover:text-blue-800 transition-colors" title="Resend Onboarding">
                                     <SendHorizontal className="w-5 h-5" strokeWidth={1.75} />
                                 </button>
                             );
                         } else if (onboardingStatus === "subscribed") {
                             const canExtend = row?.canExtend === true;
-                            return (
-                                <>
-                                    <button onClick={() => handleActionClick(row, "suspend")} className="text-red-600 hover:text-red-800 transition-colors" title="Suspend Account">
-                                        <Ban className="w-5 h-5" strokeWidth={1.75} />
-                                    </button>
-                                    {canExtend && (
-                                        <button onClick={() => handleActionClick(row, "extend")} className="text-blue-600 hover:text-blue-800 transition-colors" title="Extend Subscription">
-                                            <CalendarClock className="w-5 h-5" strokeWidth={1.75} />
-                                        </button>
-                                    )}
-                                </>
+                            actions.push(
+                                <button key="suspend" onClick={() => handleActionClick(row, "suspend")} className="text-red-600 hover:text-red-800 transition-colors" title="Suspend Account">
+                                    <Ban className="w-5 h-5" strokeWidth={1.75} />
+                                </button>
                             );
+                            if (canExtend) {
+                                actions.push(
+                                    <button key="extend" onClick={() => handleActionClick(row, "extend")} className="text-blue-600 hover:text-blue-800 transition-colors" title="Extend Subscription">
+                                        <CalendarClock className="w-5 h-5" strokeWidth={1.75} />
+                                    </button>
+                                );
+                            }
                         } else if (status === "expired") {
-                            return (
-                                <button onClick={() => handleActionClick(row, "activate")} className="text-emerald-600 hover:text-emerald-800 transition-colors" title="Activate Account">
+                            actions.push(
+                                <button key="activate" onClick={() => handleActionClick(row, "activate")} className="text-emerald-600 hover:text-emerald-800 transition-colors" title="Activate Account">
                                     <CheckCircle className="w-5 h-5" strokeWidth={1.75} />
                                 </button>
                             );
                         }
-                        return null;
+
+                        if (row.canShowCashPlanAssign) {
+                            actions.push(
+                                <button
+                                    key="cashplan"
+                                    onClick={() => openCashPlanModal(row)}
+                                    className="text-green-600 hover:text-green-800 disabled:opacity-50 transition-colors"
+                                    title="Assign Cash Plan"
+                                    disabled={fetchingCashPlanData}
+                                >
+                                    {fetchingCashPlanData && selectedAdminId === row.id ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <IndianRupee className="w-5 h-5" />
+                                    )}
+                                </button>
+                            );
+                        }
+
+                        if (actions.length === 0) return null;
+                        return <div className="flex items-center gap-2">{actions}</div>;
                     }}
                     checkboxHeading="Action"
                     selectedRows={selectedRows}
@@ -419,6 +624,124 @@ const AdminManagementList: React.FC = () => {
                     )}
                 </div>
             </Modal>
+
+            {/* Cash Plan Modal */}
+            <ConfigProvider
+                theme={{
+                    algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                    components: {
+                        Modal: {
+                            contentBg: isDark ? '#0B0F19' : '#ffffff',
+                            headerBg: isDark ? '#0B0F19' : '#ffffff',
+                        },
+                    },
+                }}
+            >
+                <Modal
+                    title={<span className="text-xl font-bold text-blue-600 dark:text-blue-400">Assign Cash Plan</span>}
+                    open={isCashPlanModalOpen}
+                    onCancel={() => setIsCashPlanModalOpen(false)}
+                    footer={null}
+                    destroyOnHidden
+                    width={700}
+                    classNames={{
+                        header: 'dark:bg-[#0B0F19] dark:border-b dark:border-gray-800 pb-2',
+                        body: 'dark:bg-[#0B0F19]',
+                    }}
+                >
+                    <form onSubmit={handleCashSubmit(onCashPlanSubmit)} className="mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {/* Row 1 */}
+                            <div>
+                                <Label>Select Plan <span className="text-red-500">*</span></Label>
+                                <Controller
+                                    name="planId"
+                                    control={controlCash}
+                                    rules={{ required: 'Plan is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={plansList.map(p => ({ label: p.name, value: p._id }))}
+                                            placeholder="Select a plan"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!cashErrors.planId}
+                                        />
+                                    )}
+                                />
+                                {cashErrors.planId && <span className="text-xs text-red-500">{cashErrors.planId.message}</span>}
+                            </div>
+
+                            <div>
+                                <Label>Tenure <span className="text-red-500">*</span></Label>
+                                <Controller
+                                    name="tenure"
+                                    control={controlCash}
+                                    rules={{ required: 'Tenure is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={tenureOptions}
+                                            placeholder="Select tenure"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!cashErrors.tenure}
+                                            disabled={!selectedPlanId}
+                                        />
+                                    )}
+                                />
+                                {cashErrors.tenure && <span className="text-xs text-red-500">{cashErrors.tenure.message}</span>}
+                            </div>
+
+                            {/* Row 2 */}
+                            <div>
+                                <Label>Paid At</Label>
+                                <Input
+                                    {...registerCash('paidAt')}
+                                    type="date"
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <Label>Collected By <span className="text-red-500">*</span></Label>
+                                <Controller
+                                    name="collectedBy"
+                                    control={controlCash}
+                                    rules={{ required: 'Collected by is required' }}
+                                    render={({ field }) => (
+                                        <Select
+                                            options={managersList.map(m => ({ label: `${m.name} (${m.userType})`, value: m._id }))}
+                                            placeholder="Select team member"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            error={!!cashErrors.collectedBy}
+                                        />
+                                    )}
+                                />
+                                {cashErrors.collectedBy && <span className="text-xs text-red-500">{cashErrors.collectedBy.message}</span>}
+                            </div>
+
+                            {/* Row 3 - Full Width */}
+                            <div className="col-span-1 md:col-span-2">
+                                <Label>Note</Label>
+                                <TextArea
+                                    {...registerCash('note')}
+                                    rows={2}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-100 dark:border-gray-800">
+                            <Button variant="outline" type="button" onClick={() => setIsCashPlanModalOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" type="submit" disabled={submitting}>
+                                {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                                {submitting ? 'Assigning...' : 'Assign Plan'}
+                            </Button>
+                        </div>
+                    </form>
+                </Modal>
+            </ConfigProvider>
         </div>
     );
 };

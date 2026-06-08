@@ -11,10 +11,12 @@ import ComponentCard from "../../../components/common/ComponentCard";
 import { formatDateWithTiming } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import { Modal } from "antd";
+import { usePermission } from "@/utility/permission";
 
 const DesignationList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const { pagePermissions } = usePermission();
     const { designations, loading, error, meta } = useSelector((state: RootState) => state.designation);
     
     const [currentPage, setCurrentPage] = useState(1);
@@ -82,11 +84,11 @@ const DesignationList: React.FC = () => {
                     error={error}
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
-                    showAddButton={true}
+                    showAddButton={pagePermissions.canWrite}
                     addButtonText="Add Designation"
                     addButtonPath="/designations/add"
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onEdit={pagePermissions.canUpdate ? handleEdit : undefined}
+                    onDelete={pagePermissions.canDelete ? handleDelete : undefined}
                     checkboxHeading="Action"
                     currentPage={currentPage}
                     total={meta?.total || 0}

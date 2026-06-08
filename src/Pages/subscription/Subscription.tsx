@@ -11,10 +11,12 @@ import { formatDateWithTiming } from "../../components/common/dateFormat";
 
 import PageMeta from "@/components/common/PageMeta";
 import Select from "../../components/form/Select";
+import { usePermission } from "@/utility/permission";
 
 const Subscription: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const { pagePermissions } = usePermission();
     const { subscriptions, loading, error, meta, searchQuery, statusFilter, tenureFilter, pagination } = useSelector(
         (state: RootState) => state.subscription
     );
@@ -96,7 +98,7 @@ const Subscription: React.FC = () => {
 
     const tenureOptions = [
         { label: "All Tenure", value: "all" },
-        { label: "Trial", value: "trial" },
+        // { label: "Trial", value: "trial" },
         { label: "Monthly", value: "monthly" },
         { label: "Quarterly", value: "quarterly" },
         { label: "Half Yearly", value: "halfYearly" },
@@ -139,7 +141,7 @@ const Subscription: React.FC = () => {
                     error={error}
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
-                    onView={handleView}
+                    onView={pagePermissions.canRead ? handleView : undefined}
                     currentPage={pagination.currentPage}
                     total={meta?.total || 0}
                     pageSize={pagination.pageSize}

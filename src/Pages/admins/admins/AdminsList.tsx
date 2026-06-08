@@ -9,10 +9,12 @@ import { formatDateWithTiming } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import { encryptData } from "../../../utility/crypto";
 import StatusToggle from "../../../components/form/input/StatusToggle";
+import { usePermission } from "@/utility/permission";
 
 const AdminsList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const { pagePermissions } = usePermission();
     const { admins, loading, error, meta, filterStatus, searchQuery, pagination } = useSelector((state: RootState) => state.admin);
     const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
 
@@ -108,6 +110,7 @@ const AdminsList: React.FC = () => {
         createdAt: formatDateWithTiming(admin.createdAt),
         statusIcon: admin.isActive ? "Active" : "Inactive",
         businessInfo: `${admin.businessName} (${admin.businessType})`,
+        createdBy: admin.createdBy?.name || "N/A"
     }));
 
 
@@ -121,7 +124,7 @@ const AdminsList: React.FC = () => {
         { label: "Subscription", key: "subStatus", value: "checked" as const },
         { label: "created At", key: "createdAt", value: "checked" as const },
         { label: "Status", key: "statusIcon", value: "checked" as const },
-        { label: "createdBy", key: "createdBy", value: "checked" as const },
+        { label: "Created By", key: "createdBy", value: "checked" as const },
         // {label: "createdAt", key: "createdAt", value: "checked" as const },
     ];
 
@@ -142,11 +145,11 @@ const AdminsList: React.FC = () => {
                     error={error}
                     searchQuery={searchQuery}
                     setSearchQuery={handleSearchChange}
-                    showAddButton={true}
+                    showAddButton={pagePermissions.canWrite}
                     addButtonText="Add Client"
                     addButtonPath="/Admin/add"
-                    onView={handleView}
-                    onEdit={handleEdit}
+                    onView={pagePermissions.canRead ? handleView : undefined}
+                    onEdit={pagePermissions.canUpdate ? handleEdit : undefined}
                     // onDelete={handleDelete}
                     checkboxHeading="Action"
                     // onCheckbox={true}

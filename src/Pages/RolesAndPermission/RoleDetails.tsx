@@ -9,6 +9,8 @@ import {
   User,
   FileText,
   Shield,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 import type { AppDispatch, RootState } from "../../store";
@@ -18,6 +20,101 @@ import Button from "../../components/UI/button/Button";
 import Loader from "../../components/UI/Loader";
 import PageMeta from "@/components/common/PageMeta";
 import { formatDateWithTiming } from "../../components/common/dateFormat";
+
+// Available modules mapped from Sidebar/App routes
+const MODULE_HIERARCHY = [
+    { module: "Dashboard", slug: "/" },
+    {
+        module: "Client",
+        slug: "#client",
+        subModules: [
+            { module: "Client", slug: "/Admin" },
+            { module: "Client Management", slug: "/AdminManagement" },
+        ]
+    },
+    {
+        module: "Team Members",
+        slug: "#team",
+        subModules: [
+            { module: "Members", slug: "/TeamMembers" },
+            { module: "Org Hierarchy", slug: "/TeamMembers/hierarchy" },
+        ]
+    },
+    { module: "Plans", slug: "/Plans" },
+    { module: "Subscriptions", slug: "/Subscriptions" },
+    { module: "Invoices", slug: "/Invoices" },
+    {
+        module: "Cash Management",
+        slug: "#cash",
+        subModules: [
+            { module: "Wallet", slug: "/Cash/wallet" },
+            { module: "Ledger", slug: "/Cash/ledger" },
+        ]
+    },
+    {
+        module: "Reports",
+        slug: "#reports",
+        subModules: [
+            { module: "Admin Report", slug: "/reports/admin" },
+            { module: "Revenue Report", slug: "/reports/revenue" },
+            { module: "Subscription Report", slug: "/reports/subscriptions" },
+            { module: "Invoice Report", slug: "/reports/invoices" },
+            { module: "Razorpay Payments", slug: "/reports/razorpay-payments" },
+            { module: "Razorpay Settlements", slug: "/reports/razorpay-settlements" },
+        ]
+    },
+    {
+        module: "Help Desk",
+        slug: "#helpdesk",
+        subModules: [
+            { module: "Dashboard Stats", slug: "/HelpDesk/stats" },
+            { module: "Tickets", slug: "/HelpDesk" },
+        ]
+    },
+    // {
+    //     module: "Master",
+    //     slug: "#master",
+    //     subModules: [
+    //         { module: "Settings", slug: "/settings" },
+    //         { module: "Designations", slug: "/designations" },
+    //         { module: "Roles & Permissions", slug: "/roles" },
+    //     ]
+    // }
+];
+
+interface PermissionRow {
+    module: string;
+    slug: string;
+    canRead: boolean;
+    canWrite: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
+    isGroup?: boolean;
+    parentSlug?: string;
+}
+
+const flattenModules = () => {
+    const flat: PermissionRow[] = [];
+    MODULE_HIERARCHY.forEach(m => {
+        if (m.subModules) {
+            flat.push({ module: m.module, slug: m.slug, isGroup: true, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
+            m.subModules.forEach(sm => {
+                flat.push({ module: sm.module, slug: sm.slug, parentSlug: m.slug, isGroup: false, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
+            });
+        } else {
+            flat.push({ module: m.module, slug: m.slug, isGroup: false, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
+        }
+    });
+    return flat;
+};
+
+const getInitialPermissions = () => {
+    const perms: Record<string, PermissionRow> = {};
+    flattenModules().forEach(m => {
+        perms[m.slug] = m;
+    });
+    return perms;
+};
 
 const PERM_COLORS = {
   canRead: { yes: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", label: "Read" },
@@ -51,10 +148,18 @@ const RoleDetails: React.FC = () => {
   const { roleId } = useParams<{ roleId: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const [expandedGroups, setExpandedGroups] = React.useState<Record<string, boolean>>({});
 
   const { currentRole: role, fetchingCurrent: loading } = useSelector(
     (state: RootState) => state.roles
   );
+
+  const toggleGroup = (slug: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [slug]: !prev[slug],
+    }));
+  };
 
   useEffect(() => {
     if (roleId) {
@@ -64,6 +169,40 @@ const RoleDetails: React.FC = () => {
       dispatch(clearCurrentRole());
     };
   }, [dispatch, roleId]);
+
+  useEffect(() => {
+    if (role?.permissions) {
+      const initialExpanded: Record<string, boolean> = {};
+      const flatList = flattenModules();
+      role.permissions.forEach((p: any) => {
+        const matchedModule = flatList.find((m) => m.slug === p.slug);
+        if (matchedModule?.parentSlug && (p.canRead || p.canWrite || p.canUpdate || p.canDelete)) {
+          initialExpanded[matchedModule.parentSlug] = true;
+        }
+      });
+      setExpandedGroups(initialExpanded);
+    }
+  }, [role]);
+
+  const permissionsMap = React.useMemo(() => {
+    const initialPerms = getInitialPermissions();
+    if (role?.permissions) {
+      role.permissions.forEach((p: any) => {
+        if (initialPerms[p.slug]) {
+          initialPerms[p.slug] = {
+            ...initialPerms[p.slug],
+            canRead: p.canRead,
+            canWrite: p.canWrite,
+            canUpdate: p.canUpdate,
+            canDelete: p.canDelete,
+          };
+        }
+      });
+    }
+    return initialPerms;
+  }, [role]);
+
+  const flatModulesList = flattenModules();
 
   return (
     <div className="space-y-6">
@@ -210,39 +349,55 @@ const RoleDetails: React.FC = () => {
                     <p className="text-sm italic">No permissions assigned</p>
                   </div>
                 ) : (
-                  (role.permissions || []).map((perm, idx) => (
-                    <div
-                      key={idx}
-                      className="flex flex-col sm:grid sm:grid-cols-[1fr_repeat(4,_100px)] px-5 py-4 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors gap-3 sm:gap-0"
-                    >
-                      {/* Module Name */}
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-2 h-2 rounded-full bg-primary/50 shrink-0" />
-                        <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                          {perm.module}
-                        </span>
-                      </div>
+                  flatModulesList.map((m) => {
+                    const perm = permissionsMap[m.slug];
+                    if (!perm) return null;
 
-                      {/* Permissions — Desktop */}
-                      {(
-                        [
-                          { key: "canRead", ...PERM_COLORS.canRead },
-                          { key: "canWrite", ...PERM_COLORS.canWrite },
-                          { key: "canUpdate", ...PERM_COLORS.canUpdate },
-                          { key: "canDelete", ...PERM_COLORS.canDelete },
-                        ] as Array<{ key: keyof typeof perm; yes: string; label: string }>
-                      ).map((p) => (
-                        <div key={p.key} className="hidden sm:flex justify-center items-center">
-                          <PermBadge
-                            granted={perm[p.key] as boolean}
-                            label={p.label}
-                            colorClass={p.yes}
-                          />
+                    if (m.parentSlug && !expandedGroups[m.parentSlug]) return null;
+
+                    return (
+                      <div
+                        key={m.slug}
+                        className={`flex flex-col sm:grid sm:grid-cols-[1fr_repeat(4,_100px)] px-5 py-3.5 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors gap-3 sm:gap-0 items-center ${
+                          m.isGroup ? "bg-gray-50/30 dark:bg-white/[0.01]" : ""
+                        }`}
+                      >
+                        {/* Module Name */}
+                        <div
+                          className={`flex items-center gap-2.5 w-full sm:w-auto ${
+                            m.parentSlug ? "pl-6" : ""
+                          } ${m.isGroup ? "cursor-pointer select-none" : ""}`}
+                          onClick={() => {
+                            if (m.isGroup) toggleGroup(m.slug);
+                          }}
+                        >
+                          {!m.parentSlug && !m.isGroup && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
+                          )}
+                          {m.isGroup && (
+                            <div className="text-gray-400">
+                              {expandedGroups[m.slug] ? (
+                                <ChevronDown size={14} />
+                              ) : (
+                                <ChevronRight size={14} />
+                              )}
+                            </div>
+                          )}
+                          {m.parentSlug && (
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 shrink-0" />
+                          )}
+                          <span
+                            className={`text-sm ${
+                              m.isGroup
+                                ? "font-bold text-gray-900 dark:text-white hover:text-primary transition-colors"
+                                : "font-medium text-gray-700 dark:text-gray-200"
+                            }`}
+                          >
+                            {m.module}
+                          </span>
                         </div>
-                      ))}
 
-                      {/* Permissions — Mobile */}
-                      <div className="sm:hidden flex flex-wrap gap-2">
+                        {/* Permissions — Desktop */}
                         {(
                           [
                             { key: "canRead", ...PERM_COLORS.canRead },
@@ -251,16 +406,36 @@ const RoleDetails: React.FC = () => {
                             { key: "canDelete", ...PERM_COLORS.canDelete },
                           ] as Array<{ key: keyof typeof perm; yes: string; label: string }>
                         ).map((p) => (
-                          <PermBadge
-                            key={p.key}
-                            granted={perm[p.key] as boolean}
-                            label={p.label}
-                            colorClass={p.yes}
-                          />
+                          <div key={p.key} className="hidden sm:flex justify-center items-center">
+                            <PermBadge
+                              granted={perm[p.key] as boolean}
+                              label={p.label}
+                              colorClass={p.yes}
+                            />
+                          </div>
                         ))}
+
+                        {/* Permissions — Mobile */}
+                        <div className="sm:hidden flex flex-wrap gap-2 w-full">
+                          {(
+                            [
+                              { key: "canRead", ...PERM_COLORS.canRead },
+                              { key: "canWrite", ...PERM_COLORS.canWrite },
+                              { key: "canUpdate", ...PERM_COLORS.canUpdate },
+                              { key: "canDelete", ...PERM_COLORS.canDelete },
+                            ] as Array<{ key: keyof typeof perm; yes: string; label: string }>
+                          ).map((p) => (
+                            <PermBadge
+                              key={p.key}
+                              granted={perm[p.key] as boolean}
+                              label={p.label}
+                              colorClass={p.yes}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

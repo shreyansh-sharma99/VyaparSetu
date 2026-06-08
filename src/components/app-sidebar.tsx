@@ -17,6 +17,8 @@ import {
   Book,
   Headphones,
   Ticket,
+  Mail,
+  Send,
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,6 +47,7 @@ interface SubItem {
   icon: React.ElementType;
   url: string;
   isActive?: boolean;
+  slug?: string;
 }
 
 interface MenuItem {
@@ -53,6 +56,7 @@ interface MenuItem {
   url: string;
   isActive?: boolean;
   subItems?: SubItem[];
+  slug?: string;
 }
 
 const getInitials = (name?: string) => {
@@ -78,7 +82,7 @@ const menuItems: MenuItem[] = [
     icon: User,
     url: "#",
     subItems: [
-      { title: "Client", icon: UserCheck, url: "/Admin" },
+      // { title: "Client", icon: UserCheck, url: "/Admin" },
       { title: "Client Management", icon: Building2, url: "/AdminManagement" },
     ],
   },
@@ -139,6 +143,12 @@ const menuItems: MenuItem[] = [
 
   // Help Desk
   {
+    title: "Email",
+    icon: Send,
+    url: "/email",
+    slug: "email",
+  },
+  {
     title: "Help Desk",
     icon: Headphones,
     url: "#",
@@ -157,6 +167,7 @@ const menuItems: MenuItem[] = [
       { title: "Settings", icon: Settings, url: "/settings" },
       { title: "Designations", icon: UserCheck, url: "/designations" },
       { title: "Roles & Permissions", icon: Shield, url: "/roles" },
+      { title: "Email Templates", icon: Mail, url: "/settings/email-templates" },
     ],
   },
 ];
@@ -167,6 +178,7 @@ import { fetchUserProfile } from "@/Pages/login/services/userSlice";
 import type { RootState, AppDispatch } from "@/store";
 import { useLocation } from "react-router-dom";
 import { Logo } from "@/components/Logo";
+import { usePermission } from "@/utility/permission";
 
 export function AppSidebar() {
   const dispatch = useDispatch<AppDispatch>();
@@ -191,23 +203,40 @@ export function AppSidebar() {
     return location.pathname === url;
   };
 
+  const { hasMenuPermission } = usePermission();
   const userType = profile?.user?.userType || profile?.userType || localStorage.getItem('userType');
   const isOwner = userType === 'owner';
 
-  const filteredMenuItems = menuItems.map(item => {
-    if (item.title === "Cash Management" && item.subItems) {
-      return {
-        ...item,
-        subItems: item.subItems.filter(sub => {
-          if (sub.title === "Ledger") {
-            return isOwner;
-          }
-          return true;
-        })
-      };
-    }
-    return item;
-  });
+  const filteredMenuItems = menuItems
+    .map(item => {
+      if (item.subItems) {
+        return {
+          ...item,
+          subItems: item.subItems.filter(sub => {
+            if (sub.title === "Ledger" && !isOwner) {
+              return false;
+            }
+            return hasMenuPermission(sub.url);
+          })
+        };
+      }
+      return item;
+    })
+    .filter(item => {
+      if (item.subItems) {
+        const parentSlugMap: Record<string, string> = {
+          "Client": "#client",
+          "Team Members": "#team",
+          "Cash Management": "#cash",
+          "Reports": "#reports",
+          "Help Desk": "#helpdesk",
+          "Master": "#master"
+        };
+        const parentSlug = parentSlugMap[item.title] || item.url;
+        return hasMenuPermission(parentSlug) && item.subItems.length > 0;
+      }
+      return hasMenuPermission(item.url);
+    });
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border/10 bg-gradient-to-b from-sidebar via-sidebar/95 to-sidebar/90 backdrop-blur-2xl no-scrollbar shadow-2xl">

@@ -2,29 +2,30 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
-import { ShieldCheck, Trash2 } from "lucide-react";
+import { Mail, Trash2 } from "lucide-react";
 
-import type { AppDispatch, RootState } from "../../store";
-import { fetchRoles, deleteRole } from "./services/rolesSlice";
-import AdvanceTable from "../../components/Tables/AdvanceTable";
-import ComponentCard from "../../components/common/ComponentCard";
-import { formatDateWithTiming } from "../../components/common/dateFormat";
+import type { AppDispatch, RootState } from "../../../store";
+import { fetchEmailTemplates, deleteEmailTemplateAction } from "./services/emailTemplateSlice";
+import AdvanceTable from "../../../components/Tables/AdvanceTable";
+import ComponentCard from "../../../components/common/ComponentCard";
+import { formatDateWithTiming } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import { usePermission } from "@/utility/permission";
+import { encryptData } from "../../../utility/crypto";
 
-const RoleAndPermissionList: React.FC = () => {
+const ListEmailTemplate: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { pagePermissions } = usePermission();
-  const { roles, loading, error, meta } = useSelector(
-    (state: RootState) => state.roles
+  const { templates, loading, error, meta } = useSelector(
+    (state: RootState) => state.emailTemplate
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    dispatch(fetchRoles({ page: currentPage, limit: pageSize, search: searchQuery }));
+    dispatch(fetchEmailTemplates({ page: currentPage, limit: pageSize, search: searchQuery }));
   }, [dispatch, currentPage, pageSize, searchQuery]);
 
   const handleSearchChange = (query: string) => {
@@ -32,17 +33,19 @@ const RoleAndPermissionList: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleView = (role: any) => {
-    navigate(`/roles/view/${role._id}`);
+  const handleView = (template: any) => {
+    const encryptedId = encodeURIComponent(encryptData(template._id));
+    navigate(`/settings/email-templates/view/${encryptedId}`);
   };
 
-  const handleEdit = (role: any) => {
-    navigate(`/roles/edit/${role._id}`);
+  const handleEdit = (template: any) => {
+    const encryptedId = encodeURIComponent(encryptData(template._id));
+    navigate(`/settings/email-templates/edit/${encryptedId}`);
   };
 
   const handleDelete = (id: string) => {
     Modal.confirm({
-      title: <span className="dark:text-red-600">Delete Role</span>,
+      title: <span className="dark:text-red-600">Delete Email Template</span>,
       icon: (
         <span className="flex items-center justify-center mr-2 rounded-full bg-red-100 dark:bg-red-200 mb-2">
           <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -51,10 +54,10 @@ const RoleAndPermissionList: React.FC = () => {
       content: (
         <div className="py-2">
           <p className="text-gray-700 dark:text-gray-300 font-medium">
-            Are you sure you want to delete this role?
+            Are you sure you want to delete this template?
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            This action cannot be undone. All permissions associated with this role will be permanently removed.
+            This action cannot be undone.
           </p>
         </div>
       ),
@@ -69,24 +72,22 @@ const RoleAndPermissionList: React.FC = () => {
         className: "!rounded-xl font-bold h-10 px-6 dark:bg-red-800 dark:text-red-200 dark:border-red-700 dark:hover:bg-red-700 dark:hover:text-white"
       },
       onOk: () => {
-        dispatch(deleteRole(id));
+        dispatch(deleteEmailTemplateAction(id));
       },
     });
   };
 
-  const tableRows = (roles || []).map((role) => ({
-    ...role,
-    id: role._id,
-    permissionsCount: `${role.permissions?.length || 0} modules`,
-    type: role.isSystemRole ? "System Role" : "Custom Role",
-    createdDate: formatDateWithTiming(role.createdAt),
+  const tableRows = (templates || []).map((template) => ({
+    ...template,
+    id: template._id,
+    status: template.isActive ? "Active" : "Inactive",
+    createdDate: formatDateWithTiming(template.createdAt),
   }));
 
   const headers = [
-    { label: "Role Name", key: "roleName", value: "checked" as const },
-    { label: "Description", key: "description", value: "checked" as const },
-    { label: "Type", key: "type", value: "checked" as const },
-    { label: "Permissions", key: "permissionsCount", value: "checked" as const },
+    { label: "Name", key: "name", value: "checked" as const },
+    { label: "Subject", key: "subject", value: "checked" as const },
+    { label: "Status", key: "status", value: "checked" as const },
     { label: "Created At", key: "createdDate", value: "checked" as const },
   ];
 
@@ -98,16 +99,16 @@ const RoleAndPermissionList: React.FC = () => {
   return (
     <div>
       <PageMeta
-        title="Roles & Permissions | VyaparSetu"
-        description="Manage roles and permissions"
+        title="Email Templates | VyaparSetu"
+        description="Manage email templates"
       />
       <ComponentCard
-        title="Roles & Permissions"
+        title="Email Templates"
         rightButtonNode={
           <div className="flex items-center gap-2">
             <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-primary/80 bg-primary/10 px-3 py-1.5 rounded-lg">
-              <ShieldCheck size={13} />
-              Access Control
+              <Mail size={13} />
+              Templates
             </span>
           </div>
         }
@@ -120,8 +121,8 @@ const RoleAndPermissionList: React.FC = () => {
           searchQuery={searchQuery}
           setSearchQuery={handleSearchChange}
           showAddButton={pagePermissions.canWrite}
-          addButtonText="Create Role"
-          addButtonPath="/roles/create"
+          addButtonText="Create Template"
+          addButtonPath="/settings/email-templates/create"
           onView={pagePermissions.canRead ? handleView : undefined}
           onEdit={pagePermissions.canUpdate ? handleEdit : undefined}
           onDelete={pagePermissions.canDelete ? handleDelete : undefined}
@@ -131,12 +132,10 @@ const RoleAndPermissionList: React.FC = () => {
           pageSize={pageSize}
           onPageChange={handlePageChange}
           maxHeight="calc(100vh - 350px)"
-          disableEditCondition={(row) => row.isSystemRole}
-          disableDeleteCondition={(row) => row.isSystemRole}
         />
       </ComponentCard>
     </div>
   );
 };
 
-export default RoleAndPermissionList;
+export default ListEmailTemplate;

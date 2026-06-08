@@ -34,6 +34,19 @@ interface Admin {
   };
   onboardingStatus?: string;
   status?: string;
+  canShowCashPlanAssign?: boolean;
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+    userType: string;
+  };
+  updatedBy?: {
+    _id: string;
+    name: string;
+    email: string;
+    userType: string;
+  };
 }
 
 interface AdminState {
@@ -55,6 +68,10 @@ interface AdminState {
   error: string | null;
   filterStatus: string;
   managementStatusFilter: string;
+  planFilter: string;
+  paymentMethodFilter: string;
+  expiringSoonFilter: string;
+  createdByFilter: string;
   searchQuery: string;
   pagination: {
     currentPage: number;
@@ -76,6 +93,10 @@ const initialState: AdminState = {
   error: null,
   filterStatus: "all",
   managementStatusFilter: "all",
+  planFilter: "all",
+  paymentMethodFilter: "all",
+  expiringSoonFilter: "all",
+  createdByFilter: "all",
   searchQuery: "",
   pagination: {
     currentPage: 1,
@@ -84,9 +105,9 @@ const initialState: AdminState = {
 };
 
 export const fetchAdmins = createAsyncThunk("admin/fetchAdmins",
-  async ({ page, limit, search, isActive, onboardingStatus, status, subscriptionStatus }: { page: number; limit: number; search?: string, isActive?: boolean, onboardingStatus?: string, status?: string, subscriptionStatus?: string }, { rejectWithValue }) => {
+  async (params: any, { rejectWithValue }) => {
     try {
-      const response = await getAdminsService(page, limit, search, isActive, onboardingStatus, status, subscriptionStatus);
+      const response = await getAdminsService(params);
       return response.data;
     } catch (error: any) {
       const message = error.response?.data?.message || "Failed to fetch admins";
@@ -245,6 +266,22 @@ const adminSlice = createSlice({
       state.managementStatusFilter = action.payload;
       state.pagination.currentPage = 1;
     },
+    setPlanFilter: (state, action) => {
+      state.planFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setPaymentMethodFilter: (state, action) => {
+      state.paymentMethodFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setExpiringSoonFilter: (state, action) => {
+      state.expiringSoonFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
+    setCreatedByFilter: (state, action) => {
+      state.createdByFilter = action.payload;
+      state.pagination.currentPage = 1;
+    },
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
       state.pagination.currentPage = 1;
@@ -346,5 +383,5 @@ const adminSlice = createSlice({
   },
 });
 
-export const { clearCurrentAdmin, setFilterStatus, setManagementStatusFilter, setSearchQuery, setPagination } = adminSlice.actions;
+export const { clearCurrentAdmin, setFilterStatus, setManagementStatusFilter, setPlanFilter, setPaymentMethodFilter, setExpiringSoonFilter, setCreatedByFilter, setSearchQuery, setPagination } = adminSlice.actions;
 export default adminSlice.reducer;

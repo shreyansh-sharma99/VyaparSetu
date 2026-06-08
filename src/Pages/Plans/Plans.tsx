@@ -10,10 +10,12 @@ import PageMeta from '@/components/common/PageMeta';
 import { encryptData } from '../../utility/crypto';
 import { useNavigate } from 'react-router-dom';
 import PlanDetailsModal from './PlanDetailsModal';
+import { usePermission } from '@/utility/permission';
 import { fetchPlanById, fetchPlans, togglePlanStatus, deleteExistingPlan } from './services/PlanSlice';
 
 const Plans: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { pagePermissions } = usePermission();
   const { plans, loading, error, currentPlan } = useSelector((state: RootState) => state.plan);
   const navigate = useNavigate();
   const [selectedRows, setSelectedRows] = useState<{ [key: string]: boolean }>({});
@@ -126,14 +128,14 @@ const Plans: React.FC = () => {
           error={error}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          showAddButton={true}
+          showAddButton={pagePermissions.canWrite}
           addButtonText="Add Plan"
           addButtonPath="/AddPlans"
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onView={pagePermissions.canRead ? handleView : undefined}
+          onEdit={pagePermissions.canUpdate ? handleEdit : undefined}
+          onDelete={pagePermissions.canDelete ? handleDelete : undefined}
           disableDeleteCondition={(row: any) => (row.subscriberCount || 0) > 0}
-          onCheckbox={true}
+          onCheckbox={pagePermissions.canUpdate}
           onCheckboxToggle={handleToggleStatus}
           checkboxHeading="Action"
           selectedRows={selectedRows}

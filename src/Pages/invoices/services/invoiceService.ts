@@ -1,8 +1,9 @@
 import Http from "@/utility/Http";
 
-export const getInvoicesService = async (page: number = 1, limit: number = 10, status?: string) => {
+export const getInvoicesService = async (page: number = 1, limit: number = 10, status?: string, search?: string) => {
     let url = `/owner/invoices?page=${page}&limit=${limit}`;
     if (status) url += `&status=${status}`;
+    if (search) url += `&search=${search}`;
     return await Http.get(url);
 };
 

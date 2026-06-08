@@ -1,12 +1,16 @@
 import Http from "@/utility/Http";
 
-export const getAdminsService = async (page: number = 1, limit: number = 10, search: string = "", isActive?: boolean, onboardingStatus?: string, status?: string, subscriptionStatus?: string) => {
-    let url = `/owner/admins?page=${page}&limit=${limit}`;
-    if (search) url += `&search=${search}`;
-    if (isActive !== undefined) url += `&isActive=${isActive}`;
-    if (onboardingStatus) url += `&onboardingStatus=${onboardingStatus}`;
-    if (status) url += `&status=${status}`;
-    if (subscriptionStatus) url += `&subscriptionStatus=${subscriptionStatus}`;
+export const getAdminsService = async (params: any) => {
+    let url = `/owner/admins?page=${params.page || 1}&limit=${params.limit || 10}`;
+    if (params.search) url += `&search=${params.search}`;
+    if (params.isActive !== undefined) url += `&isActive=${params.isActive}`;
+    if (params.onboardingStatus) url += `&onboardingStatus=${params.onboardingStatus}`;
+    if (params.status) url += `&status=${params.status}`;
+    if (params.subscriptionStatus) url += `&subscriptionStatus=${params.subscriptionStatus}`;
+    if (params.plan) url += `&plan=${params.plan}`;
+    if (params.paymentMethod) url += `&paymentMethod=${params.paymentMethod}`;
+    if (params.expiringSoon) url += `&expiringSoon=${params.expiringSoon}`;
+    if (params.createdBy) url += `&createdBy=${params.createdBy}`;
     return await Http.get(url);
 };
 

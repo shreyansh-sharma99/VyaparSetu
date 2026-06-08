@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { usePermission, getSlugFromPath } from '@/utility/permission';
 import type { RootState } from './store';
 import Login from './Pages/login/Login';
 import { Dashboard } from './Pages/dashboard/Dashboard';
@@ -44,17 +45,44 @@ import CashReport from './Pages/cash/CashReport';
 import HelpDesk from './Pages/HelpDesk/helpDeskManagement/HelpDesk';
 import HelpDeskStats from './Pages/HelpDesk/helpDeskManagement/HelpDeskStats';
 import HelpDeskDetails from './Pages/HelpDesk/helpDeskManagement/HelpDeskDetails';
+import ListEmailTemplate from './Pages/settings/emailTemplate/ListEmailTemplate';
+import CreateEmailTemplate from './Pages/settings/emailTemplate/CreateEmailTemplate';
+import UpdateEmailTemplate from './Pages/settings/emailTemplate/UpdateEmailTemplate';
+import ViewEmailTemplate from './Pages/settings/emailTemplate/ViewEmailTemplate';
+import SendEmail from './Pages/email/SendEmail';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const location = useLocation();
+  const { hasMenuPermission, hasActionPermission, isTeamMember } = usePermission();
+
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+  if (isTeamMember) {
+    const slug = getSlugFromPath(location.pathname);
+    if (slug !== '/' && !hasMenuPermission(slug)) {
+      return <Navigate to="/" replace />;
+    }
+
+    const pathLower = location.pathname.toLowerCase();
+    const isCreatePage = pathLower.includes('/add') || pathLower.includes('/create') || pathLower.includes('/addplans');
+    const isEditPage = pathLower.includes('/edit') || pathLower.includes('/update') || pathLower.includes('/editplans');
+
+    if (isCreatePage && !hasActionPermission(slug, 'canWrite')) {
+      return <Navigate to="/" replace />;
+    }
+    if (isEditPage && !hasActionPermission(slug, 'canUpdate')) {
+      return <Navigate to="/" replace />;
+    }
+  }
+
   return <>{children}</>;
 }
 
 function OwnerRoute({ children }: { children: React.ReactNode }) {
   const { profile } = useSelector((state: RootState) => state.user);
   const userType = profile?.user?.userType || profile?.userType || localStorage.getItem('userType');
-  
+
   if (userType !== 'owner') {
     return <Navigate to="/Cash/wallet" replace />;
   }
@@ -93,6 +121,13 @@ function App() {
 
           {/*Settings  */}
           <Route path="/settings" element={<Settings />} />
+          <Route path="/settings/email-templates" element={<ListEmailTemplate />} />
+          <Route path="/settings/email-templates/create" element={<CreateEmailTemplate />} />
+          <Route path="/settings/email-templates/edit/:id" element={<UpdateEmailTemplate />} />
+          <Route path="/settings/email-templates/view/:id" element={<ViewEmailTemplate />} />
+
+          {/* Email */}
+          <Route path="/email" element={<SendEmail />} />
 
           {/* Team Member */}
           <Route path="/TeamMembers" element={<TeamMemberList />} />
