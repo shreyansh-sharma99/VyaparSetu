@@ -334,6 +334,8 @@ const TeamMemberHierarchy: React.FC = () => {
       !n.reportingManager
   );
 
+  console.log("Hierarchy data:", hierarchy);
+
   return (
     <div className="space-y-6">
       <PageMeta title="Team Hierarchy | VyaparSetu" description="Organization hierarchy" />

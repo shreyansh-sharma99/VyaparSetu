@@ -639,6 +639,15 @@ const TeamMemberHierarchy: React.FC = () => {
       !n.reportingManager
   );
 
+  const countMembers = (users: any[]): number => {
+  return users.reduce((count, user) => {
+    return count + 1 + countMembers(user.reports || []);
+  }, 0);
+};
+
+const totalMembers = countMembers(hierarchy || []);
+
+  console.log("Hierarchy Data:", hierarchy);
   return (
     <div className="space-y-6">
       <PageMeta title="Team Hierarchy | VyaparSetu" description="Organization hierarchy" />
@@ -648,7 +657,8 @@ const TeamMemberHierarchy: React.FC = () => {
         rightButtonNode={
           <div className="flex items-center gap-2 text-[14px] font-semibold text-gray-500 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-150/40 dark:border-gray-700/40">
             <Users size={13} className="text-primary" />
-            <span>{(hierarchy || []).length} members total</span>
+            {/* <span>{(hierarchy || []).length} members total</span> */}
+            <span>{totalMembers} members total</span>
           </div>
         }
       >
