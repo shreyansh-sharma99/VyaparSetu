@@ -7,8 +7,9 @@ import Select from '../../components/form/Select';
 import {
   ArrowLeft, User, Mail, CreditCard, Calendar, Clock, Activity, Zap,
   ShieldCheck, BarChart3, Globe, Code2, Headphones, Download, Layout,
-  Bell, Box, ShoppingCart, Users, Store, HardDrive, XCircle,
-  ArrowUpCircle, CalendarClock, Ban, RefreshCw, Settings2, ShieldAlert
+  Bell, XCircle,
+  ArrowUpCircle, CalendarClock, Ban, RefreshCw, Settings2, ShieldAlert,
+  Info, Tag
 } from 'lucide-react';
 import { formatDateWithTiming } from '../../components/common/dateFormat';
 import Loader from '../../components/UI/Loader';
@@ -39,6 +40,21 @@ const SubscriptionDetails: React.FC = () => {
 
   const { plans } = useSelector((state: RootState) => state.plan);
   const { profile } = useSelector((state: RootState) => state.user);
+
+  const formatCurrency = useCallback((amount?: number, currency = "INR") => {
+    if (amount === undefined || amount === null) return "—";
+    const value = amount / 100;
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency,
+      maximumFractionDigits: 2
+    }).format(value);
+  }, []);
+
+  const activePricing = useMemo(() => {
+    if (!sub?.planId?.computedPricing || !sub?.tenure) return null;
+    return sub.planId.computedPricing.find((p: any) => p.tenure === sub.tenure);
+  }, [sub]);
 
   const [actionModalVisible, setActionModalVisible] = useState(false);
   const [actionType, setActionType] = useState<"upgrade" | "cancel" | "extend" | "reconcile" | "forceStatus" | null>(null);
@@ -244,13 +260,13 @@ const SubscriptionDetails: React.FC = () => {
   };
 
   const InfoItem = ({ icon: Icon, label, value, colorClass = "text-gray-500" }: any) => (
-    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100/50 dark:border-white/[0.05]">
-      <div className={`mt-0.5 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 ${colorClass}`}>
+    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100/50 dark:border-white/[0.05] min-w-0">
+      <div className={`mt-0.5 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 shrink-0 ${colorClass}`}>
         <Icon size={16} />
       </div>
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-tight mb-1">{label}</p>
-        <div className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 leading-tight">
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-tight mb-1 truncate">{label}</p>
+        <div className="text-[15px] font-semibold text-gray-900 dark:text-gray-100 leading-tight break-all">
           {value}
         </div>
       </div>
@@ -323,115 +339,127 @@ const SubscriptionDetails: React.FC = () => {
             <Loader />
           </div>
         ) : sub ? (
-          <div className="space-y-8">
-            {/* Section: General Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <InfoItem icon={User} label="Admin" value={sub.adminId?.name || 'N/A'} colorClass="text-blue-500" />
-              <InfoItem icon={Mail} label="Email" value={sub.adminId?.email || 'N/A'} colorClass="text-indigo-500" />
-              <InfoItem icon={Zap} label="Plan" value={sub.planId?.name || 'N/A'} colorClass="text-amber-500" />
-              <InfoItem icon={Activity} label="Status" value={getStatusBadge(sub.status)} colorClass="text-emerald-500" />
-              <InfoItem icon={Calendar} label="Start Date" value={formatDateWithTiming(sub.startDate)} colorClass="text-blue-400" />
-              <InfoItem icon={Calendar} label="End Date" value={formatDateWithTiming(sub.endDate)} colorClass="text-rose-400" />
-              <InfoItem icon={Clock} label="Tenure" value={sub.tenure?.toUpperCase()} colorClass="text-purple-500" />
-              <InfoItem icon={CreditCard} label="ID" value={sub.razorpaySubscriptionId?.split('_')[1] || 'N/A'} colorClass="text-gray-400" />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {/* Card 1: Account & Access */}
+              <ComponentCard title="Account & Access" className="!h-full border border-gray-100 dark:border-white/[0.05]">
+                <div className="space-y-4">
+                  <InfoItem icon={User} label="Admin Name" value={sub.adminId?.name || 'N/A'} colorClass="text-blue-500" />
+                  <InfoItem icon={Mail} label="Email Address" value={sub.adminId?.email || 'N/A'} colorClass="text-indigo-500" />
+                  <InfoItem icon={Activity} label="Status" value={getStatusBadge(sub.status)} colorClass="text-purple-500" />
+                  <InfoItem icon={Calendar} label="Created Date" value={formatDateWithTiming(sub.createdAt)} colorClass="text-emerald-500" />
+                </div>
+              </ComponentCard>
+
+              {/* Card 2: Plan Details */}
+              <ComponentCard title="Plan Details" className="!h-full border border-gray-100 dark:border-white/[0.05]">
+                <div className="space-y-4">
+                  <InfoItem icon={Zap} label="Plan Name" value={sub.planId?.name || 'N/A'} colorClass="text-amber-500" />
+                  <InfoItem icon={Info} label="Description" value={sub.planId?.description || 'N/A'} colorClass="text-blue-500" />
+                  <InfoItem icon={Globe} label="Access Mode" value={(sub.planId as any)?.accessMode ? (sub.planId as any).accessMode.replace(/([A-Z])/g, ' $1').trim().toUpperCase() : 'N/A'} colorClass="text-purple-500" />
+                </div>
+              </ComponentCard>
+
+              {/* Card 3: Schedule & Period */}
+              <ComponentCard title="Schedule & Subscription" className="!h-full border border-gray-100 dark:border-white/[0.05]">
+                <div className="space-y-4">
+                  <InfoItem icon={Calendar} label="Start Date" value={formatDateWithTiming(sub.startDate)} colorClass="text-blue-400" />
+                  <InfoItem icon={Calendar} label="End Date" value={formatDateWithTiming(sub.endDate)} colorClass="text-rose-400" />
+                  <InfoItem icon={Clock} label="Billing Tenure" value={sub.tenure?.toUpperCase()} colorClass="text-purple-500" />
+                  <InfoItem icon={CreditCard} label="Subscription ID" value={sub.razorpaySubscriptionId || 'N/A'} colorClass="text-gray-400" />
+                </div>
+              </ComponentCard>
+
+              {/* Card 4: Pricing & Savings */}
+              <ComponentCard title="Pricing & Billing" className="!h-full border border-gray-100 dark:border-white/[0.05]">
+                <div className="space-y-4">
+                  <InfoItem 
+                    icon={Tag} 
+                    label="Base Plan Price" 
+                    value={formatCurrency(sub.planId?.basePrice, sub.planId?.currency)} 
+                    colorClass="text-amber-500" 
+                  />
+                  <InfoItem 
+                    icon={Zap} 
+                    label="Applied Discount" 
+                    value={activePricing ? `${activePricing.discountPercent}%` : '0%'} 
+                    colorClass="text-emerald-500" 
+                  />
+                  <InfoItem 
+                    icon={CreditCard} 
+                    label="Final Total Paid" 
+                    value={formatCurrency(activePricing ? activePricing.totalPrice : sub.planId?.basePrice, sub.planId?.currency)} 
+                    colorClass="text-blue-500" 
+                  />
+                  <InfoItem 
+                    icon={ShieldCheck} 
+                    label="Money Saved" 
+                    value={formatCurrency(activePricing ? activePricing.savedAmount : 0, sub.planId?.currency)} 
+                    colorClass="text-emerald-600" 
+                  />
+                </div>
+              </ComponentCard>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Section: Plan Limits */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="text-blue-500" size={18} />
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-widest">Plan Limits</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Products", value: sub.planId?.limits?.maxProducts, icon: Box, color: "text-blue-500" },
-                    { label: "Orders", value: sub.planId?.limits?.maxOrders, icon: ShoppingCart, color: "text-emerald-500" },
-                    { label: "Customers", value: sub.planId?.limits?.maxCustomers, icon: Users, color: "text-indigo-500" },
-                    { label: "Staff", value: sub.planId?.limits?.maxStaff, icon: User, color: "text-purple-500" },
-                    { label: "Stores", value: sub.planId?.limits?.maxStores, icon: Store, color: "text-amber-500" },
-                    { label: "Storage", value: `${sub.planId?.limits?.storageGB} GB`, icon: HardDrive, color: "text-rose-500" },
-                  ].map((limit, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.05] flex items-center gap-3">
-                      <limit.icon size={16} className={limit.color} />
-                      <div>
-                        <p className="text-xs font-semibold text-gray-400 uppercase leading-none mb-1.5">{limit.label}</p>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                          {limit.value === -1 ? 'Unlimited' : limit.value}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section: Features */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Zap className="text-amber-500" size={18} />
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-widest">Features Included</h3>
-                </div>
-                <div className="flex flex-wrap gap-2.5">
-                  {sub.planId?.features && Object.entries(sub.planId.features).map(([key, enabled]) => (
+            {sub.planId?.features && (
+              <ComponentCard title="Features Included" className="border border-gray-100 dark:border-white/[0.05]">
+                <div className="flex flex-wrap gap-3 mt-2">
+                  {Object.entries(sub.planId.features).map(([key, enabled]) => (
                     enabled ? (
-                      <div key={key} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm">
-                        <div className="text-emerald-500">{featureIcons[key] || <ShieldCheck size={14} />}</div>
-                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-tight">
+                      <div key={key} className="flex items-center gap-2 px-3 py-2.5 bg-gray-50/50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.05] rounded-2xl shadow-sm hover:border-blue-200 dark:hover:border-blue-900/50 transition-all duration-300">
+                        <div className="text-emerald-500 p-1.5 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                          {featureIcons[key] || <ShieldCheck size={14} />}
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                           {key.replace(/([A-Z])/g, ' $1').trim()}
                         </span>
                       </div>
                     ) : null
                   ))}
                 </div>
-              </div>
-            </div>
+              </ComponentCard>
+            )}
 
             {/* Section: History */}
-            <div className="space-y-5 pt-4">
-              <div className="flex items-center gap-2">
-                <Activity className="text-purple-500" size={18} />
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-widest">Subscription History</h3>
-              </div>
-              <div className="bg-gray-50/50 dark:bg-white/[0.02] p-6 rounded-2xl border border-gray-100 dark:border-white/[0.05]">
-                <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-hide hover:scrollbar-default">
-                  <Timeline
-                    className="mt-2"
-                    items={sub.history?.map((item: any, index: number) => ({
-                      children: (
-                        <div key={index} className="pb-6 relative">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                            <div className="flex items-center gap-3">
-                              <span className={`px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-widest ${item.action === 'created' ? 'bg-emerald-500 text-white' :
-                                item.action === 'suspended' ? 'bg-rose-500 text-white' :
-                                  item.action === 'reactivated' ? 'bg-blue-500 text-white' :
-                                    item.action === 'extended' ? 'bg-amber-500 text-white' : 'bg-gray-600 text-white'
-                                }`}>
-                                {item.action}
-                              </span>
-                              <span className="text-xs font-semibold text-gray-400 flex items-center gap-1.5">
-                                <Calendar size={12} />
-                                {formatDateWithTiming(item.date)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
-                              <User size={12} className="text-gray-400" />
-                              <span className="text-[11px] font-semibold text-gray-500 uppercase">By {item.performedBy}</span>
-                            </div>
+            <ComponentCard title="Subscription Timeline / History" className="border border-gray-100 dark:border-white/[0.05]">
+              <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-hide hover:scrollbar-default mt-4">
+                <Timeline
+                  className="mt-2"
+                  items={sub.history?.map((item: any, index: number) => ({
+                    children: (
+                      <div key={index} className="pb-6 relative">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-3">
+                            <span className={`px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-widest ${item.action === 'created' ? 'bg-emerald-500 text-white' :
+                              item.action === 'suspended' ? 'bg-rose-500 text-white' :
+                                item.action === 'reactivated' ? 'bg-blue-500 text-white' :
+                                  item.action === 'extended' ? 'bg-amber-500 text-white' : 'bg-gray-600 text-white'
+                              }`}>
+                              {item.action}
+                            </span>
+                            <span className="text-xs font-semibold text-gray-400 flex items-center gap-1.5">
+                              <Calendar size={12} />
+                              {formatDateWithTiming(item.date)}
+                            </span>
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed pl-1 italic border-l-2 border-gray-200 dark:border-gray-700 ml-1">
-                            "{item.note}"
-                          </p>
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <User size={12} className="text-gray-400" />
+                            <span className="text-[11px] font-semibold text-gray-500 uppercase">By {item.performedBy}</span>
+                          </div>
                         </div>
-                      ),
-                      color: item.action === 'created' ? '#10b981' :
-                        item.action === 'suspended' ? '#ef4444' :
-                          item.action === 'reactivated' ? '#3b82f6' :
-                            item.action === 'extended' ? '#f59e0b' : '#6366f1',
-                    }))}
-                  />
-                </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed pl-1 italic border-l-2 border-gray-200 dark:border-gray-700 ml-1">
+                          "{item.note}"
+                        </p>
+                      </div>
+                    ),
+                    color: item.action === 'created' ? '#10b981' :
+                      item.action === 'suspended' ? '#ef4444' :
+                        item.action === 'reactivated' ? '#3b82f6' :
+                          item.action === 'extended' ? '#f59e0b' : '#6366f1',
+                  }))}
+                />
               </div>
-            </div>
+            </ComponentCard>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400 italic">
@@ -500,7 +528,9 @@ const SubscriptionDetails: React.FC = () => {
                   placeholder="Choose a plan"
                   value={selectedPlan}
                   onChange={(val) => setSelectedPlan(val)}
-                  options={plans.map(p => ({ label: p.name, value: p._id }))}
+                  options={plans
+                    .filter(p => p._id !== sub?.planId?._id)
+                    .map(p => ({ label: p.name, value: p._id }))}
                 />
               </div>
               {selectedPlan && tenureOptions.length > 0 && (

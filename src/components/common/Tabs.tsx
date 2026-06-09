@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TabItem {
   key: string;
@@ -16,6 +16,12 @@ interface TabsProps {
 
 const Tabs: React.FC<TabsProps> = ({ items, defaultActiveKey, onChange, className = "" }) => {
   const [activeKey, setActiveKey] = useState(defaultActiveKey || items[0]?.key);
+
+  useEffect(() => {
+    if (items.length > 0 && !items.some(item => item.key === activeKey)) {
+      setActiveKey(items[0]?.key);
+    }
+  }, [items, activeKey]);
 
   const handleTabClick = (key: string) => {
     setActiveKey(key);

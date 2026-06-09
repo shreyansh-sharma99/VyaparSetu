@@ -76,6 +76,7 @@ const TeamMemberList: React.FC = () => {
         ),
         designation: member.designation ? (typeof member.designation === "object" ? member.designation.name || "—" : member.designation) : "—",
         roleName: member.role?.roleName || "—",
+        userType: member.userType === "team_member" ? "Team Member" : (member.userType || "—"),
     }));
 
     const headers = [

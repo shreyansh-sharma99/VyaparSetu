@@ -111,8 +111,8 @@ const Plans: React.FC = () => {
     { label: "Subscribers", key: "subscriberCount" },
     { label: "Status", key: "statusStr" },
     { label: "Featured", key: "featuredStr" },
-    { label: "Trial", key: "trialStr" },
-    { label: "Limits", key: "limitsStr" },
+    // { label: "Trial", key: "trialStr" },
+    // { label: "Limits", key: "limitsStr" },
     { label: "Billing Cycles", key: "billingCyclesStr" },
     { label: "Created At", key: "formattedDate" },
   ];

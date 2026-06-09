@@ -458,7 +458,7 @@ const EditAdmin: React.FC = () => {
                                 <Input
                                     {...registerCash('paidAt')}
                                     type="date"
-                                    disabled
+
                                 />
                             </div>
 

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { loginApi, logoutApi, changePasswordApi } from './authService';
+import { loginApi, logoutApi, changePasswordApi, forgotPasswordApi } from './authService';
 import { encryptData, decryptData } from '@/utility/crypto';
 import { storePermissions } from '@/utility/permission';
 
@@ -9,6 +9,7 @@ interface AuthState {
   error: string | null;
   isAuthenticated: boolean;
   changingPassword: boolean;
+  forgotPasswordLoading: boolean;
 }
 
 const getInitialAuth = () => {
@@ -45,6 +46,7 @@ const initialState: AuthState = {
   error: null,
   isAuthenticated: initData.isAuthenticated,
   changingPassword: false,
+  forgotPasswordLoading: false,
 };
 
 export const loginUser = createAsyncThunk(
@@ -85,6 +87,20 @@ export const changePassword = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.message || 'Failed to change password.'
+      );
+    }
+  }
+);
+
+export const forgotPassword = createAsyncThunk(
+  'auth/forgotPassword',
+  async (emailData: { email: string }, { rejectWithValue }) => {
+    try {
+      const data = await forgotPasswordApi(emailData);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to send reset link.'
       );
     }
   }
@@ -142,6 +158,15 @@ const authSlice = createSlice({
       })
       .addCase(changePassword.rejected, (state) => {
         state.changingPassword = false;
+      })
+      .addCase(forgotPassword.pending, (state) => {
+        state.forgotPasswordLoading = true;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.forgotPasswordLoading = false;
+      })
+      .addCase(forgotPassword.rejected, (state) => {
+        state.forgotPasswordLoading = false;
       });
   },
 });

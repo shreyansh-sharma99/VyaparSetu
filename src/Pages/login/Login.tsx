@@ -2,20 +2,58 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Modal, ConfigProvider, theme } from 'antd';
 import type { AppDispatch, RootState } from '@/store';
-import { loginUser } from '@/Pages/login/services/authSlice';
+import { loginUser, forgotPassword } from '@/Pages/login/services/authSlice';
 import { Input } from '@/components/layout/input';
 import { Button } from '@/components/layout/button';
 import { Label } from '@/components/layout/label';
+import { toast } from 'react-toastify';
 
 export default function Login() {
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { register, handleSubmit, getValues, formState: { errors } } = useForm();
     const dispatch = useDispatch<AppDispatch>();
-    const { loading, error } = useSelector((state: RootState) => state.auth);
+    const { loading, error, forgotPasswordLoading } = useSelector((state: RootState) => state.auth);
     const [showPassword, setShowPassword] = useState(false);
+    const currentTheme = useSelector((state: RootState) => state.ui?.theme || 'light');
+    const isDark = currentTheme === 'dark';
+    const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState('');
 
     const onSubmit = (data: any) => {
         dispatch(loginUser(data));
+    };
+
+    const handleForgotPasswordClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const emailVal = getValues('email');
+        setForgotEmail(emailVal || '');
+        setIsForgotModalOpen(true);
+    };
+
+    const handleSendResetLink = async () => {
+        if (!forgotEmail) {
+            toast.warning("Please enter your email address");
+            return;
+        }
+        const emailPattern = /^\S+@\S+$/i;
+        if (!emailPattern.test(forgotEmail)) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
+        try {
+            const resultAction = await dispatch(forgotPassword({ email: forgotEmail }));
+            if (forgotPassword.fulfilled.match(resultAction)) {
+                toast.success("Password reset link sent to your email!");
+                setIsForgotModalOpen(false);
+                setForgotEmail('');
+            } else {
+                toast.error(resultAction.payload as string || "Failed to send reset link");
+            }
+        } catch (error) {
+            toast.error("An unexpected error occurred");
+        }
     };
 
     return (
@@ -89,9 +127,13 @@ export default function Login() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label>Password</Label>
-                                    <a href="#" className="text-xs font-semibold text-primary hover:text-primary/80 hover:underline underline-offset-4 transition-all">
+                                    <button
+                                        type="button"
+                                        onClick={handleForgotPasswordClick}
+                                        className="text-xs font-semibold text-primary hover:text-primary/80 hover:underline underline-offset-4 transition-all"
+                                    >
                                         Forgot Password?
-                                    </a>
+                                    </button>
                                 </div>
                                 <div className="relative group">
                                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -129,6 +171,83 @@ export default function Login() {
                     </div>
                 </div>
             </div>
+
+            <ConfigProvider
+                theme={{
+                    algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+                    components: {
+                        Modal: {
+                            contentBg: isDark ? '#111827' : '#ffffff',
+                            headerBg: isDark ? '#111827' : '#ffffff',
+                        },
+                    },
+                }}
+            >
+                <Modal
+                    title={
+                        <div className={`flex items-center gap-2.5 pb-2 border-b border-border/44 ${isDark ? "text-gray-100" : ""}`}>
+                            <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                                <Lock size={20} />
+                            </div>
+                            <span className="text-xl font-bold">Forgot Password?</span>
+                        </div>
+                    }
+                    open={isForgotModalOpen}
+                    onCancel={() => {
+                        setIsForgotModalOpen(false);
+                        setForgotEmail('');
+                    }}
+                    footer={null}
+                    centered
+                    width={450}
+                    styles={{ body: { padding: '24px' } }}
+                >
+                    <div className="space-y-6 mt-4">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            Enter the email address associated with your account and we will send you a link to reset your password.
+                        </p>
+
+                        <div className="space-y-2">
+                            <Label>Email Address</Label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                <Input
+                                    type="email"
+                                    placeholder="name@company.com"
+                                    value={forgotEmail}
+                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSendResetLink()}
+                                    className="pl-10 h-11 bg-muted/40 border-transparent focus:bg-background focus:border-primary/50 transition-all shadow-sm"
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-2 flex gap-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setIsForgotModalOpen(false);
+                                    setForgotEmail('');
+                                }}
+                                className="flex-1 h-11 text-base font-semibold border-border bg-transparent hover:bg-muted transition-all duration-200"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleSendResetLink}
+                                disabled={forgotPasswordLoading}
+                                className="flex-[2] h-11 text-base font-semibold tracking-wide shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200"
+                            >
+                                {forgotPasswordLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+                                {forgotPasswordLoading ? "Sending..." : "Send Reset Link"}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+            </ConfigProvider>
         </div>
     );
 }
