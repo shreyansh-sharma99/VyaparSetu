@@ -214,14 +214,6 @@ const Settings: React.FC = () => {
 
   // ─────────────────────────────────────────────────────────────────────────
 
-  if (loading && !settings) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
-
   if (error && !settings) {
     return (
       <div className="flex h-screen items-center justify-center text-red-500 font-medium">
@@ -230,7 +222,13 @@ const Settings: React.FC = () => {
     );
   }
 
-  if (!settings) return null;
+  if (!settings) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   const renderTable = (title: string, sectionKey: string, data: Record<string, any>) => {
     if (!data) return null;
@@ -239,6 +237,7 @@ const Settings: React.FC = () => {
     return (
       <ComponentCard
         title={title}
+        loading={loading || updating}
         className="mb-6 shadow-sm border-gray-100 dark:border-gray-800"
         rightButtonNode={
           <button
@@ -343,6 +342,7 @@ const Settings: React.FC = () => {
         {/* ── Plan Feature Definitions ──────────────────────────────────── */}
         <ComponentCard
           title="Plan Feature Definitions"
+          loading={loading || updating}
           className="shadow-sm border-gray-100 dark:border-gray-800"
           rightButtonNode={
             <button

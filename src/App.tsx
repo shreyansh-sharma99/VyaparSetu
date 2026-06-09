@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { usePermission, getSlugFromPath } from '@/utility/permission';
 import type { RootState } from './store';
 import Login from './Pages/login/Login';
+import ResetPassword from './Pages/login/ResetPassword';
 import { Dashboard } from './Pages/dashboard/Dashboard';
 import Plans from './Pages/Plans/Plans';
 import AddPlans from './Pages/Plans/AddPlans';
@@ -98,6 +99,10 @@ function App() {
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
+        />
+        <Route
+          path="/auth/reset-password"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <ResetPassword />}
         />
 
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>

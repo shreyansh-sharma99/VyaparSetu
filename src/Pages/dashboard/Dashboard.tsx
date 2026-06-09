@@ -117,6 +117,11 @@ export function Dashboard() {
 
   const { revenue, admins, subscriptions, invoices, plans, activity, reconciliation } = data;
 
+  const byTenureData = revenue?.byTenure?.map((t: any) => ({
+    ...t,
+    totalRupees: parseFloat(t.totalINR) || (t.totalPaise / 100)
+  })) || [];
+
   const showTrend = revenue?.monthlyTrend && revenue.monthlyTrend.length > 0;
   const showTenure = revenue?.byTenure && revenue.byTenure.length > 0;
   const trendColSpan = showTenure ? "lg:col-span-8" : "lg:col-span-12";
@@ -383,13 +388,13 @@ export function Dashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={revenue.byTenure}
+                        data={byTenureData}
                         cx="50%"
                         cy="50%"
                         innerRadius={70}
                         outerRadius={100}
                         paddingAngle={10}
-                        dataKey="totalPaise"
+                        dataKey="totalRupees"
                         nameKey="tenure"
                         stroke="#fff"
                         strokeWidth={2}
@@ -397,12 +402,13 @@ export function Dashboard() {
                         animationBegin={0}
                         animationDuration={1500}
                       >
-                        {revenue.byTenure.map((_, i) => (
+                        {byTenureData.map((_, i) => (
                           <Cell key={i} fill={COLORS[i % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip
                         contentStyle={{ borderRadius: '1.5rem', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.2)', fontSize: '12px', padding: '12px 20px' }}
+                        formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Revenue']}
                       />
                     </PieChart>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
@@ -605,7 +611,9 @@ export function Dashboard() {
                               <p className="text-[10px] font-bold text-gray-400">{inv?.planId?.name}</p>
                             </td>
                             <td className="px-4 py-4 border border-gray-100 dark:border-white/5">
-                              <span className="text-xs font-black text-gray-900 dark:text-white">₹{inv?.totalAmount?.toLocaleString()}</span>
+                              <span className="text-xs font-black text-gray-900 dark:text-white">
+                                ₹{inv?.totalAmount ? (inv.totalAmount / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
+                              </span>
                             </td>
                             <td className="px-4 py-4 border border-gray-100 dark:border-white/5">
                               <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${inv?.status === 'paid' ? 'bg-emerald-50 text-emerald-600' :

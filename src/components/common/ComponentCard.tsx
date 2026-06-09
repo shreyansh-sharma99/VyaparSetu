@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Loader from "@/components/UI/Loader";
 
 interface ComponentCardProps {
   title: React.ReactNode;
@@ -10,6 +11,7 @@ interface ComponentCardProps {
   disable?: boolean;
   bodyClassName?: string;
   titleBorder?: boolean;
+  loading?: boolean;
 }
 
 const ComponentCard: React.FC<ComponentCardProps> = ({ 
@@ -21,7 +23,8 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
   disable = false, 
   rightButtonNode = null, 
   bodyClassName = "",
-  titleBorder = true
+  titleBorder = true,
+  loading = false
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const handleToggle = () => {
@@ -33,39 +36,45 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       className={`relative rounded-2xl border border-gray-200 bg-white dark:border-border dark:bg-card ${className}`}
     >
       {disable && (<div className="absolute inset-0 bg-transparent cursor-not-allowed z-0"></div>)}
+      {loading ? (
+        <div className="flex items-center justify-center p-12 min-h-[150px]">
+          <Loader />
+        </div>
+      ) : (
+        <>
+          {title && (
+            <div className="px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
-      {title && (
-        <div className="px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* Left: Title */}
+              <div onClick={handleToggle}>
+                <h3 className={`text-xl cursor-pointer font-medium inline-block dark:text-white/90 ${titleBorder ? "border-b border-blue-700 text-blue-700" : ""}`}>
+                  {title}
+                </h3>
+                {desc && (
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {desc}
+                  </p>
+                )}
+              </div>
 
-          {/* Left: Title */}
-          <div onClick={handleToggle}>
-            <h3 className={`text-xl cursor-pointer font-medium inline-block dark:text-white/90 ${titleBorder ? "border-b border-blue-700 text-blue-700" : ""}`}>
-              {title}
-            </h3>
-            {desc && (
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {desc}
-              </p>
-            )}
-          </div>
-
-          {rightButtonNode && (
-            <div className="flex items-center gap-2">
-              {rightButtonNode}
+              {rightButtonNode && (
+                <div className="flex items-center gap-2">
+                  {rightButtonNode}
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {isOpen && (
-        <div
-          className={`p-4 sm:px-4 ${title ? "border-t border-gray-200 dark:border-border" : ""
-            } ${disable ? "pointer-events-none" : ""} ${bodyClassName}`}
-        >
-          <div className="space-y-2 h-full flex flex-col">{children}</div>
-        </div>
+          {isOpen && (
+            <div
+              className={`p-4 sm:px-4 ${title ? "border-t border-gray-200 dark:border-border" : ""
+                } ${disable ? "pointer-events-none" : ""} ${bodyClassName}`}
+            >
+              <div className="space-y-2 h-full flex flex-col">{children}</div>
+            </div>
+          )}
+        </>
       )}
-
     </div>
   );
 };
