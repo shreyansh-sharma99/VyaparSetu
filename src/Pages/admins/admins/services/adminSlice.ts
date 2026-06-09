@@ -19,6 +19,8 @@ interface Admin {
   };
   planId?: string;
   tenure?: string;
+  planTenure?: string;
+  paymentMethod?: string;
   notes?: string;
   createdAt: string;
   plan: {

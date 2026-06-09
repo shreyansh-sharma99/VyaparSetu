@@ -5,11 +5,26 @@ import type { AppDispatch, RootState } from "../../../store";
 import { fetchAdmins, setFilterStatus, setSearchQuery, setPagination } from "./services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
-import { formatDateWithTiming } from "../../../components/common/dateFormat";
+import { formatDateWithTiming, formatDate } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import { encryptData } from "../../../utility/crypto";
 import StatusToggle from "../../../components/form/input/StatusToggle";
 import { usePermission } from "@/utility/permission";
+
+const formatTenure = (tenure?: string) => {
+    if (!tenure) return "—";
+    if (tenure === "monthly") return "Monthly";
+    if (tenure === "halfYearly") return "Half-Yearly";
+    if (tenure === "yearly") return "Yearly";
+    return tenure.charAt(0).toUpperCase() + tenure.slice(1);
+};
+
+const formatPaymentMethod = (method?: string) => {
+    if (!method) return "—";
+    if (method === "cash") return "Cash";
+    if (method === "trial") return "Trial";
+    return method.charAt(0).toUpperCase() + method.slice(1);
+};
 
 const AdminsList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -106,26 +121,33 @@ const AdminsList: React.FC = () => {
         ...admin,
         id: admin._id,
         planName: admin.plan?.name || "N/A",
-        subStatus: admin.subscription?.status || "inactive",
+        tenure: formatTenure(admin.planTenure),
+        paymentMethod: formatPaymentMethod(admin.paymentMethod),
+        subStatus: admin.subscription?.status ? (admin.subscription.status.charAt(0).toUpperCase() + admin.subscription.status.slice(1)) : "Inactive",
         createdAt: formatDateWithTiming(admin.createdAt),
         statusIcon: admin.isActive ? "Active" : "Inactive",
         businessInfo: `${admin.businessName} (${admin.businessType})`,
-        createdBy: admin.createdBy?.name || "N/A"
+        createdBy: admin.createdBy?.name || "N/A",
+        planStartDate: formatDate(admin.subscription?.currentPeriodStart ?? null),
+        planEndDate: formatDate(admin.subscription?.currentPeriodEnd ?? null)
     }));
 
 
 
     const headers = [
         { label: "Client Name", key: "name", value: "checked" as const },
+        { label: "Business Details", key: "businessInfo", value: "checked" as const },
         { label: "Email", key: "email", value: "checked" as const },
         { label: "Phone", key: "phone", value: "checked" as const },
-        { label: "Business Details", key: "businessInfo", value: "checked" as const },
         { label: "Current Plan", key: "planName", value: "checked" as const },
-        { label: "Subscription", key: "subStatus", value: "checked" as const },
-        { label: "created At", key: "createdAt", value: "checked" as const },
+        { label: "Billing Cycle", key: "tenure", value: "checked" as const },
+        { label: "Payment Method", key: "paymentMethod", value: "checked" as const },
+        { label: "Subscription Status", key: "subStatus", value: "checked" as const },
+        { label: "Plan Start Date", key: "planStartDate", value: "checked" as const },
+        { label: "Plan End Date", key: "planEndDate", value: "checked" as const },
+        { label: "Created At", key: "createdAt", value: "checked" as const },
         { label: "Status", key: "statusIcon", value: "checked" as const },
         { label: "Created By", key: "createdBy", value: "checked" as const },
-        // {label: "createdAt", key: "createdAt", value: "checked" as const },
     ];
 
 

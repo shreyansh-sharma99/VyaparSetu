@@ -6,7 +6,7 @@ import type { AppDispatch, RootState } from "../../../store";
 import { fetchAdmins, resendOnboarding, suspendAdmin, activateAdmin, extendSubscription, setFilterStatus, setManagementStatusFilter, setSearchQuery, setPagination, assignCashPlan, setPlanFilter, setPaymentMethodFilter, setExpiringSoonFilter, setCreatedByFilter } from "../admins/services/adminSlice";
 import AdvanceTable from "../../../components/Tables/AdvanceTable";
 import ComponentCard from "../../../components/common/ComponentCard";
-import { formatDateWithTiming } from "../../../components/common/dateFormat";
+import { formatDateWithTiming, formatDate } from "../../../components/common/dateFormat";
 import PageMeta from "@/components/common/PageMeta";
 import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
@@ -22,6 +22,21 @@ import Input from "../../../components/form/input/InputField";
 import TextArea from "../../../components/form/input/TextArea";
 import { getPlans } from "../../Plans/services/PlanServices";
 import { getManagersService } from "../../teamMember/teamMembers/services/teamMemberService";
+
+const formatTenure = (tenure?: string) => {
+    if (!tenure) return "—";
+    if (tenure === "monthly") return "Monthly";
+    if (tenure === "halfYearly") return "Half-Yearly";
+    if (tenure === "yearly") return "Yearly";
+    return tenure.charAt(0).toUpperCase() + tenure.slice(1);
+};
+
+const formatPaymentMethod = (method?: string) => {
+    if (!method) return "—";
+    if (method === "cash") return "Cash";
+    if (method === "trial") return "Trial";
+    return method.charAt(0).toUpperCase() + method.slice(1);
+};
 
 const AdminManagementList: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -311,6 +326,10 @@ const AdminManagementList: React.FC = () => {
         onboardingStatusRaw: admin.onboardingStatus,
         statusRaw: admin.status,
         planName: admin.plan?.name || "N/A",
+        tenure: formatTenure(admin.planTenure),
+        paymentMethod: formatPaymentMethod(admin.paymentMethod),
+        planStartDate: formatDate(admin.subscription?.currentPeriodStart ?? null),
+        planEndDate: formatDate(admin.subscription?.currentPeriodEnd ?? null),
         subStatusBadge: (
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${admin.subscription?.status === "active"
                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
@@ -352,16 +371,20 @@ const AdminManagementList: React.FC = () => {
 
     const headers = [
         { label: "Client Name", key: "name", value: "checked" as const },
+        { label: "Business Details", key: "businessInfo", value: "checked" as const },
         { label: "Email", key: "email", value: "checked" as const },
         { label: "Phone", key: "phone", value: "checked" as const },
-        { label: "Business Details", key: "businessInfo", value: "checked" as const },
         { label: "Current Plan", key: "planName", value: "checked" as const },
+        { label: "Billing Cycle", key: "tenure", value: "checked" as const },
+        { label: "Payment Method", key: "paymentMethod", value: "checked" as const },
+        { label: "Subscription Status", key: "subStatusBadge", value: "checked" as const },
+        { label: "Plan Start Date", key: "planStartDate", value: "checked" as const },
+        { label: "Plan End Date", key: "planEndDate", value: "checked" as const },
         { label: "Joining Date", key: "joinedDate", value: "checked" as const },
         { label: "Trial End Date", key: "trialEndsAt", value: "checked" as const },
-        { label: "Created By", key: "createdBy", value: "checked" as const },
-        { label: "Status", key: "statusBadge", value: "checked" as const },
-        { label: "Subscription", key: "subStatusBadge", value: "checked" as const },
         { label: "Onboarding Status", key: "onboardingStatusBadge", value: "checked" as const },
+        { label: "Status", key: "statusBadge", value: "checked" as const },
+        { label: "Created By", key: "createdBy", value: "checked" as const },
     ];
 
 

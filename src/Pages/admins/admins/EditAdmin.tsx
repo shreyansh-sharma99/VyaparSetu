@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import postalcodes from 'postalcodes-india';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -57,7 +58,7 @@ const EditAdmin: React.FC = () => {
     const currentTheme = useSelector((state: any) => state.ui?.theme);
     const isDark = currentTheme === 'dark';
 
-    const { register, handleSubmit, control, reset, formState: { errors } } = useForm<AdminFormData>();
+    const { register, handleSubmit, control, reset, setValue, formState: { errors } } = useForm<AdminFormData>();
 
     // Cash Plan state
     const [isCashPlanModalOpen, setIsCashPlanModalOpen] = useState(false);
@@ -316,6 +317,28 @@ const EditAdmin: React.FC = () => {
                                 />
                             </div>
                             <div>
+                                <Label>Pincode <span className="text-red-500">*</span></Label>
+                                <Input
+                                    {...register('address.pincode', {
+                                        required: 'Pincode is required',
+                                        pattern: { value: /^[0-9]{6}$/, message: "Invalid pincode" },
+                                        onChange: (e) => {
+                                            const val = e.target.value;
+                                            if (/^[0-9]{6}$/.test(val)) {
+                                                const res = postalcodes.find(val);
+                                                if (res && res.isValid) {
+                                                    setValue('address.city', res.district, { shouldValidate: true });
+                                                    setValue('address.state', res.state, { shouldValidate: true });
+                                                }
+                                            }
+                                        }
+                                    })}
+                                    placeholder="400001"
+                                    error={!!errors.address?.pincode}
+                                    hint={errors.address?.pincode?.message}
+                                />
+                            </div>
+                            <div>
                                 <Label>City <span className="text-red-500">*</span></Label>
                                 <Input
                                     {...register('address.city', { required: 'City is required' })}
@@ -333,18 +356,7 @@ const EditAdmin: React.FC = () => {
                                     hint={errors.address?.state?.message}
                                 />
                             </div>
-                            <div>
-                                <Label>Pincode <span className="text-red-500">*</span></Label>
-                                <Input
-                                    {...register('address.pincode', {
-                                        required: 'Pincode is required',
-                                        pattern: { value: /^[0-9]{6}$/, message: "Invalid pincode" }
-                                    })}
-                                    placeholder="400001"
-                                    error={!!errors.address?.pincode}
-                                    hint={errors.address?.pincode?.message}
-                                />
-                            </div>
+
                             <div>
                                 <Label>Country <span className="text-red-500">*</span></Label>
                                 <Input
