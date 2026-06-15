@@ -76,8 +76,8 @@ const StyledSelect = ({
         type="button"
         onClick={() => setOpen((p) => !p)}
         className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-sm transition-all bg-white dark:bg-gray-900 ${error
-            ? "border-red-400 dark:border-red-500"
-            : "border-gray-200 dark:border-gray-700 hover:border-primary/50 focus:border-primary"
+          ? "border-red-400 dark:border-red-500"
+          : "border-gray-200 dark:border-gray-700 hover:border-primary/50 focus:border-primary"
           } ${open ? "border-primary ring-2 ring-primary/20" : ""}`}
       >
         {loading ? (
@@ -107,8 +107,8 @@ const StyledSelect = ({
               type="button"
               onClick={() => { onChange(opt.value); setOpen(false); }}
               className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex flex-col gap-0.5 ${opt.value === value
-                  ? "bg-primary/10 text-primary font-semibold"
-                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
             >
               <span>{opt.label}</span>

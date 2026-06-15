@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import {
   Users, Crown, User, Shield, Mail,
   ChevronDown, ChevronRight,
-  Check, X, MapPin, CreditCard, Loader2, Phone
+  Check, X, MapPin, CreditCard, Loader2, Phone, Compass
 } from "lucide-react";
 
 import type { AppDispatch, RootState } from "../../../store";
@@ -146,7 +146,7 @@ const TeamsPopoverCard = ({
 
   return (
     <div
-      className={`relative w-[220px] h-[130px] rounded-2xl border p-3.5 bg-white dark:bg-gray-900 transition-all duration-300 select-none flex flex-col justify-between ${isOwner
+      className={`relative w-[220px] h-[130px] rounded-2xl border p-3.5 bg-white dark:bg-gray-900 transition-all duration-300 select-none flex flex-col justify-between teams-card-interactive ${isOwner
         ? "border-primary/50 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.03]"
         : "border-gray-200 dark:border-gray-800/80 shadow-sm hover:border-primary/50 hover:shadow-md hover:scale-[1.03]"
         }`}
@@ -459,6 +459,75 @@ interface D3HierarchyTreeProps {
 const D3HierarchyTree: React.FC<D3HierarchyTreeProps> = ({
   rootNodes, expandedNodes, onToggle, onOpenModal
 }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [scrollStart, setScrollStart] = useState({ left: 0, top: 0 });
+
+  // Center scroll helper
+  const handleRecenter = () => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    container.scrollTo({
+      left: (container.scrollWidth - container.clientWidth) / 2,
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // Auto-center on mount and when rootNodes / structure changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        const container = containerRef.current;
+        container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [rootNodes, expandedNodes]);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only drag on left click
+    if (e.button !== 0) return;
+
+    // Check if user clicked on interactive elements (cards, buttons, popovers, input)
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest(".ant-popover") ||
+      target.closest(".teams-card-interactive")
+    ) {
+      return;
+    }
+
+    if (!containerRef.current) return;
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+    });
+    setScrollStart({
+      left: containerRef.current.scrollLeft,
+      top: containerRef.current.scrollTop,
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging || !containerRef.current) return;
+    e.preventDefault();
+
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+
+    containerRef.current.scrollLeft = scrollStart.left - dx;
+    containerRef.current.scrollTop = scrollStart.top - dy;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsDragging(false);
+  };
+
   // We construct a single virtual root node containing all our real roots as its reports.
   // This lets D3 compute the alignment for multiple roots in a single elegant layout!
   const virtualRoot = {
@@ -537,65 +606,93 @@ const D3HierarchyTree: React.FC<D3HierarchyTreeProps> = ({
   const translateY = -minY + CARD_HEIGHT / 2 + padding;
 
   return (
-    <div className="w-full overflow-x-auto pb-8 pt-4 flex justify-center">
-      <div className="min-w-max">
-        <svg
-          width={svgWidth}
-          height={svgHeight}
-          className="transition-all duration-500 ease-in-out select-none overflow-visible"
+    <div className="relative w-full border border-gray-100 dark:border-gray-800/85 rounded-2xl bg-gray-50/20 dark:bg-gray-950/10 overflow-hidden">
+      {/* Floating Control Panel */}
+      <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-gray-900/90 border border-gray-150/40 dark:border-gray-800/60 shadow-sm text-[12px] text-gray-550 dark:text-gray-405 font-semibold select-none">
+          <span>💡 Grab & drag background to pan</span>
+        </div>
+        <button
+          onClick={handleRecenter}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 border border-gray-250/70 dark:border-gray-800 shadow-sm text-[12px] font-bold text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-all active:scale-[0.97]"
+          title="Center view"
         >
-          <defs>
-            <linearGradient id="elbow-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
+          <Compass size={13} className="text-primary" />
+          Center View
+        </button>
+      </div>
 
-          <g
-            transform={`translate(${translateX}, ${translateY})`}
-            className="transition-transform duration-500 ease-in-out"
+      {/* Drag scroll container */}
+      <div
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUpOrLeave}
+        onMouseLeave={handleMouseUpOrLeave}
+        className={`w-full overflow-auto pb-8 pt-16 px-4 thin-scrollbar ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
+        style={{ maxHeight: "70vh" }}
+      >
+        <div className="min-w-max mx-auto flex justify-center p-4">
+          <svg
+            width={svgWidth}
+            height={svgHeight}
+            className="transition-all duration-500 ease-in-out select-none overflow-visible"
           >
-            {/* Crisp Connection Links */}
-            {processedLinks.map((link, i) => (
-              <path
-                key={`link-${i}`}
-                d={drawElbowLink(link)}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                className="text-primary/40 dark:text-primary/50 transition-all duration-500 ease-in-out"
-              />
-            ))}
+            <defs>
+              <linearGradient id="elbow-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.1" />
+              </linearGradient>
+            </defs>
 
-            {/* Render Cards inside SVG foreignObject */}
-            {processedNodes.map((node) => (
-              <g
-                key={node.id}
-                transform={`translate(${node.x}, ${node.y})`}
-                className="transition-transform duration-500 ease-in-out"
-              >
-                <foreignObject
-                  x={-CARD_WIDTH / 2}
-                  y={-CARD_HEIGHT / 2}
-                  width={CARD_WIDTH}
-                  height={CARD_HEIGHT + 24}
-                  className="overflow-visible"
+            <g
+              transform={`translate(${translateX}, ${translateY})`}
+              className="transition-transform duration-500 ease-in-out"
+            >
+              {/* Crisp Connection Links */}
+              {processedLinks.map((link, i) => (
+                <path
+                  key={`link-${i}`}
+                  d={drawElbowLink(link)}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  className="text-primary/40 dark:text-primary/50 transition-all duration-500 ease-in-out"
+                />
+              ))}
+
+              {/* Render Cards inside SVG foreignObject */}
+              {processedNodes.map((node) => (
+                <g
+                  key={node.id}
+                  transform={`translate(${node.x}, ${node.y})`}
+                  className="transition-transform duration-500 ease-in-out"
                 >
-                  <div className="w-full h-full p-1 overflow-visible">
-                    <TeamsPopoverCard
-                      member={node.data}
-                      depth={node.depth}
-                      isExpanded={expandedNodes.has(node.id)}
-                      hasChildren={node.hasChildren}
-                      onToggle={onToggle}
-                      onOpenModal={onOpenModal}
-                    />
-                  </div>
-                </foreignObject>
-              </g>
-            ))}
-          </g>
-        </svg>
+                  <foreignObject
+                    x={-CARD_WIDTH / 2}
+                    y={-CARD_HEIGHT / 2}
+                    width={CARD_WIDTH}
+                    height={CARD_HEIGHT + 24}
+                    className="overflow-visible"
+                  >
+                    <div className="w-full h-full p-1 overflow-visible">
+                      <TeamsPopoverCard
+                        member={node.data}
+                        depth={node.depth}
+                        isExpanded={expandedNodes.has(node.id)}
+                        hasChildren={node.hasChildren}
+                        onToggle={onToggle}
+                        onOpenModal={onOpenModal}
+                      />
+                    </div>
+                  </foreignObject>
+                </g>
+              ))}
+            </g>
+          </svg>
+        </div>
       </div>
     </div>
   );

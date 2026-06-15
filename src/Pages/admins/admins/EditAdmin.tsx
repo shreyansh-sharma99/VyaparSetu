@@ -66,6 +66,13 @@ const EditAdmin: React.FC = () => {
     const [managersList, setManagersList] = useState<any[]>([]);
     const [fetchingCashPlanData, setFetchingCashPlanData] = useState(false);
 
+    const { user } = useSelector((state: RootState) => state.auth);
+    const { profile } = useSelector((state: RootState) => state.user);
+
+    const currentUserId = profile?.id || profile?.user?.id || profile?._id || profile?.user?._id || user?.id || user?._id;
+    const currentUserName = profile?.name || profile?.user?.name || user?.name || 'Logged-in User';
+    const currentUserType = profile?.userType || profile?.user?.userType || user?.userType || 'owner';
+
     const {
         register: registerCash,
         handleSubmit: handleCashSubmit,
@@ -80,7 +87,7 @@ const EditAdmin: React.FC = () => {
             tenure: '',
             paidAt: new Date().toISOString().split('T')[0],
             note: 'Cash received from client at office',
-            collectedBy: ''
+            collectedBy: currentUserId || ''
         }
     });
 
@@ -169,6 +176,12 @@ const EditAdmin: React.FC = () => {
             if (managersRes?.data?.data) {
                 setManagersList(managersRes.data.data);
             }
+
+            // Auto-select current logged-in user as collector
+            if (currentUserId) {
+                setCashValue('collectedBy', currentUserId);
+            }
+
             setIsCashPlanModalOpen(true);
         } catch (error) {
             toast.error("Failed to load required data for Cash Plan");
@@ -480,17 +493,28 @@ const EditAdmin: React.FC = () => {
                                     name="collectedBy"
                                     control={controlCash}
                                     rules={{ required: 'Collected by is required' }}
-                                    render={({ field }) => (
-                                        <Select
-                                            options={managersList.map(m => ({ label: `${m.name} (${m.userType})`, value: m._id }))}
-                                            placeholder="Select team member"
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            error={!!cashErrors.collectedBy}
-                                        />
-                                    )}
+                                    render={({ field }) => {
+                                        const collectedByOptions = [...managersList];
+                                        if (currentUserId && !collectedByOptions.some(m => m._id === currentUserId)) {
+                                            collectedByOptions.unshift({
+                                                _id: currentUserId,
+                                                name: currentUserName,
+                                                userType: currentUserType
+                                            });
+                                        }
+                                        return (
+                                            <Select
+                                                options={collectedByOptions.map(m => ({ label: `${m.name} (${m.userType})`, value: m._id }))}
+                                                placeholder="Select team member"
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                                error={!!cashErrors.collectedBy}
+                                                disabled={true}
+                                            />
+                                        );
+                                    }}
                                 />
-                                {cashErrors.collectedBy && <span className="text-xs text-red-500">{cashErrors.collectedBy.message}</span>}
+                                {cashErrors.collectedBy && <span className="text-xs text-red-500">{String(cashErrors.collectedBy.message)}</span>}
                             </div>
 
                             {/* Row 3 - Full Width */}
