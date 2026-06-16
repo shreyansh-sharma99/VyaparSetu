@@ -129,7 +129,9 @@ const AdminsList: React.FC = () => {
         businessInfo: `${admin.businessName} (${admin.businessType})`,
         createdBy: admin.createdBy?.name || "N/A",
         planStartDate: formatDate(admin.subscription?.currentPeriodStart ?? null),
-        planEndDate: formatDate(admin.subscription?.currentPeriodEnd ?? null)
+        planEndDate: formatDate(admin.subscription?.currentPeriodEnd ?? null),
+        updatedBy: admin.updatedBy?.name || "N/A",
+        updatedAt: formatDateWithTiming(admin.updatedAt ?? null)
     }));
 
 
@@ -148,6 +150,8 @@ const AdminsList: React.FC = () => {
         { label: "Created At", key: "createdAt", value: "checked" as const },
         { label: "Status", key: "statusIcon", value: "checked" as const },
         { label: "Created By", key: "createdBy", value: "checked" as const },
+        { label: "Updated By", key: "updatedBy", value: "checked" as const },
+        { label: "Updated Date", key: "updatedAt", value: "checked" as const },
     ];
 
 

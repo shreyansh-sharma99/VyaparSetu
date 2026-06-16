@@ -257,11 +257,9 @@ const CreateRolesAndPermission: React.FC = () => {
             [field]: value,
         };
 
-        // Rule 1: If canWrite, canUpdate, or canDelete becomes true, canRead must become true
         if (value === true && (field === "canWrite" || field === "canUpdate" || field === "canDelete")) {
             updatedPerms[slug].canRead = true;
         }
-        // Rule 2: If canRead becomes false, canWrite, canUpdate, and canDelete must become false
         if (value === false && field === "canRead") {
             updatedPerms[slug].canWrite = false;
             updatedPerms[slug].canUpdate = false;

@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
-  Loader2, User, MapPin, CreditCard, ShieldCheck, ChevronDown,
+  Loader2, User, MapPin, CreditCard, ShieldCheck,
 } from "lucide-react";
+import Select from "@/components/form/Select";
 
 import type { AppDispatch, RootState } from "../../store";
 import { updateTeamMember, fetchTeamMemberById, clearCurrentTeamMember, fetchManagers } from "./services/teamMemberSlice";
@@ -25,66 +26,7 @@ interface EditTeamMemberForm {
   bankDetails: { accountHolderName: string; accountNumber: string; bankName: string; ifscCode: string; branchName: string };
 }
 
-// Reusable styled select
-const StyledSelect = ({
-  value,
-  onChange,
-  options,
-  placeholder,
-  loading,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string; sub?: string }[];
-  placeholder: string;
-  loading?: boolean;
-}) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const selected = options.find((o) => o.value === value);
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((p) => !p)}
-        className={`w-full flex items-center justify-between h-11 px-4 rounded-xl border text-sm transition-all bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-primary/50 ${open ? "border-primary ring-2 ring-primary/20" : ""}`}
-      >
-        {loading ? (
-          <span className="flex items-center gap-2 text-gray-400"><Loader2 size={14} className="animate-spin" />Loading...</span>
-        ) : selected ? (
-          <span className="text-gray-800 dark:text-gray-100 font-medium truncate">{selected.label}</span>
-        ) : (
-          <span className="text-gray-400">{placeholder}</span>
-        )}
-        <ChevronDown size={16} className={`text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
-          <button type="button" onClick={() => { onChange(""); setOpen(false); }}
-            className="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-800">
-            {placeholder}
-          </button>
-          {options.map((opt) => (
-            <button key={opt.value} type="button" onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex flex-col gap-0.5 ${opt.value === value ? "bg-primary/10 text-primary font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
-              <span>{opt.label}</span>
-              {opt.sub && <span className="text-[11px] text-gray-400">{opt.sub}</span>}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType; title: string }) => (
   <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
@@ -163,13 +105,27 @@ const EditTeamMember: React.FC = () => {
     }
   }, [member, reset]);
 
-  const roleOptions = (roles || []).map((r: any) => ({ value: r._id, label: r.roleName, sub: r.description }));
+  const roleOptions = (roles || []).map((r: any) => ({
+    value: r._id,
+    label: r.roleName,
+    element: (
+      <div className="flex flex-col gap-0.5">
+        <span className="font-semibold text-gray-800 dark:text-gray-200">{r.roleName}</span>
+        {r.description && <span className="text-[11px] text-gray-400">{r.description}</span>}
+      </div>
+    )
+  }));
   const managerOptions = (managers || [])
     .filter((m: any) => m._id !== decryptedId) // can't report to self
     .map((m: any) => ({
       value: m._id,
       label: m.name,
-      sub: m.email + (m.userType === "owner" ? " · Owner" : ""),
+      element: (
+        <div className="flex flex-col gap-0.5">
+          <span className="font-semibold text-gray-800 dark:text-gray-200">{m.name}</span>
+          <span className="text-[11px] text-gray-400">{m.email}{m.userType === "owner" ? " · Owner" : ""}</span>
+        </div>
+      )
     }));
 
   const onSubmit = async (data: EditTeamMemberForm) => {
@@ -233,18 +189,17 @@ const EditTeamMember: React.FC = () => {
             </div>
           </div>
 
-          {/* Role & Manager */}
           <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5">
             <SectionHeader icon={ShieldCheck} title="Role & Reporting" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <Label>Role</Label>
-                <StyledSelect value={roleId} onChange={setRoleId} options={roleOptions}
+                <Select value={roleId} onChange={setRoleId} options={roleOptions}
                   placeholder="Select a role" loading={loadingRoles} />
               </div>
               <div>
                 <Label>Reporting Manager</Label>
-                <StyledSelect value={reportingManager} onChange={setReportingManager}
+                <Select value={reportingManager} onChange={setReportingManager}
                   options={managerOptions} placeholder="Select manager (optional)" loading={loadingManagers} />
               </div>
             </div>

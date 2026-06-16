@@ -23,6 +23,7 @@ interface Admin {
   paymentMethod?: string;
   notes?: string;
   createdAt: string;
+  updatedAt?: string;
   plan: {
     _id: string;
     name: string;

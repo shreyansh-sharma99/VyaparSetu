@@ -12,8 +12,7 @@ import { toast } from "react-toastify";
 import { encryptData } from "../../../utility/crypto";
 import Select from "../../../components/form/Select";
 import { usePermission } from "@/utility/permission";
-import StatusToggle from "../../../components/form/input/StatusToggle";
-import { SendHorizontal, CheckCircle, CalendarClock, Ban, Loader2, IndianRupee } from "lucide-react";
+import { SendHorizontal, CheckCircle, CalendarClock, Ban, Loader2, IndianRupee, SlidersHorizontal } from "lucide-react";
 
 import { useForm, Controller } from "react-hook-form";
 import Button from "../../../components/UI/button/Button";
@@ -60,6 +59,7 @@ const AdminManagementList: React.FC = () => {
     const [actionType, setActionType] = useState<"resend" | "suspend" | "activate" | "extend" | null>(null);
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [extendDays, setExtendDays] = useState<number>(1);
+    const [showFilters, setShowFilters] = useState(false);
 
     // Cash Plan state
     const [isCashPlanModalOpen, setIsCashPlanModalOpen] = useState(false);
@@ -220,7 +220,7 @@ const AdminManagementList: React.FC = () => {
             if (managersRes?.data?.data) {
                 setManagersList(managersRes.data.data);
             }
-            
+
             // Auto-select current logged-in user as collector
             if (currentUserId) {
                 setCashValue('collectedBy', currentUserId);
@@ -378,6 +378,9 @@ const AdminManagementList: React.FC = () => {
             </span>
         ),
         createdBy: admin.createdBy?.name || "N/A",
+        createdDate: formatDateWithTiming(admin.createdAt),
+        updatedBy: admin.updatedBy?.name || "N/A",
+        updatedDate: formatDateWithTiming(admin.updatedAt ?? null),
     }));
 
 
@@ -398,6 +401,9 @@ const AdminManagementList: React.FC = () => {
         { label: "Onboarding Status", key: "onboardingStatusBadge", value: "checked" as const },
         { label: "Status", key: "statusBadge", value: "checked" as const },
         { label: "Created By", key: "createdBy", value: "checked" as const },
+        { label: "Created Date", key: "createdDate", value: "checked" as const },
+        { label: "Updated By", key: "updatedBy", value: "checked" as const },
+        { label: "Updated Date", key: "updatedDate", value: "checked" as const },
     ];
 
 
@@ -407,67 +413,89 @@ const AdminManagementList: React.FC = () => {
             <ComponentCard
                 title="Client Management Lists"
                 rightButtonNode={
-                    <StatusToggle status={filterStatus} onStatusChange={handleActiveStatusChange} />
+                    <button
+                        onClick={() => setShowFilters(prev => !prev)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-300 ${showFilters
+                            ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            : "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20"}`}
+                    >
+                        <SlidersHorizontal size={16} />
+                        <span>Filter</span>
+                    </button>
                 }
             >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <div>
-                        <Label className="text-xs mb-1 block text-gray-500">Status / Sub</Label>
-                        <Select
-                            value={managementStatusFilter}
-                            options={[
-                                { label: "All Status", value: "all" },
-                                { label: "Pending Subscription", value: "pending_subscription" },
-                                { label: "Subscribed", value: "subscribed" },
-                                { label: "Trialing", value: "trialing" },
-                                { label: "Active", value: "active" },
-                                { label: "Past Due", value: "past_due" },
-                                { label: "Cancelled", value: "cancelled" },
-                                { label: "Expired", value: "expired" },
-                            ]}
-                            onChange={handleStatusFilterChange}
-                        />
-                    </div>
-                    <div>
-                        <Label className="text-xs mb-1 block text-gray-500">Plan</Label>
-                        <Select
-                            value={planFilter}
-                            options={[{ label: "All Plans", value: "all" }, ...plansList.map(p => ({ label: p.name, value: p._id }))]}
-                            onChange={(val) => dispatch(setPlanFilter(val))}
-                        />
-                    </div>
-                    <div>
-                        <Label className="text-xs mb-1 block text-gray-500">Payment Method</Label>
-                        <Select
-                            value={paymentMethodFilter}
-                            options={[
-                                { label: "All Methods", value: "all" },
-                                { label: "Cash", value: "cash" },
-                                // { label: "Online", value: "online" },
-                                { label: "Trial", value: "trial" }
-                            ]}
-                            onChange={(val) => dispatch(setPaymentMethodFilter(val))}
-                        />
-                    </div>
-                    <div>
-                        <Label className="text-xs mb-1 block text-gray-500">Expiring Soon</Label>
-                        <Select
-                            value={expiringSoonFilter}
-                            options={[
-                                { label: "All", value: "all" },
-                                { label: "Expiring Soon", value: "true" },
-                                { label: "Not Expiring", value: "false" }
-                            ]}
-                            onChange={(val) => dispatch(setExpiringSoonFilter(val))}
-                        />
-                    </div>
-                    <div>
-                        <Label className="text-xs mb-1 block text-gray-500">Created By</Label>
-                        <Select
-                            value={createdByFilter}
-                            options={[{ label: "All Creators", value: "all" }, ...managersList.map(m => ({ label: m.name, value: m._id }))]}
-                            onChange={(val) => dispatch(setCreatedByFilter(val))}
-                        />
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showFilters ? 'max-h-[500px] opacity-100 mb-6' : 'max-h-0 opacity-0 mb-0 pointer-events-none'}`}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+                        <div>
+                            <Label className="text-xs mb-1 block text-gray-500">Status / Sub</Label>
+                            <Select
+                                value={managementStatusFilter}
+                                options={[
+                                    { label: "All Status", value: "all" },
+                                    { label: "Pending Subscription", value: "pending_subscription" },
+                                    { label: "Subscribed", value: "subscribed" },
+                                    { label: "Trialing", value: "trialing" },
+                                    { label: "Active", value: "active" },
+                                    { label: "Past Due", value: "past_due" },
+                                    { label: "Cancelled", value: "cancelled" },
+                                    { label: "Expired", value: "expired" },
+                                ]}
+                                onChange={handleStatusFilterChange}
+                            />
+                        </div>
+                        <div>
+                            <Label className="text-xs mb-1 block text-gray-500">Plan</Label>
+                            <Select
+                                value={planFilter}
+                                options={[{ label: "All Plans", value: "all" }, ...plansList.map(p => ({ label: p.name, value: p._id }))]}
+                                onChange={(val) => dispatch(setPlanFilter(val))}
+                            />
+                        </div>
+                        <div>
+                            <Label className="text-xs mb-1 block text-gray-500">Payment Method</Label>
+                            <Select
+                                value={paymentMethodFilter}
+                                options={[
+                                    { label: "All Methods", value: "all" },
+                                    { label: "Cash", value: "cash" },
+                                    // { label: "Online", value: "online" },
+                                    { label: "Trial", value: "trial" }
+                                ]}
+                                onChange={(val) => dispatch(setPaymentMethodFilter(val))}
+                            />
+                        </div>
+                        <div>
+                            <Label className="text-xs mb-1 block text-gray-500">Expiring Soon</Label>
+                            <Select
+                                value={expiringSoonFilter}
+                                options={[
+                                    { label: "All", value: "all" },
+                                    { label: "Expiring Soon", value: "true" },
+                                    { label: "Not Expiring", value: "false" }
+                                ]}
+                                onChange={(val) => dispatch(setExpiringSoonFilter(val))}
+                            />
+                        </div>
+                        <div>
+                            <Label className="text-xs mb-1 block text-gray-500">Created By</Label>
+                            <Select
+                                value={createdByFilter}
+                                options={[{ label: "All Creators", value: "all" }, ...managersList.map(m => ({ label: m.name, value: m._id }))]}
+                                onChange={(val) => dispatch(setCreatedByFilter(val))}
+                            />
+                        </div>
+                        <div>
+                            <Label className="text-xs mb-1 block text-gray-500">Active Status</Label>
+                            <Select
+                                value={filterStatus}
+                                options={[
+                                    { label: "All Status", value: "all" },
+                                    { label: "Active", value: "active" },
+                                    { label: "Inactive", value: "inactive" }
+                                ]}
+                                onChange={handleActiveStatusChange}
+                            />
+                        </div>
                     </div>
                 </div>
                 <AdvanceTable
