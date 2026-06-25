@@ -21,7 +21,6 @@ const MODULE_HIERARCHY = [
         module: "Client",
         slug: "#client",
         subModules: [
-            { module: "Client", slug: "/Admin" },
             { module: "Client Management", slug: "/AdminManagement" },
         ]
     },
@@ -56,6 +55,7 @@ const MODULE_HIERARCHY = [
             { module: "Razorpay Settlements", slug: "/reports/razorpay-settlements" },
         ]
     },
+    { module: "Email", slug: "/email" },
     {
         module: "Help Desk",
         slug: "#helpdesk",
@@ -71,6 +71,7 @@ const MODULE_HIERARCHY = [
     //         { module: "Settings", slug: "/settings" },
     //         { module: "Designations", slug: "/designations" },
     //         { module: "Roles & Permissions", slug: "/roles" },
+    //         { module: "Email Templates", slug: "/settings/email-templates" },
     //     ]
     // }
 ];

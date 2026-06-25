@@ -23,97 +23,98 @@ import { formatDateWithTiming } from "../../components/common/dateFormat";
 
 // Available modules mapped from Sidebar/App routes
 const MODULE_HIERARCHY = [
-    { module: "Dashboard", slug: "/" },
-    {
-        module: "Client",
-        slug: "#client",
-        subModules: [
-            { module: "Client", slug: "/Admin" },
-            { module: "Client Management", slug: "/AdminManagement" },
-        ]
-    },
-    {
-        module: "Team Members",
-        slug: "#team",
-        subModules: [
-            { module: "Members", slug: "/TeamMembers" },
-            { module: "Org Hierarchy", slug: "/TeamMembers/hierarchy" },
-        ]
-    },
-    { module: "Plans", slug: "/Plans" },
-    { module: "Subscriptions", slug: "/Subscriptions" },
-    { module: "Invoices", slug: "/Invoices" },
-    {
-        module: "Cash Management",
-        slug: "#cash",
-        subModules: [
-            { module: "Wallet", slug: "/Cash/wallet" },
-            { module: "Ledger", slug: "/Cash/ledger" },
-        ]
-    },
-    {
-        module: "Reports",
-        slug: "#reports",
-        subModules: [
-            { module: "Admin Report", slug: "/reports/admin" },
-            { module: "Revenue Report", slug: "/reports/revenue" },
-            { module: "Subscription Report", slug: "/reports/subscriptions" },
-            { module: "Invoice Report", slug: "/reports/invoices" },
-            { module: "Razorpay Payments", slug: "/reports/razorpay-payments" },
-            { module: "Razorpay Settlements", slug: "/reports/razorpay-settlements" },
-        ]
-    },
-    {
-        module: "Help Desk",
-        slug: "#helpdesk",
-        subModules: [
-            { module: "Dashboard Stats", slug: "/HelpDesk/stats" },
-            { module: "Tickets", slug: "/HelpDesk" },
-        ]
-    },
-    // {
-    //     module: "Master",
-    //     slug: "#master",
-    //     subModules: [
-    //         { module: "Settings", slug: "/settings" },
-    //         { module: "Designations", slug: "/designations" },
-    //         { module: "Roles & Permissions", slug: "/roles" },
-    //     ]
-    // }
+  { module: "Dashboard", slug: "/" },
+  {
+    module: "Client",
+    slug: "#client",
+    subModules: [
+      { module: "Client Management", slug: "/AdminManagement" },
+    ]
+  },
+  {
+    module: "Team Members",
+    slug: "#team",
+    subModules: [
+      { module: "Members", slug: "/TeamMembers" },
+      { module: "Org Hierarchy", slug: "/TeamMembers/hierarchy" },
+    ]
+  },
+  { module: "Plans", slug: "/Plans" },
+  { module: "Subscriptions", slug: "/Subscriptions" },
+  { module: "Invoices", slug: "/Invoices" },
+  {
+    module: "Cash Management",
+    slug: "#cash",
+    subModules: [
+      { module: "Wallet", slug: "/Cash/wallet" },
+      { module: "Ledger", slug: "/Cash/ledger" },
+    ]
+  },
+  {
+    module: "Reports",
+    slug: "#reports",
+    subModules: [
+      { module: "Admin Report", slug: "/reports/admin" },
+      { module: "Revenue Report", slug: "/reports/revenue" },
+      { module: "Subscription Report", slug: "/reports/subscriptions" },
+      { module: "Invoice Report", slug: "/reports/invoices" },
+      { module: "Razorpay Payments", slug: "/reports/razorpay-payments" },
+      { module: "Razorpay Settlements", slug: "/reports/razorpay-settlements" },
+    ]
+  },
+  { module: "Email", slug: "/email" },
+  {
+    module: "Help Desk",
+    slug: "#helpdesk",
+    subModules: [
+      { module: "Dashboard Stats", slug: "/HelpDesk/stats" },
+      { module: "Tickets", slug: "/HelpDesk" },
+    ]
+  },
+  // {
+  //     module: "Master",
+  //     slug: "#master",
+  //     subModules: [
+  //         { module: "Settings", slug: "/settings" },
+  //         { module: "Designations", slug: "/designations" },
+  //         { module: "Roles & Permissions", slug: "/roles" },
+  //         { module: "Email Templates", slug: "/settings/email-templates" },
+  //     ]
+  // }
 ];
 
 interface PermissionRow {
-    module: string;
-    slug: string;
-    canRead: boolean;
-    canWrite: boolean;
-    canUpdate: boolean;
-    canDelete: boolean;
-    isGroup?: boolean;
-    parentSlug?: string;
+  module: string;
+  slug: string;
+  canRead: boolean;
+  canWrite: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  isGroup?: boolean;
+  parentSlug?: string;
 }
 
 const flattenModules = () => {
-    const flat: PermissionRow[] = [];
-    MODULE_HIERARCHY.forEach(m => {
-        if (m.subModules) {
-            flat.push({ module: m.module, slug: m.slug, isGroup: true, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
-            m.subModules.forEach(sm => {
-                flat.push({ module: sm.module, slug: sm.slug, parentSlug: m.slug, isGroup: false, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
-            });
-        } else {
-            flat.push({ module: m.module, slug: m.slug, isGroup: false, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
-        }
-    });
-    return flat;
+  const flat: PermissionRow[] = [];
+  MODULE_HIERARCHY.forEach(m => {
+    if (m.subModules) {
+      flat.push({ module: m.module, slug: m.slug, isGroup: true, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
+      m.subModules.forEach(sm => {
+        flat.push({ module: sm.module, slug: sm.slug, parentSlug: m.slug, isGroup: false, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
+      });
+    } else {
+      flat.push({ module: m.module, slug: m.slug, isGroup: false, canRead: false, canWrite: false, canUpdate: false, canDelete: false });
+    }
+  });
+  return flat;
 };
 
 const getInitialPermissions = () => {
-    const perms: Record<string, PermissionRow> = {};
-    flattenModules().forEach(m => {
-        perms[m.slug] = m;
-    });
-    return perms;
+  const perms: Record<string, PermissionRow> = {};
+  flattenModules().forEach(m => {
+    perms[m.slug] = m;
+  });
+  return perms;
 };
 
 const PERM_COLORS = {
@@ -133,11 +134,10 @@ const PermBadge = ({
   colorClass: string;
 }) => (
   <span
-    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all ${
-      granted
-        ? `${colorClass} border-transparent`
-        : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 border-gray-200 dark:border-gray-700"
-    }`}
+    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all ${granted
+      ? `${colorClass} border-transparent`
+      : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 border-gray-200 dark:border-gray-700"
+      }`}
   >
     {granted ? <Check size={10} strokeWidth={3} /> : <X size={10} strokeWidth={3} />}
     {label}
@@ -261,11 +261,10 @@ const RoleDetails: React.FC = () => {
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border ${
-                    role.isSystemRole
-                      ? "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
-                      : "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/40"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border ${role.isSystemRole
+                    ? "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/40"
+                    : "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/40"
+                    }`}
                 >
                   <ShieldCheck size={12} />
                   {role.isSystemRole ? "System Role" : "Custom Role"}
@@ -358,15 +357,13 @@ const RoleDetails: React.FC = () => {
                     return (
                       <div
                         key={m.slug}
-                        className={`flex flex-col sm:grid sm:grid-cols-[1fr_repeat(4,_100px)] px-5 py-3.5 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors gap-3 sm:gap-0 items-center ${
-                          m.isGroup ? "bg-gray-50/30 dark:bg-white/[0.01]" : ""
-                        }`}
+                        className={`flex flex-col sm:grid sm:grid-cols-[1fr_repeat(4,_100px)] px-5 py-3.5 hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-colors gap-3 sm:gap-0 items-center ${m.isGroup ? "bg-gray-50/30 dark:bg-white/[0.01]" : ""
+                          }`}
                       >
                         {/* Module Name */}
                         <div
-                          className={`flex items-center gap-2.5 w-full sm:w-auto ${
-                            m.parentSlug ? "pl-6" : ""
-                          } ${m.isGroup ? "cursor-pointer select-none" : ""}`}
+                          className={`flex items-center gap-2.5 w-full sm:w-auto ${m.parentSlug ? "pl-6" : ""
+                            } ${m.isGroup ? "cursor-pointer select-none" : ""}`}
                           onClick={() => {
                             if (m.isGroup) toggleGroup(m.slug);
                           }}
@@ -387,11 +384,10 @@ const RoleDetails: React.FC = () => {
                             <div className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 shrink-0" />
                           )}
                           <span
-                            className={`text-sm ${
-                              m.isGroup
-                                ? "font-bold text-gray-900 dark:text-white hover:text-primary transition-colors"
-                                : "font-medium text-gray-700 dark:text-gray-200"
-                            }`}
+                            className={`text-sm ${m.isGroup
+                              ? "font-bold text-gray-900 dark:text-white hover:text-primary transition-colors"
+                              : "font-medium text-gray-700 dark:text-gray-200"
+                              }`}
                           >
                             {m.module}
                           </span>

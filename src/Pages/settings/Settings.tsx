@@ -143,7 +143,7 @@ const Settings: React.FC = () => {
 
   const openEditFeature = (feature: PlanFeatureDefinition) => {
     setEditingFeature(feature);
-    featureForm.setFieldsValue({ ...feature });
+    featureForm.setFieldsValue({ ...feature, type: "number" });
     setIsFeatureModalOpen(true);
   };
 
@@ -151,20 +151,13 @@ const Settings: React.FC = () => {
     try {
       const formValues = await featureForm.validateFields();
 
-      let generatedKey = formValues.label
-        .replace(/(?:^\w|[A-Z]|\b\w)/g, (word: string, index: number) => {
-          return index === 0 ? word.toLowerCase() : word.toUpperCase();
-        })
-        .replace(/\s+/g, '');
-
       const values = {
         ...(editingFeature || EMPTY_FEATURE),
         ...formValues,
+        type: "number",
       };
 
       if (!editingFeature) {
-        values.key = generatedKey;
-        // Backend enforces a strict enum for systemHook. New UI features must default to "none"
         values.systemHook = "none";
       }
 
@@ -531,23 +524,38 @@ const Settings: React.FC = () => {
         classNames={{
           header: 'dark:bg-[#0B0F19] dark:border-b dark:border-gray-800 pb-2',
           body: 'dark:bg-[#0B0F19]',
+
         }}
         bodyStyle={{ paddingTop: '20px' }}
       >
         <Form form={featureForm} layout="vertical" className="mt-2">
           <Row gutter={[16, 0]}>
-            <Col xs={24}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="key" label={<span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Key</span>}
+                rules={[{ required: true, message: "Key is required" }]}>
+                <CustomSelect
+                  placeholder="Select key"
+                  options={[
+                    { value: "maximumProduct", label: "Maximum Product" },
+                    { value: "maximumClients", label: "Maximum Clients" }
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
               <Form.Item name="label" label={<span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Label</span>}
                 rules={[{ required: true, message: "Label is required" }]}>
                 <InputField placeholder="e.g. Maximum Products" />
               </Form.Item>
             </Col>
+            {/*
             <Col xs={24} sm={12}>
               <Form.Item name="type" label={<span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Type</span>}
                 rules={[{ required: true }]}>
                 <CustomSelect placeholder="Select type" options={[{ value: "number", label: "Number" }, { value: "boolean", label: "Boolean" }]} />
               </Form.Item>
             </Col>
+            */}
             <Col xs={24} sm={12}>
               <Form.Item
                 noStyle
