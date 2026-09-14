@@ -76,7 +76,7 @@ const menuItems: MenuItem[] = [
     isActive: true,
   },
 
-  // Core Management
+
   {
     title: "Client",
     icon: User,
