@@ -38,7 +38,7 @@ const ViewEmailTemplate: React.FC = () => {
     return (
       <div className="space-y-6">
         <PageMeta
-          title="View Email Template | VyaparSetu"
+          title="View Email Template | ecnbiz"
           description="View email template details"
         />
         <ComponentCard title="View Email Template">
@@ -51,7 +51,7 @@ const ViewEmailTemplate: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageMeta
-        title="View Email Template | VyaparSetu"
+        title="View Email Template | ecnbiz"
         description="View email template details"
       />
 

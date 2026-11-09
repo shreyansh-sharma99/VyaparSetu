@@ -338,7 +338,7 @@ const TeamMemberHierarchy: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageMeta title="Team Hierarchy | VyaparSetu" description="Organization hierarchy" />
+      <PageMeta title="Team Hierarchy | ecnbiz" description="Organization hierarchy" />
 
       <ComponentCard
         title="Organization Hierarchy"

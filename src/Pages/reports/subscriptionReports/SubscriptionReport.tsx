@@ -86,7 +86,7 @@ export default function SubscriptionReport() {
   return (
     <>
       <PageMeta
-        title="Subscription Report | VyaparSetu"
+        title="Subscription Report | ecnbiz"
         description="Monthly subscription metrics including new signups, renewals, upgrades, cancellations and tenure distribution."
       />
 

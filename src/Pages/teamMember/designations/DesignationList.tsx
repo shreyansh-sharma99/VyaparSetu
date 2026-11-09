@@ -75,7 +75,7 @@ const DesignationList: React.FC = () => {
 
     return (
         <div className="">
-            <PageMeta title="Designations | VyaparSetu" description="Manage your team designations" />
+            <PageMeta title="Designations | ecnbiz" description="Manage your team designations" />
             <ComponentCard title="Designations">
                 <AdvanceTable
                     headers={headers as any}

@@ -99,7 +99,7 @@ const ListEmailTemplate: React.FC = () => {
   return (
     <div>
       <PageMeta
-        title="Email Templates | VyaparSetu"
+        title="Email Templates | ecnbiz"
         description="Manage email templates"
       />
       <ComponentCard

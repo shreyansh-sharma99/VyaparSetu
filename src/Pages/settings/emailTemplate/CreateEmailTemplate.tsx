@@ -48,7 +48,7 @@ const CreateEmailTemplate: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageMeta
-        title="Create Email Template | VyaparSetu"
+        title="Create Email Template | ecnbiz"
         description="Create a new email template"
       />
 

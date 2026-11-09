@@ -60,7 +60,7 @@ const HelpDeskStats: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <PageMeta title="HelpDesk Stats | VyaparSetu" description="Analytics for support tickets" />
+            <PageMeta title="HelpDesk Stats | ecnbiz" description="Analytics for support tickets" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((card, idx) => (

@@ -108,7 +108,7 @@ const Subscription: React.FC = () => {
     return (
         <div className="">
             <PageMeta
-                title="Subscriptions | VyaparSetu"
+                title="Subscriptions | ecnbiz"
                 description="Manage all owner subscriptions"
             />
             <ComponentCard

@@ -254,7 +254,7 @@ const CashWallet: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <PageMeta title="My Cash Wallet | VyaparSetu" description="Overview of cash wallet, approvals, and handovers" />
+            <PageMeta title="My Cash Wallet | ecnbiz" description="Overview of cash wallet, approvals, and handovers" />
 
             <ComponentCard
                 title={

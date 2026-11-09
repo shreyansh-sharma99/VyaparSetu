@@ -276,7 +276,7 @@ const SubscriptionDetails: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageMeta
-        title={`Subscription Details | ${sub?.adminId?.name || 'VyaparSetu'}`}
+        title={`Subscription Details | ${sub?.adminId?.name || 'ecnbiz'}`}
         description="Detailed overview of the business subscription plan"
       />
 

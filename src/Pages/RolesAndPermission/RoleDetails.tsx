@@ -207,7 +207,7 @@ const RoleDetails: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageMeta
-        title={`${role?.roleName || "Role"} Details | VyaparSetu`}
+        title={`${role?.roleName || "Role"} Details | ecnbiz`}
         description="View role details and permissions"
       />
 

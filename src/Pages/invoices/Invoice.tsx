@@ -95,7 +95,7 @@ const Invoice: React.FC = () => {
 
     return (
         <div className="">
-            <PageMeta title="Invoices | VyaparSetu" description="Manage and view all system invoices" />
+            <PageMeta title="Invoices | ecnbiz" description="Manage and view all system invoices" />
             <ComponentCard
                 title="Invoice List"
                 rightButtonNode={

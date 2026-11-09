@@ -147,7 +147,7 @@ const CashReport: React.FC = () => {
 
     return (
         <div className="">
-            <PageMeta title="Cash Report | VyaparSetu" description="View cash report details" />
+            <PageMeta title="Cash Report | ecnbiz" description="View cash report details" />
             
             <div className="flex gap-4 mb-4">
                 <button 

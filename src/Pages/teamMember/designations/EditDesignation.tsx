@@ -79,7 +79,7 @@ const EditDesignation: React.FC = () => {
 
     return (
         <div className="mx-auto">
-            <PageMeta title="Edit Designation | VyaparSetu" description="Edit an existing designation" />
+            <PageMeta title="Edit Designation | ecnbiz" description="Edit an existing designation" />
             <ComponentCard title="Edit Designation">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
                     <div>

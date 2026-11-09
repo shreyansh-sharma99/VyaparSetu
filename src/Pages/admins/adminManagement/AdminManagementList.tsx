@@ -409,7 +409,7 @@ const AdminManagementList: React.FC = () => {
 
     return (
         <div className="">
-            <PageMeta title="Business Clients | VyaparSetu" description="Manage all business Clients on the platform" />
+            <PageMeta title="Business Clients | ecnbiz" description="Manage all business Clients on the platform" />
             <ComponentCard
                 title="Client Management Lists"
                 rightButtonNode={

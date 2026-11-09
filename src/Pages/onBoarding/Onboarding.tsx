@@ -166,7 +166,7 @@ export default function Onboarding() {
       const rzp = new (window as any).Razorpay({
         key: orderData.razorpayKeyId,
         subscription_id: orderData.razorpaySubscriptionId,
-        name: 'Vyaparsetu',
+        name: 'ecnbiz',
         description: `${plan.name} (${orderData.billingCycle})`,
         handler: async (response: any) => {
           try {

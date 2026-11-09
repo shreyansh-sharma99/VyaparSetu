@@ -393,7 +393,7 @@ const UpdateRoleAndPermission: React.FC = () => {
     return (
         <div className="space-y-6">
             <PageMeta
-                title={`Edit ${role?.roleName || "Role"} | VyaparSetu`}
+                title={`Edit ${role?.roleName || "Role"} | ecnbiz`}
                 description="Edit role and permissions"
             />
 

@@ -14,7 +14,7 @@ interface AuthState {
 }
 
 const getInitialAuth = () => {
-  const vsetu = localStorage.getItem('vyaparsetu');
+  const vsetu = localStorage.getItem('ecnbiz');
   let user = null;
   let isAuthenticated = false;
 
@@ -158,7 +158,7 @@ const authSlice = createSlice({
           }
 
           const encryptedString = encryptData(JSON.stringify(action.payload.data));
-          localStorage.setItem('vyaparsetu', encryptedString);
+          localStorage.setItem('ecnbiz', encryptedString);
           storePermissions(action.payload.data);
         }
       })

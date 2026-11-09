@@ -334,7 +334,7 @@ const CreateRolesAndPermission: React.FC = () => {
     return (
         <div className="space-y-6">
             <PageMeta
-                title="Create Role | VyaparSetu"
+                title="Create Role | ecnbiz"
                 description="Create a new role with custom permissions"
             />
 

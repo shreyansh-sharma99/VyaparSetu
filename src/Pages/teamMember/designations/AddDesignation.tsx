@@ -42,7 +42,7 @@ const AddDesignation: React.FC = () => {
 
     return (
         <div className="mx-auto">
-            <PageMeta title="Add Designation | VyaparSetu" description="Add a new designation" />
+            <PageMeta title="Add Designation | ecnbiz" description="Add a new designation" />
             <ComponentCard title="Add Designation">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
                     <div>

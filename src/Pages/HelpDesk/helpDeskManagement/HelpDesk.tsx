@@ -84,7 +84,7 @@ const HelpDesk: React.FC = () => {
 
     return (
         <div>
-            <PageMeta title="HelpDesk | VyaparSetu" description="Manage all support tickets" />
+            <PageMeta title="HelpDesk | ecnbiz" description="Manage all support tickets" />
             <ComponentCard
                 title="Support Tickets"
                 rightButtonNode={

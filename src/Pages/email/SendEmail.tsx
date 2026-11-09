@@ -143,7 +143,7 @@ const SendEmail: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageMeta title="Send Email | VyaparSetu" description="Send automated or manual emails" />
+      <PageMeta title="Send Email | ecnbiz" description="Send automated or manual emails" />
 
       <ComponentCard title="Send Email">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

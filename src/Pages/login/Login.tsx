@@ -1,3 +1,4 @@
+import { Logo } from "@/components/Logo";
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
@@ -67,11 +68,7 @@ export default function Login() {
                     <div className="absolute bottom-[-10%] right-[-10%] w-3/4 h-3/4 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
                     {/* Logo at the top of the graphics card */}
-                    <img
-                        src="/image/logos/newLogo.png"
-                        alt="VyaparSetu Logo"
-                        className="w-full max-w-[250px]  object-contain drop-shadow-2xl z-10 animate-in fade-in zoom-in duration-1000"
-                    />
+                    <Logo className="w-full max-w-[250px] object-contain z-10 mb-6" />
 
                     <div className="text-center z-10 mb-8 space-y-4">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground">

@@ -128,7 +128,7 @@ export default function AdminReport() {
   return (
     <>
       <PageMeta
-        title="Admin Report | VyaparSetu"
+        title="Admin Report | ecnbiz"
         description="Comprehensive admin report showing total admins, status breakdown, plan distribution and recent signups."
       />
 

@@ -44,7 +44,7 @@ type SidebarContextProps = {
 }
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
-// console.log(encryptData(localStorage.getItem("vyaparsetu") || ""))
+// console.log(encryptData(localStorage.getItem("ecnbiz") || ""))
 function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {

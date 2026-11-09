@@ -172,7 +172,7 @@ const EditTeamMember: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageMeta title="Edit Team Member | VyaparSetu" description="Edit team member details" />
+      <PageMeta title="Edit Team Member | ecnbiz" description="Edit team member details" />
       <ComponentCard
         title={`Edit: ${member?.name || "Team Member"}`}
         rightButtonNode={

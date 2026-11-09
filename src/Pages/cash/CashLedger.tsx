@@ -134,7 +134,7 @@ const CashLedger: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <PageMeta title="Cash Ledger & Approvals | VyaparSetu" description="Manage team cash ledger and approvals" />
+            <PageMeta title="Cash Ledger & Approvals | ecnbiz" description="Manage team cash ledger and approvals" />
 
             <ComponentCard
                 title="Cash Administration"

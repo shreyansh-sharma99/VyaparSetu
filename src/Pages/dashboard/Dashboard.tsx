@@ -255,8 +255,8 @@ export function Dashboard() {
   return (
     <>
       <PageMeta
-        title="Executive Dashboard | VyaparSetu"
-        description="Detailed business intelligence and executive dashboard for VyaparSetu platform monitoring."
+        title="Executive Dashboard | ecnbiz"
+        description="Detailed business intelligence and executive dashboard for ecnbiz platform monitoring."
       />
 
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">

@@ -108,7 +108,7 @@ const HelpDeskDetails: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <PageMeta title={`Ticket ${currentTicket.ticketId} | VyaparSetu`} description="Ticket Details" />
+            <PageMeta title={`Ticket ${currentTicket.ticketId} | ecnbiz`} description="Ticket Details" />
 
             <ComponentCard
                 title="Ticket Management"

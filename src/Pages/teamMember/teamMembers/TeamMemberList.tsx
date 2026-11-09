@@ -97,7 +97,7 @@ const TeamMemberList: React.FC = () => {
 
     return (
         <div className="">
-            <PageMeta title="Team Members | VyaparSetu" description="Manage your team members" />
+            <PageMeta title="Team Members | ecnbiz" description="Manage your team members" />
             <ComponentCard title="Team Members">
                 <AdvanceTable
                     headers={headers as any}

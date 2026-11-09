@@ -248,7 +248,7 @@ export function AppSidebar() {
 
           <div className="hidden group-data-[collapsible=icon]:flex h-full w-full items-center justify-center">
             <img
-              src="/image/logos/newLogo.png"
+              src="/favicon.svg"
               alt="Hero Icon"
               className="w-10 h-10 object-contain transition-all duration-300 hover:scale-110"
             />

@@ -98,7 +98,7 @@ const RoleAndPermissionList: React.FC = () => {
   return (
     <div>
       <PageMeta
-        title="Roles & Permissions | VyaparSetu"
+        title="Roles & Permissions | ecnbiz"
         description="Manage roles and permissions"
       />
       <ComponentCard

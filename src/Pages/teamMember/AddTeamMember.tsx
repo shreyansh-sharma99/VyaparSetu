@@ -119,7 +119,7 @@ const AddTeamMember: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageMeta title="Add Team Member | VyaparSetu" description="Add a new team member" />
+      <PageMeta title="Add Team Member | ecnbiz" description="Add a new team member" />
       <ComponentCard
         title="Add New Team Member"
         rightButtonNode={

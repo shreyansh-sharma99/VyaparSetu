@@ -51,7 +51,7 @@ export default function RazorpayPayments() {
     return (
         <>
             <PageMeta
-                title="Razorpay Payments Report | VyaparSetu"
+                title="Razorpay Payments Report | ecnbiz"
                 description="View and download Razorpay payment reports."
             />
 

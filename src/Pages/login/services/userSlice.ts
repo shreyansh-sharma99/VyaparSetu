@@ -12,7 +12,7 @@ interface UserState {
 
 const getStoredProfile = () => {
   try {
-    const vsetu = localStorage.getItem('vyaparsetu');
+    const vsetu = localStorage.getItem('ecnbiz');
     if (vsetu) {
       const decrypted = decryptData(vsetu);
       if (decrypted) {
@@ -61,7 +61,7 @@ const userSlice = createSlice({
   reducers: {
     clearUser: (state) => {
       state.profile = null;
-      localStorage.removeItem('vyaparsetu');
+      localStorage.removeItem('ecnbiz');
       localStorage.removeItem('_v_menu_permissions');
     },
   },
@@ -78,7 +78,7 @@ const userSlice = createSlice({
 
           // Encrypt and store the response data
           const encryptedString = encryptData(JSON.stringify(action.payload));
-          localStorage.setItem('vyaparsetu', encryptedString);
+          localStorage.setItem('ecnbiz', encryptedString);
           storePermissions(action.payload);
         }
       })

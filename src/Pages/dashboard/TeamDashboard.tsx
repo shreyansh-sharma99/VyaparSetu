@@ -91,7 +91,7 @@ export function TeamDashboard() {
   return (
     <>
       <PageMeta
-        title="Team Dashboard | VyaparSetu"
+        title="Team Dashboard | ecnbiz"
         description="View your active wallet, clients, and approvals."
       />
 

@@ -105,7 +105,7 @@ export default function InvoiceReport() {
   return (
     <>
       <PageMeta
-        title="Invoice Report | VyaparSetu"
+        title="Invoice Report | ecnbiz"
         description="Invoice analytics showing paid, pending, overdue amounts and aging buckets."
       />
 

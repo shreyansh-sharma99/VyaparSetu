@@ -10,6 +10,17 @@ export const updateSettings = async (data: any) => {
   return response.data;
 };
 
+// GST % rates shops may choose (Master → Settings → GST Rates)
+export const getGstRates = async () => {
+  const response = await apiClient.get('/owner/settings/gst-rates');
+  return response.data;
+};
+
+export const updateGstRates = async (rates: number[]) => {
+  const response = await apiClient.put('/owner/settings/gst-rates', { rates });
+  return response.data;
+};
+
 export const updatePlanFeatureDefinitions = async (data: any) => {
   const response = await apiClient.put('/owner/settings/plan-feature-definitions', data);
   return response.data;

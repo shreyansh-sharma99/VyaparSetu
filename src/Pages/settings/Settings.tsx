@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import InputField from "@/components/form/input/InputField";
 import CustomSelect from "@/components/form/Select";
 import { loginApi } from "@/Pages/login/services/authService";
+import GstRatesCard from "./GstRatesCard";
 
 const EMPTY_FEATURE: Omit<PlanFeatureDefinition, "_id"> = {
   key: "",
@@ -318,7 +319,7 @@ const Settings: React.FC = () => {
         },
       }}
     >
-      <PageMeta title="Settings | Vyapar Setu" description="Platform settings and configurations" />
+      <PageMeta title="Settings | ecnbiz" description="Platform settings and configurations" />
 
       <div className="space-y-6 max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -331,6 +332,9 @@ const Settings: React.FC = () => {
             {renderTable("SMTP Configuration", "smtp", settings.smtp)}
           </div>
         </div>
+
+        {/* ── GST rates shops may choose ─────────────────────────────────── */}
+        <GstRatesCard />
 
         {/* ── Plan Feature Definitions ──────────────────────────────────── */}
         <ComponentCard

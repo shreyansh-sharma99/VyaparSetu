@@ -50,7 +50,7 @@ export default function RazorpaySettlements() {
     return (
         <>
             <PageMeta
-                title="Razorpay Settlements Report | VyaparSetu"
+                title="Razorpay Settlements Report | ecnbiz"
                 description="View and download Razorpay settlement reports."
             />
 

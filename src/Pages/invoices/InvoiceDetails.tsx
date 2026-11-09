@@ -130,7 +130,7 @@ const InvoiceDetails: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <PageMeta title={`Invoice ${inv?.invoiceNumber || ''} | VyaparSetu`} description="Invoice details" />
+      <PageMeta title={`Invoice ${inv?.invoiceNumber || ''} | ecnbiz`} description="Invoice details" />
 
       <ComponentCard
         title={inv?.invoiceNumber || 'Invoice Details'}

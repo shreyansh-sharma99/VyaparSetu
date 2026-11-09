@@ -138,7 +138,7 @@ export default function RevenueReport() {
   return (
     <>
       <PageMeta
-        title="Revenue Report | VyaparSetu"
+        title="Revenue Report | ecnbiz"
         description="Detailed revenue analytics showing MRR, ARR, collections, and plan-wise breakdown."
       />
 

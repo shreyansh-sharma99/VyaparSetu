@@ -81,7 +81,7 @@ const UpdateEmailTemplate: React.FC = () => {
     return (
       <div className="space-y-6">
         <PageMeta
-          title="Edit Email Template | VyaparSetu"
+          title="Edit Email Template | ecnbiz"
           description="Edit an existing email template"
         />
         <ComponentCard title="Edit Email Template">
@@ -94,7 +94,7 @@ const UpdateEmailTemplate: React.FC = () => {
   return (
     <div className="space-y-6">
       <PageMeta
-        title="Edit Email Template | VyaparSetu"
+        title="Edit Email Template | ecnbiz"
         description="Edit an existing email template"
       />
 
